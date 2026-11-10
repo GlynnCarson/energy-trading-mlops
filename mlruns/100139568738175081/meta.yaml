@@ -1,0 +1,9 @@
+artifact_location: file:///C:/Users/cglyn/Downloads/energy-trading-mlops V2/energy-trading-mlops
+  v2/mlruns/100139568738175081
+creation_time: 1784021033969
+experiment_id: '100139568738175081'
+last_update_time: 1784021033969
+lifecycle_stage: active
+name: energy-drl-trading
+trace_location: null
+workspace: default

@@ -1,0 +1,39 @@
+pipeline:
+  name: energy-trading-mlops-pipeline
+  version: "1.0.0"
+  schedule_interval: "@hourly"
+  catchup: false
+  tags:
+    - energy
+    - trading
+    - mlops
+
+ingestion:
+  source: eia_api                        # eia_api | synthetic
+  eia_base_url: "https://api.eia.gov/v2"
+  commodity: gas                         # gas (Henry Hub) | oil (WTI) — the tradeable target
+  eia_start_date: "2010-01-01"           # daily history start for EIA pulls
+  series_ids:
+    - "RNGWHHD"                          # Henry Hub natural gas daily spot ($/MMBtu)
+    - "RWTC"                             # WTI crude oil daily spot ($/bbl)
+  lookback_days: 365
+  raw_s3_prefix: "raw/energy/"
+  timeout_seconds: 30
+  retry_attempts: 3
+
+transformation:
+  processed_s3_prefix: "processed/energy/"
+  feature_window_hours: [1, 6, 12, 24, 48, 168]  # lag windows
+  rolling_windows: [6, 24, 168]                   # rolling stat windows
+  target_column: "price_usd"
+  drop_na: true
+  outlier_std_threshold: 6.0   # relaxed so genuine commodity price spikes survive
+  train_ratio: 0.8
+  val_ratio: 0.1
+  test_ratio: 0.1
+
+aws:
+  region: "us-east-1"
+  s3_bucket: "energy-trading-mlops-data"
+  glue_database: "energy_trading_db"
+  log_group: "/aws/energy-trading-mlops"

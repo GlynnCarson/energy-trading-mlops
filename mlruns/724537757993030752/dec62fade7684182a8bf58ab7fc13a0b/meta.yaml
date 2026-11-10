@@ -1,0 +1,15 @@
+artifact_uri: file:///C:/Users/cglyn/Downloads/energy-trading-mlops V2/energy-trading-mlops
+  v2/mlruns/724537757993030752/dec62fade7684182a8bf58ab7fc13a0b/artifacts
+end_time: 1784027881842
+entry_point_name: ''
+experiment_id: '724537757993030752'
+lifecycle_stage: active
+run_id: dec62fade7684182a8bf58ab7fc13a0b
+run_name: PPO_drl_20260714_1103
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1784026984354
+status: 3
+tags: []
+user_id: cglyn

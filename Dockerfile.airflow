@@ -1,0 +1,15 @@
+###############################################################################
+# Dockerfile.airflow
+# Extends the official Airflow image with this project's dependencies, so
+# DAG tasks (which import loguru, mlflow, boto3, gymnasium, stable-baselines3,
+# etc.) can actually run inside the Airflow scheduler/webserver containers.
+###############################################################################
+
+FROM apache/airflow:2.8.1-python3.11
+
+COPY requirements.txt /requirements.txt
+
+# Install CPU-only torch first: this container has no GPU, and the default
+# PyPI torch wheel drags in several GB of unused CUDA/cuDNN/NCCL packages.
+RUN pip install --no-cache-dir torch==2.2.0 --index-url https://download.pytorch.org/whl/cpu \
+ && pip install --no-cache-dir -r /requirements.txt

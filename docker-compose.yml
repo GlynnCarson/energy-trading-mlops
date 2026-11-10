@@ -1,0 +1,179 @@
+###############################################################################
+# docker-compose.yml
+# Local development stack:
+#   - pipeline (app)
+#   - mlflow (tracking server)
+#   - localstack (mock AWS S3)
+#   - airflow (scheduler + webserver)
+#   - postgres (Airflow metadata DB)
+###############################################################################
+
+version: "3.9"
+
+x-airflow-common: &airflow-common
+  build:
+    context: .
+    dockerfile: Dockerfile.airflow
+  image: energy-trading-mlops-airflow:local
+  env_file: .env
+  environment:
+    &airflow-env
+    AIRFLOW__CORE__EXECUTOR: LocalExecutor
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+    AIRFLOW__CORE__FERNET_KEY: ""
+    AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "true"
+    AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+    AIRFLOW__WEBSERVER__EXPOSE_CONFIG: "true"
+    PYTHONPATH: "/opt/airflow/project"
+    AWS_DEFAULT_REGION: us-east-1
+    AWS_ACCESS_KEY_ID: test
+    AWS_SECRET_ACCESS_KEY: test
+    AWS_ENDPOINT_URL: http://localstack:4566
+  volumes:
+    - ./src/pipeline:/opt/airflow/dags
+    - ./src:/opt/airflow/project/src
+    - ./config:/opt/airflow/project/config
+    - airflow_logs:/opt/airflow/logs
+  depends_on:
+    postgres:
+      condition: service_healthy
+
+services:
+
+  # ── LocalStack (mock AWS S3, Glue, etc.) ──────────────────────────────────
+  localstack:
+    image: localstack/localstack:3.2
+    ports:
+      - "4566:4566"
+    environment:
+      SERVICES: s3,glue,logs,sns,iam
+      DEFAULT_REGION: us-east-1
+      PERSISTENCE: 1
+    volumes:
+      - localstack_data:/var/lib/localstack
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Bootstrap: create S3 bucket and folders in LocalStack ─────────────────
+  localstack-init:
+    image: amazon/aws-cli:2.15.0
+    depends_on:
+      localstack:
+        condition: service_healthy
+    environment:
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+      AWS_DEFAULT_REGION: us-east-1
+    entrypoint: >
+      sh -c "
+        aws --endpoint-url=http://localstack:4566 s3 mb s3://energy-trading-mlops-data &&
+        echo 'S3 bucket created'
+      "
+
+  # ── MLflow Tracking Server ─────────────────────────────────────────────────
+  mlflow-server:
+    image: python:3.11-slim
+    ports:
+      - "5000:5000"
+    volumes:
+      - mlflow_data:/mlflow
+    command: >
+      sh -c "pip install mlflow boto3 -q &&
+      mlflow server
+      --host 0.0.0.0
+      --port 5000
+      --backend-store-uri sqlite:///mlflow/mlflow.db
+      --default-artifact-root /mlflow/artifacts
+      --allowed-hosts mlflow-server:*,localhost:*,127.0.0.1:*"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/health')"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  # ── PostgreSQL (Airflow metadata) ──────────────────────────────────────────
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "airflow"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Airflow Init (DB migrate + admin user) ─────────────────────────────────
+  airflow-init:
+    <<: *airflow-common
+    command: >
+      bash -c "
+      airflow db upgrade &&
+      airflow users create
+      --username admin
+      --password admin
+      --firstname MLOps
+      --lastname Admin
+      --role Admin
+      --email admin@energytrading.io
+      "
+    restart: on-failure
+
+  # ── Airflow Webserver ──────────────────────────────────────────────────────
+  airflow-webserver:
+    <<: *airflow-common
+    command: webserver
+    ports:
+      - "8080:8080"
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # ── Airflow Scheduler ──────────────────────────────────────────────────────
+  airflow-scheduler:
+    <<: *airflow-common
+    command: scheduler
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+
+  # ── Pipeline Runner (manual trigger) ──────────────────────────────────────
+  pipeline:
+    build:
+      context: .
+      target: runtime
+    env_file: .env
+    environment:
+      AWS_DEFAULT_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+      AWS_ENDPOINT_URL: http://localstack:4566
+      MLFLOW_TRACKING_URI: http://mlflow-server:5000
+      EIA_DATA_SOURCE: synthetic
+    volumes:
+      - ./src:/app/src
+      - ./config:/app/config
+    depends_on:
+      localstack-init:
+        condition: service_completed_successfully
+      mlflow-server:
+        condition: service_healthy
+    profiles:
+      - manual
+
+volumes:
+  localstack_data:
+  mlflow_data:
+  postgres_data:
+  airflow_logs:

@@ -1,0 +1,192 @@
+{
+  "cutoff": "2026-07-14",
+  "last_raw_date": "2026-07-06",
+  "raw_rows": 4166,
+  "featured_rows": 4138,
+  "n_columns": 40,
+  "n_features": 38,
+  "splits": {
+    "train": {
+      "rows": 3310,
+      "start": "2010-08-26",
+      "end": "2023-05-03",
+      "price_min": 1.33,
+      "price_max": 11.32,
+      "price_mean": 3.407296072507553
+    },
+    "val": {
+      "rows": 413,
+      "start": "2023-05-04",
+      "end": "2024-12-02",
+      "price_min": 1.21,
+      "price_max": 3.39,
+      "price_mean": 2.276585956416465
+    },
+    "test": {
+      "rows": 415,
+      "start": "2024-12-03",
+      "end": "2026-07-06",
+      "price_min": 2.54,
+      "price_max": 10.25,
+      "price_mean": 3.4748433734939757
+    }
+  },
+  "runs": {
+    "PPO-10k": {
+      "run_id": "ef3a6400d97345ceab55ab6e0ac0b481",
+      "val_reproduced_return_pct": -2.9479,
+      "val_logged_return_pct": -2.9479,
+      "val_reproduced_ok": true,
+      "first_252": {
+        "agent": {
+          "total_return_pct": 3.666,
+          "annualised_return_pct": 3.666,
+          "sharpe": 0.4278,
+          "max_drawdown_pct": -52.6246,
+          "calmar_ratio": 0.0697,
+          "win_rate_pct": 46.2151,
+          "var_95_pct": -3.9945,
+          "profit_factor": 1.1345,
+          "final_portfolio_value": 103666.03,
+          "n_steps": 252,
+          "total_trades": 252,
+          "trade_freq_per_day": 1.0,
+          "algorithm": "PPO",
+          "days_flat": 0
+        },
+        "buy_and_hold": {
+          "total_return_pct": 24.9265,
+          "annualised_return_pct": 24.9265,
+          "sharpe": 0.7433,
+          "max_drawdown_pct": -66.0434,
+          "calmar_ratio": 0.3774,
+          "win_rate_pct": 46.2151,
+          "var_95_pct": -6.5792,
+          "profit_factor": 1.2436,
+          "final_portfolio_value": 124926.5,
+          "n_steps": 252,
+          "algorithm": "Buy & Hold"
+        },
+        "random_return_mean": 17.67649,
+        "random_return_std": 58.160560499014856,
+        "random_return_min": -53.6866,
+        "random_return_max": 155.1832,
+        "random_beats_agent_pct": 56.666666666666664
+      },
+      "full_test": {
+        "agent": {
+          "total_return_pct": -2.7023,
+          "annualised_return_pct": -1.6537,
+          "sharpe": 0.3795,
+          "max_drawdown_pct": -53.0636,
+          "calmar_ratio": -0.0509,
+          "win_rate_pct": 45.0363,
+          "var_95_pct": -3.8233,
+          "profit_factor": 1.1165,
+          "final_portfolio_value": 97297.7,
+          "n_steps": 414,
+          "total_trades": 414,
+          "trade_freq_per_day": 1.0,
+          "algorithm": "PPO",
+          "days_flat": 0
+        },
+        "buy_and_hold": {
+          "total_return_pct": 9.9265,
+          "annualised_return_pct": 5.93,
+          "sharpe": 0.6475,
+          "max_drawdown_pct": -68.1875,
+          "calmar_ratio": 0.1456,
+          "win_rate_pct": 45.0363,
+          "var_95_pct": -6.564,
+          "profit_factor": 1.201,
+          "final_portfolio_value": 109926.5,
+          "n_steps": 414,
+          "algorithm": "Buy & Hold"
+        },
+        "random_return_mean": 13.506806666666668,
+        "random_return_std": 66.86294526140236,
+        "random_return_min": -53.7792,
+        "random_return_max": 157.9714,
+        "random_beats_agent_pct": 50.0
+      }
+    },
+    "PPO-300k": {
+      "run_id": "dec62fade7684182a8bf58ab7fc13a0b",
+      "val_reproduced_return_pct": -15.0433,
+      "val_logged_return_pct": -15.0433,
+      "val_reproduced_ok": true,
+      "first_252": {
+        "agent": {
+          "total_return_pct": 126.3736,
+          "annualised_return_pct": 126.3736,
+          "sharpe": 1.2427,
+          "max_drawdown_pct": -6.4295,
+          "calmar_ratio": 19.6553,
+          "win_rate_pct": 6.7729,
+          "var_95_pct": -0.0441,
+          "profit_factor": 4.7048,
+          "final_portfolio_value": 226373.64,
+          "n_steps": 252,
+          "total_trades": 38,
+          "trade_freq_per_day": 0.1508,
+          "algorithm": "PPO",
+          "days_flat": 217
+        },
+        "buy_and_hold": {
+          "total_return_pct": 24.9265,
+          "annualised_return_pct": 24.9265,
+          "sharpe": 0.7433,
+          "max_drawdown_pct": -66.0434,
+          "calmar_ratio": 0.3774,
+          "win_rate_pct": 46.2151,
+          "var_95_pct": -6.5792,
+          "profit_factor": 1.2436,
+          "final_portfolio_value": 124926.5,
+          "n_steps": 252,
+          "algorithm": "Buy & Hold"
+        },
+        "random_return_mean": 12.617393333333334,
+        "random_return_std": 49.741390094185704,
+        "random_return_min": -55.2392,
+        "random_return_max": 131.5771,
+        "random_beats_agent_pct": 3.3333333333333335
+      },
+      "full_test": {
+        "agent": {
+          "total_return_pct": 124.0237,
+          "annualised_return_pct": 63.3888,
+          "sharpe": 0.9581,
+          "max_drawdown_pct": -6.4295,
+          "calmar_ratio": 19.2898,
+          "win_rate_pct": 4.3584,
+          "var_95_pct": -0.0016,
+          "profit_factor": 4.5337,
+          "final_portfolio_value": 224023.7,
+          "n_steps": 414,
+          "total_trades": 42,
+          "trade_freq_per_day": 0.1014,
+          "algorithm": "PPO",
+          "days_flat": 377
+        },
+        "buy_and_hold": {
+          "total_return_pct": 9.9265,
+          "annualised_return_pct": 5.93,
+          "sharpe": 0.6475,
+          "max_drawdown_pct": -68.1875,
+          "calmar_ratio": 0.1456,
+          "win_rate_pct": 45.0363,
+          "var_95_pct": -6.564,
+          "profit_factor": 1.201,
+          "final_portfolio_value": 109926.5,
+          "n_steps": 414,
+          "algorithm": "Buy & Hold"
+        },
+        "random_return_mean": 1.9822366666666684,
+        "random_return_std": 61.49165437246197,
+        "random_return_min": -54.4956,
+        "random_return_max": 169.0714,
+        "random_beats_agent_pct": 10.0
+      }
+    }
+  }
+}

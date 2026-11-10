@@ -1,0 +1,9 @@
+artifact_location: file:///C:/Users/cglyn/Downloads/energy-trading-mlops V2/energy-trading-mlops
+  v2/mlruns/724537757993030752
+creation_time: 1784025745566
+experiment_id: '724537757993030752'
+last_update_time: 1784025745566
+lifecycle_stage: active
+name: energy-drl-eia-gas
+trace_location: null
+workspace: default

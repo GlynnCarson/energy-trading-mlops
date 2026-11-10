@@ -1,0 +1,201 @@
+###############################################################################
+# .github/workflows/ci.yml
+# Runs on every push and PR:
+#   Lint → Unit Tests → Integration Smoke Test → Build Docker
+###############################################################################
+
+name: CI Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+env:
+  PYTHON_VERSION: "3.11"
+  IMAGE_NAME: energy-trading-mlops
+
+jobs:
+
+  # ────────────────────────────────────────────
+  lint:
+    name: Lint & Format Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Cache pip
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+
+      - name: Install lint tools
+        run: pip install flake8 black isort
+
+      - name: Check formatting (black)
+        run: black --check src/ tests/
+
+      - name: Check import order (isort)
+        run: isort --check-only src/ tests/
+
+      - name: Lint (flake8)
+        run: flake8 src/ tests/ --max-line-length=120 --ignore=E203,W503
+
+  # ────────────────────────────────────────────
+  test:
+    name: Unit & Integration Tests
+    runs-on: ubuntu-latest
+    needs: lint
+    env:
+      AWS_DEFAULT_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+      EIA_API_KEY: fake-key-for-tests
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov moto[s3]
+
+      - name: Run tests
+        run: |
+          pytest tests/ \
+            --cov=src \
+            --cov-report=xml \
+            --cov-report=term-missing \
+            -v \
+            --tb=short
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: coverage.xml
+          flags: unittests
+          fail_ci_if_error: false
+
+  # ────────────────────────────────────────────
+  smoke-test:
+    name: Smoke Test (Synthetic Pipeline)
+    runs-on: ubuntu-latest
+    needs: test
+    env:
+      EIA_API_KEY: fake-key
+      AWS_DEFAULT_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run end-to-end smoke test
+        run: |
+          python - <<'EOF'
+          from src.ingestion.ingest import SyntheticEnergyGenerator
+          from src.transformation.transform import clean_raw, engineer_features, temporal_split, validate_dataframe
+          from src.ml.drl.train_drl import load_drl_config, run_drl_training, evaluate_agent
+          from src.ml.drl.env import EnergyTradingEnv
+          from stable_baselines3 import PPO
+
+          # Generate synthetic data
+          gen = SyntheticEnergyGenerator(seed=42)
+          df = gen.generate(days=90)
+
+          # Transform
+          df = clean_raw(df)
+          validate_dataframe(df)
+          df = engineer_features(df)
+          train, val, test = temporal_split(df)
+
+          # Train a tiny DRL agent
+          import mlflow
+          mlflow.set_tracking_uri("./mlruns")
+
+          drl_cfg = load_drl_config()
+          drl_cfg["training"]["total_timesteps"] = 1_000
+          drl_cfg["training"]["n_envs"] = 1
+          drl_cfg["training"]["eval_freq"] = 500
+          drl_cfg["training"]["save_freq"] = 500
+          drl_cfg["environment"]["episode_length"] = 100
+          drl_cfg["mlflow"]["tracking_uri"] = "./mlruns"
+          drl_cfg["mlflow"]["experiment_name"] = "smoke-test-drl"
+
+          run_id = run_drl_training(train, val, drl_cfg)
+          print(f"Smoke test DRL run: {run_id}")
+
+          # Evaluate the resulting agent
+          env = EnergyTradingEnv(test, drl_cfg, mode="test")
+          agent = PPO.load(f"{drl_cfg['training']['checkpoint_dir']}/ppo_final")
+          metrics = evaluate_agent(agent, env, n_episodes=2)
+          print(f"Smoke test metrics: {metrics}")
+
+          assert "mean_return_pct" in metrics
+          print("✅ Smoke test PASSED")
+          EOF
+
+  # ────────────────────────────────────────────
+  docker-build:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    needs: smoke-test
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build image (no push on CI)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          tags: ${{ env.IMAGE_NAME }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ────────────────────────────────────────────
+  terraform-validate:
+    name: Validate Terraform
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.6.6"
+
+      - name: Terraform Init
+        working-directory: terraform
+        run: terraform init -backend=false
+
+      - name: Terraform Validate
+        working-directory: terraform
+        run: terraform validate
+
+      - name: Terraform Format Check
+        working-directory: terraform
+        run: terraform fmt -check -recursive
