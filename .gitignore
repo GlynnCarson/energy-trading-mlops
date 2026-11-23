@@ -56,3 +56,6 @@ docker/local-certs/
 
 # ── Dashboard build output (published by .github/workflows/pages.yml) ──────────
 site/
+
+# Signed copy of the report (handwritten signature) - kept local, never published
+*_signed.docx
