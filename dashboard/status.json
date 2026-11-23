@@ -1,0 +1,39 @@
+{
+  "_comment": "Hand-maintained facts that are not in a data file. Keep in step with Chapter 5 and Figure 4.5 of the report. Everything else on the dashboard is read from the report tables, reports/ and git.",
+  "updated": "2026-11-23",
+  "components": [
+    {"name": "EIA ingestion", "detail": "Daily Henry Hub gas (RNGWHHD) and WTI crude (RWTC), 2010 onwards", "file": "src/ingestion/ingest.py", "status": "used"},
+    {"name": "Validation and transformation", "detail": "Cleaning, 8 validation rules, 38 leakage-free features, chronological splits", "file": "src/transformation/transform.py", "status": "used"},
+    {"name": "Trading environment", "detail": "Custom Gymnasium environment with 0.1 % transaction costs and a stop-loss", "file": "src/ml/drl/env.py", "status": "used"},
+    {"name": "PPO training and MLflow tracking", "detail": "Stable-Baselines3 PPO; every run logged to mlruns/", "file": "src/ml/drl/train_drl.py", "status": "used"},
+    {"name": "Backtest vs Buy & Hold and Random", "detail": "Held-out test split, 414 trading days", "file": "src/ml/drl/backtest.py", "status": "used"},
+    {"name": "Trade replay application", "detail": "Offline desktop replay of a trained agent", "file": "trading_replay_app.py", "status": "used"},
+    {"name": "Airflow DAG", "detail": "start, ingest, transform, data_quality_report, train_drl, backtest_drl, notify_success, end", "file": "src/pipeline/dag.py", "status": "docker"},
+    {"name": "S3 data lake", "detail": "Raw, processed and report zones, through LocalStack", "file": "src/utils/helpers.py", "status": "docker"},
+    {"name": "Email notification", "detail": "Success and failure emails, received in Mailpit", "file": "src/pipeline/dag.py", "status": "docker"},
+    {"name": "Docker Compose stack", "detail": "Airflow, MLflow server, PostgreSQL, LocalStack, Mailpit", "file": "docker-compose.yml", "status": "docker"},
+    {"name": "Terraform (AWS)", "detail": "terraform validate did not complete on the workstation (TC-16)", "file": "terraform/", "status": "defined"},
+    {"name": "GitHub Actions CI/CD", "detail": "Workflows defined; not yet passing (CI stops at the black formatting check; CD has no AWS credentials)", "file": ".github/workflows/", "status": "defined"},
+    {"name": "AWS Glue, ECR, IAM, CloudWatch/SNS", "detail": "Defined in the design and Terraform; not deployed", "file": "terraform/", "status": "defined"}
+  ],
+  "latest_dag_run": {
+    "date": "2026-11-20",
+    "run_id": "scheduled__2026-11-19T00:00:00+00:00",
+    "where": "Local Docker Compose stack",
+    "result": "All 8 tasks succeeded",
+    "details": [
+      "300,000-step PPO training in 22 min 8 s (inside the 2-hour task timeout)",
+      "Model and metrics stored in MLflow (run 404abd89eb804a159b405989b4b60386)",
+      "Backtest report written to S3 (LocalStack); success email received",
+      "Fault-injection run with an invalid training budget: train_drl retried, run marked failed, one alert email (TC-17)"
+    ],
+    "note": "A single seed, used as evidence that the orchestration works, not as a trading result."
+  },
+  "limitations": [
+    "One held-out test period (414 trading days, December 2024 to July 2026) dominated by two weather-driven price spikes, so each result depends heavily on a few days.",
+    "Trading is simulated at each day's published spot price with a fixed 0.1 % transaction cost, without bid-ask spreads or market impact.",
+    "The reward does not penalise risk, and the agents accepted drawdowns of up to 53 %.",
+    "The main configuration was trained with five seeds and no hyperparameter search; full-test returns ranged from +67.0 % to +190.9 %.",
+    "The system has not been used for real trading, and none of the results supports acting on its decisions without a human trader reviewing them."
+  ]
+}

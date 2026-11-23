@@ -1,0 +1,46 @@
+# Builds the project status dashboard (dashboard/build_dashboard.py) and
+# publishes it with GitHub Pages on every push to main.
+name: Dashboard (GitHub Pages)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 20          # recent commits for the activity table
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install python-docx (reads the report tables)
+        run: pip install python-docx==1.2.0
+      - name: Build dashboard
+        run: python dashboard/build_dashboard.py site
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

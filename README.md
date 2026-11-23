@@ -2,6 +2,8 @@
 
 > **U-CS 101 Final Year Project**
 > End-to-end automation of data pipelines from ingestion to a Deep Reinforcement Learning trading agent for energy markets.
+>
+> **Project dashboard:** https://glynncarson.github.io/energy-trading-mlops/ (test results, defects, trading results and pipeline status, rebuilt on every push)
 
 ---
 

@@ -53,3 +53,6 @@ docs/report/backup/
 # ── Machine-specific Docker overrides (antivirus HTTPS-scanning certificate) ──
 docker-compose.override.yml
 docker/local-certs/
+
+# ── Dashboard build output (published by .github/workflows/pages.yml) ──────────
+site/
