@@ -21,7 +21,7 @@ MAP = {"Figure 2.1:": "fig2_1_conceptual.png", "Figure 3.1:": "fig3_1_agile.png"
        "Figure 4.4:": "fig4_4_db_schema.png", "Figure 4.5:": "fig4_5_architecture.png",
        "Figure 4.6:": "fig4_6_ui_wireframe.png", "Figure 5.1:": "fig5_1_price_series.png",
        "Figure 5.2:": "backtest_eia_report.png", "Figure 5.3:": "fig5_2_training_curves.png",
-       "Figure 5.4:": "fig5_3_test_equity.png"}
+       "Figure 5.4:": "fig5_3_test_equity.png", "Figure 5.5:": "fig5_5_paper_trading.png"}
 
 docx_path, fig_dir = sys.argv[1], Path(sys.argv[2])
 doc = Document(docx_path)

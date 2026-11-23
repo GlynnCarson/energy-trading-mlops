@@ -24,9 +24,9 @@ OUT.mkdir(parents=True, exist_ok=True)
 # Figure 4.1  Use case diagram
 # ─────────────────────────────────────────────────────────────────────────────
 def use_case():
-    fig, ax, H = canvas("Use Case Diagram", w=14, h=11.2)
+    fig, ax, H = canvas("Use Case Diagram", w=14, h=12.9)
     # boundary
-    bx, by, bw, bh = 31, 6, 38, 60
+    bx, by, bw, bh = 31, 6, 38, 72.2
     ax.add_patch(FancyBboxPatch((bx, by), bw, bh, boxstyle="round,pad=0,rounding_size=1.2", fc="white",
                                 ec=BLACK, lw=2.0, zorder=1))
     ax.add_patch(FancyBboxPatch((bx, by + bh - 4.2), bw, 4.2, boxstyle="round,pad=0,rounding_size=1.2",
@@ -35,7 +35,7 @@ def use_case():
     ax.text(50, by + bh - 2.1, "Energy Trading MLOps Platform", ha="center", va="center", color="white",
             fontsize=11.5, fontweight="bold", zorder=3)
 
-    ys = [58.3 - 6.1 * i for i in range(9)]
+    ys = [70.5 - 6.1 * i for i in range(11)]
     uc = {
         "cfg": (50, ys[0], "Configure pipeline\n(YAML)", WHITE),
         "ing": (50, ys[1], "Ingest energy price data", WHITE),
@@ -44,17 +44,19 @@ def use_case():
         "train": (50, ys[4], "Train DRL trading agent", PALE),
         "track": (50, ys[5], "Track experiment\nin MLflow", PALE),
         "bt": (50, ys[6], "Backtest agent against\nbaselines", PALE),
-        "view": (50, ys[7], "View backtest report\nand trade replay", LIGHT),
-        "notify": (50, ys[8], "Receive pipeline\nnotification", LIGHT),
+        "gate": (50, ys[7], "Gate, register and\npromote model", PALE),
+        "paper": (50, ys[8], "Paper trade and monitor\nthe champion", PALE),
+        "view": (50, ys[9], "View backtest report\nand trade replay", LIGHT),
+        "notify": (50, ys[10], "Receive pipeline\nnotification", LIGHT),
     }
     for k, (cx, cy, t, f) in uc.items():
         usecase(ax, cx, cy, t, w=26, h=4.9, fill=f)
 
-    actor(ax, 13, 47, "Data Engineer", "pipeline and data quality")
-    actor(ax, 13, 28, "ML Engineer", "training and evaluation")
+    actor(ax, 13, 57, "Data Engineer", "pipeline and data quality")
+    actor(ax, 13, 33, "ML Engineer", "training and evaluation")
     actor(ax, 13, 10, "Energy Analyst", "consumes results")
-    system_actor(ax, 88, 50, "Airflow Scheduler", "daily trigger")
-    system_actor(ax, 88, 30, "EIA API v2", "price data source")
+    system_actor(ax, 88, 60, "Airflow Scheduler", "daily trigger")
+    system_actor(ax, 88, 37, "EIA API v2", "price data source")
     system_actor(ax, 88, 11, "Email Service", "SMTP")
 
     def link(a, b):
@@ -62,15 +64,15 @@ def use_case():
         # reaches the edge of its use case
         ax.add_line(Line2D([a[0], b[0]], [a[1], b[1]], color=MID, lw=1.1, zorder=1.5))
 
-    de, ml, an = (16, 53), (16, 34), (16, 16)
+    de, ml, an = (16, 63), (16, 39), (16, 16)
     for k in ["cfg", "ing", "tr", "dq"]:
         link(de, (37, uc[k][1]))
-    for k in ["cfg", "train", "track", "bt", "view"]:
+    for k in ["cfg", "train", "track", "bt", "gate", "view"]:
         link(ml, (37, uc[k][1]))
-    for k in ["view", "notify"]:
+    for k in ["paper", "view", "notify"]:
         link(an, (37, uc[k][1]))
-    sch, eia, mail = (83.5, 53.5), (83.5, 33.5), (83.5, 14.5)
-    for k in ["ing", "tr", "train", "bt"]:
+    sch, eia, mail = (83.5, 63.5), (83.5, 40.5), (83.5, 14.5)
+    for k in ["ing", "tr", "train", "bt", "gate", "paper"]:
         link(sch, (63, uc[k][1]))
     link(eia, (63, uc["ing"][1]))
     link(mail, (63, uc["notify"][1]))
@@ -88,7 +90,7 @@ def use_case():
 # Figure 4.2  Class diagram
 # ─────────────────────────────────────────────────────────────────────────────
 def class_diagram():
-    fig, ax, H = canvas("Class Diagram", w=14, h=16.0)
+    fig, ax, H = canvas("Class Diagram", w=14, h=16.5)
     top = H - 9
     a = header_box(ax, 1.5, top, 29, "EIAIngester", sections=[
         ["- api_key : str", "- session : requests.Session", "+ SERIES : dict{gas, oil}"],
@@ -121,7 +123,8 @@ def class_diagram():
     row4 = row3 - 22
     j = header_box(ax, 1.5, row4, 29, "energy_trading_mlops_pipeline", stereo="Airflow DAG", head_fill=MID,
                    body_fill=PALE, sections=[["schedule : @daily, retries : 2"],
-                                             ["ingest, transform, data_quality_report,", "train_drl, backtest_drl, notify_success"]])
+                                             ["ingest, transform, data_quality_report,", "train_drl, backtest_drl, notify_success,",
+                                              "paper_trade, monitor, retrain branch"]])
     k = header_box(ax, 35.5, row4, 29, "drl_tasks", stereo="module", head_fill=MID, body_fill=PALE, sections=[
         ["+ task_train_drl(**context)", "+ task_backtest_drl(**context)"]])
     l = header_box(ax, 69.5, row4, 29, "helpers", stereo="utility", head_fill=MID, body_fill=PALE, sections=[
@@ -176,8 +179,9 @@ def class_diagram():
 # Figure 4.3  Entity relationship diagram
 # ─────────────────────────────────────────────────────────────────────────────
 def erd():
-    fig, ax, H = canvas("Entity Relationship Diagram", subtitle="Data lake datasets and MLflow tracking entities",
-                        w=14, h=11.0)
+    fig, ax, H = canvas("Entity Relationship Diagram",
+                        subtitle="Data lake datasets, MLflow tracking entities and the MLflow Model Registry",
+                        w=14, h=13.95)
     top = H - 9.5
     ax.text(25, top + 0.4, "Data lake  (bucket: energy-trading-mlops-data)", ha="center", fontsize=10.5,
             fontweight="bold", color=DARK)
@@ -223,6 +227,26 @@ def erd():
     yP = proc[1] + proc[3] - 6
     poly_arrow(ax, [(47, yP), (53.5, yP), (53.5, run[1] + 4), (60, run[1] + 4)], dashed=True, open_head=True)
     ax.text(51.6, (yP + run[1] + 4) / 2, "lineage", ha="center", va="center", fontsize=8.0, color=DARK, rotation=90)
+
+    # MLflow Model Registry (closed loop): versions of energy_trading_ppo, each created from one run's model
+    yt = min(art[1], dq[1]) - 7.5
+    ax.text(25, yt + 2.4, "MLflow Model Registry  (model energy_trading_ppo)", ha="center", fontsize=10.5,
+            fontweight="bold", color=DARK)
+    ali = header_box(ax, 3, yt, 20, "MODEL_ALIAS", head_fill=DARK, sections=[
+        ["PK FK name", "PK  alias  e.g. champion", "     version"]])
+    reg = header_box(ax, 27, yt, 20, "REGISTERED_MODEL", head_fill=DARK, sections=[
+        ["PK  name", "     description", "     creation_time"]])
+    mv = header_box(ax, 60, yt, 36, "MODEL_VERSION", head_fill=DARK, sections=[
+        ["PK FK name,  PK version", "FK  run_id", "     source  e.g. runs:/{run_id}/best_model",
+         "     tags: gate result, seed, data window"]])
+    yr = ali[1] + ali[3] - 6.5
+    crow((23, yr), (27, yr), "N : 1", lab_off=(0, 1.2))
+    crow((47, yr), (60, yr), "1 : N", lab_off=(0, 1.2))
+    # RUN 1 : N MODEL_VERSION, routed along the right margin so it crosses no box
+    yr1, yr2 = run[1] + run[3] / 2, mv[1] + mv[3] - 6.5
+    for (x1, y1), (x2, y2) in (((96, yr1), (98.4, yr1)), ((98.4, yr1), (98.4, yr2)), ((98.4, yr2), (96, yr2))):
+        ax.add_line(Line2D([x1, x2], [y1, y2], color=BLACK, lw=1.4, zorder=2))
+    ax.text(99.3, (yr1 + yr2) / 2, "1 : N", ha="center", va="center", fontsize=8.3, color=DARK, rotation=90)
     save(fig, OUT / "fig4_3_erd.png")
 
 
@@ -230,8 +254,8 @@ def erd():
 # Figure 4.4  Database schema (physical)
 # ─────────────────────────────────────────────────────────────────────────────
 def db_schema():
-    fig, ax, H = canvas("Database Schema", subtitle="MLflow tracking database and AWS Glue Data Catalog",
-                        w=14, h=10.4)
+    fig, ax, H = canvas("Database Schema", subtitle="MLflow tracking and model registry database and AWS Glue "
+                                                    "Data Catalog", w=14, h=12.1)
     top = H - 9.5
     ax.text(30, top + 0.4, "MLflow tracking database  (SQLite, MLflow server in Docker Compose)", ha="center",
             fontsize=10.5, fontweight="bold", color=DARK)
@@ -274,6 +298,30 @@ def db_schema():
         x = box_[0] + box_[2] / 2
         poly_arrow(ax, [(46.5, run[1]), (46.5, run[1] - 2.5), (x, run[1] - 2.5), (x, box_[1] + box_[3])])
     ax.text(49.5, run[1] - 1.3, "1 : N", ha="center", fontsize=8.3, color=DARK)
+
+    # MLflow Model Registry tables (closed loop)
+    yt = met[1] - 8.0
+    ax.text(31.5, yt + 2.4, "MLflow Model Registry tables", ha="center", fontsize=10.5, fontweight="bold",
+            color=DARK)
+    rma = header_box(ax, 3, yt, 16.5, "registered_model_aliases", head_fill=DARK, sections=[[
+        "PK FK name : VARCHAR", "PK  alias : VARCHAR", "     version : INTEGER"]])
+    rm = header_box(ax, 23.5, yt, 15.5, "registered_models", head_fill=DARK, sections=[[
+        "PK  name : VARCHAR", "     description : VARCHAR", "     creation_time : BIGINT"]])
+    mv = header_box(ax, 43, yt, 17, "model_versions", head_fill=DARK, sections=[[
+        "PK FK name : VARCHAR", "PK  version : INTEGER", "FK  run_id : VARCHAR(32)", "     source : VARCHAR",
+        "     status : VARCHAR"]])
+    yk = rm[1] + rm[3] - 6.5
+    poly_arrow(ax, [(rm[0], yk), (rma[0] + rma[2], yk)])
+    poly_arrow(ax, [(rm[0] + rm[2], yk), (mv[0], yk)])
+    ax.text(21.5, yk + 1.3, "1 : N", ha="center", fontsize=8.3, color=DARK)
+    ax.text(41.0, yk + 1.3, "1 : N", ha="center", fontsize=8.3, color=DARK)
+    # runs 1 : N model_versions, routed in the gap between the MLflow and Glue tables
+    yr1, yr2 = run[1] + run[3] - 3.5, mv[1] + mv[3] - 6.5
+    poly_arrow(ax, [(run[0] + run[2], yr1), (62.8, yr1), (62.8, yr2), (mv[0] + mv[2], yr2)])
+    ax.text(64.0, (yr1 + yr2) / 2, "1 : N", ha="center", va="center", fontsize=8.3, color=DARK, rotation=90)
+    ax.text(31.5, mv[1] - 2.5, "Version tags (gate result, seed, data window) are stored in model_version_tags "
+                               "(PK name, version, key; value).", ha="center", fontsize=8.6, color=MID,
+            style="italic")
     legend(ax, [("box_dark", "MLflow tables"), ("box_mid", "Glue external tables (defined in Terraform)"),
                 ("solid", "foreign key, arrow at the 'many' side")], y=1.6)
     save(fig, OUT / "fig4_4_db_schema.png")
@@ -284,68 +332,82 @@ def db_schema():
 # ─────────────────────────────────────────────────────────────────────────────
 def architecture():
     fig, ax, H = canvas("System Architecture", subtitle="Energy Trading MLOps Platform - as implemented",
-                        w=14, h=11.2)
-    rows = [("DATA\nSOURCES", 61.0), ("INGESTION\nAND STORAGE", 50.0), ("PROCESSING\nAND ML", 39.0),
-            ("ORCHESTRATION", 28.0), ("EVALUATION\nAND DELIVERY", 17.0)]
-    rh = 8.6
-    for label, y in rows:
-        box(ax, 1.5, y, 14, rh, label, fill=WHITE, edge="#BBBBBB", fs=9.5, lw=1.2)
+                        w=14, h=13.1)
+    rh, rho = 8.6, 11.0  # row height; the orchestration row is taller (two task lanes)
+    rows = [("DATA\nSOURCES", 74.4, rh), ("INGESTION\nAND STORAGE", 63.4, rh), ("PROCESSING\nAND ML", 52.4, rh),
+            ("MODEL\nLIFECYCLE", 41.4, rh), ("ORCHESTRATION", 28.0, rho), ("EVALUATION\nAND DELIVERY", 17.0, rh)]
+    for label, y, h in rows:
+        box(ax, 1.5, y, 14, h, label, fill=WHITE, edge="#BBBBBB", fs=9.5, lw=1.2)
 
-    # Three states: "used" = produced the reported results (pale, solid); "stack" = ran end to end in the
-    # local Docker Compose stack on 20 Nov 2026 but not used for the reported results (white, solid);
-    # "code" = defined in code or configuration only, never run successfully (white, dashed).
-    def comp(x, y, w, t, s, state="used"):
-        box(ax, x, y, w, rh, t, sub=s, fill=PALE if state == "used" else WHITE, dashed=state == "code",
-            fs=10, sub_fs=8.2, lw=1.4)
+    # Three states: "used" = produced the reported results (pale, solid); "stack" = ran only in the local
+    # Docker Compose stack or in GitHub Actions (white, solid); "code" = defined in code, not deployed (dashed).
+    def comp(x, y, w, t, s, state="used", h=rh, fs=10, sub_fs=8.2):
+        box(ax, x, y, w, h, t, sub=s, fill=PALE if state == "used" else WHITE, dashed=state == "code",
+            fs=fs, sub_fs=sub_fs, lw=1.4)
 
-    X0, X1 = 17.5, 75.5  # usable width for the layers
-    comp(X0, 61.0, 28, "EIA Open Data API v2", "daily Henry Hub gas + WTI oil")
-    comp(X0 + 30, 61.0, 28, "Synthetic generator", "seeded hourly data for tests")
-    comp(X0, 50.0, 18, "S3 raw zone", "raw/energy/ Parquet\n(LocalStack)", state="stack")
-    comp(X0 + 20, 50.0, 18, "S3 processed zone", "processed/energy/ Parquet\n(LocalStack)", state="stack")
-    comp(X0 + 40, 50.0, 18, "Glue crawlers", "Data Catalog tables", state="code")
-    comp(X0, 39.0, 13.5, "Transform", "clean, validate,\n38 features")
-    comp(X0 + 14.6, 39.0, 13.5, "TradingEnv", "Gymnasium,\ncosts, stop-loss")
-    comp(X0 + 29.2, 39.0, 13.5, "PPO trainer", "SB3, 4 envs,\nseed 42")
-    comp(X0 + 43.8, 39.0, 14.2, "MLflow tracking", "params, metrics, models\n(./mlruns; server in\nDocker for the DAG)")
+    X0 = 17.5  # usable width for the layers: 17.5 .. 75.5
+    comp(X0, 74.4, 28, "EIA Open Data API v2", "daily Henry Hub gas + WTI oil")
+    comp(X0 + 30, 74.4, 28, "Synthetic generator", "seeded hourly data for tests")
+    comp(X0, 63.4, 18, "S3 raw zone", "raw/energy/ Parquet\n(LocalStack)", state="stack")
+    comp(X0 + 20, 63.4, 18, "S3 processed zone", "processed/energy/ Parquet\n(LocalStack)", state="stack")
+    comp(X0 + 40, 63.4, 18, "Glue crawlers", "Data Catalog tables", state="code")
+    comp(X0, 52.4, 13.5, "Transform", "clean, validate,\n38 features")
+    comp(X0 + 14.6, 52.4, 13.5, "TradingEnv", "Gymnasium,\ncosts, stop-loss")
+    comp(X0 + 29.2, 52.4, 13.5, "PPO trainer", "SB3, 4 envs,\nfixed seeds")
+    comp(X0 + 43.8, 52.4, 14.2, "MLflow tracking", "params, metrics, models\n(./mlruns; server in\nDocker for the DAG)")
+    # model lifecycle (closed loop, November 2026)
+    lw_, lg = 10.8, 1.0
+    for i, (t, s, st) in enumerate([("Quality gate", "validation only:\nvs B&H, Random", "used"),
+                                    ("Model Registry", "energy_trading_ppo,\nalias champion", "used"),
+                                    ("Paper trading", "simulated, from\n7 Jul 2026", "used"),
+                                    ("Monitor", "gap vs B&H,\ndrawdown", "used"),
+                                    ("Retrain", "challengers;\nsmoke test only", "stack")]):
+        comp(X0 + i * (lw_ + lg), 41.4, lw_, t, s, state=st, fs=9.6, sub_fs=7.9)
     # orchestration: Airflow DAG (run in the Docker stack) + local scripts (used for the reported results)
-    ax.add_patch(FancyBboxPatch((X0, 28.0), 36, rh, boxstyle="round,pad=0,rounding_size=1.0", fc=WHITE,
+    ax.add_patch(FancyBboxPatch((X0, 28.0), 36, rho, boxstyle="round,pad=0,rounding_size=1.0", fc=WHITE,
                                 ec=BLACK, lw=1.4, zorder=3))
-    ax.text(X0 + 18, 28.0 + rh - 1.6, "Airflow DAG  (@daily, retries 2)", ha="center", fontsize=10,
+    ax.text(X0 + 18, 28.0 + rho - 1.6, "Airflow DAG  (@daily, retries 2)", ha="center", fontsize=10,
             fontweight="bold", zorder=4)
-    for i, t in enumerate(["ingest", "transform", "train_drl", "backtest", "notify"]):
-        bx = X0 + 1.2 + i * 6.9
-        box(ax, bx, 29.0, 6.3, 3.6, t, fill=WHITE, fs=8.2, bold=False, lw=1.0, z=5)
-        if i:
-            ax.add_line(Line2D([bx - 0.6, bx], [30.8, 30.8], color=DARK, lw=1.0, zorder=5))
-    comp(X0 + 38, 28.0, 20, "Local run scripts", "train_on_eia.py,\nevaluate_eia_runs.py")
+    lanes = [(32.4, ["ingest", "transform", "train_drl", "backtest", "notify"]),
+             (28.8, ["paper_trade", "monitor", "retrain", "promote", "alert"])]
+    for ly, tasks in lanes:
+        for i, t in enumerate(tasks):
+            bx = X0 + 1.2 + i * 6.9
+            box(ax, bx, ly, 6.3, 3.0, t, fill=WHITE, fs=7.9, bold=False, lw=1.0, z=5)
+            if i:
+                ax.add_line(Line2D([bx - 0.6, bx], [ly + 1.5, ly + 1.5], color=DARK, lw=1.0, zorder=5))
+    comp(X0 + 38, 28.0, 20, "Local run scripts", "train_on_eia.py,\nevaluate_eia_runs.py,\napply_gate_to_seeds.py",
+         h=rho)
     comp(X0, 17.0, 18, "Email notification", "EmailOperator to a\nlocal Mailpit inbox", state="stack")
     comp(X0 + 20, 17.0, 18, "Trade replay app", "Tkinter, offline")
     comp(X0 + 40, 17.0, 18, "Backtest report", "vs Buy & Hold and\nRandom (PNG)")
 
     # vertical flow arrows between layers
-    arrow(ax, (X0 + 9, 61.0), (X0 + 9, 58.6))      # EIA -> raw zone
-    arrow(ax, (X0 + 9, 50.0), (X0 + 9, 47.6))      # raw zone -> transform
+    arrow(ax, (X0 + 9, 74.4), (X0 + 9, 72.0))      # EIA -> raw zone
+    arrow(ax, (X0 + 9, 63.4), (X0 + 9, 61.0))      # raw zone -> transform
     arrow(ax, (X0 + 9, 28.0), (X0 + 9, 25.6))      # Airflow notify -> email
     arrow(ax, (X0 + 48, 28.0), (X0 + 48, 25.6))    # local scripts -> backtest report
 
     # platform column
-    ax.add_patch(FancyBboxPatch((78, 17.0), 20.5, 52.6, boxstyle="round,pad=0,rounding_size=1.0", fc="white",
+    ax.add_patch(FancyBboxPatch((78, 17.0), 20.5, 66.0, boxstyle="round,pad=0,rounding_size=1.0", fc="white",
                                 ec="#BBBBBB", lw=1.2, ls="--", zorder=1))
-    ax.text(88.25, 66.6, "PLATFORM\nAND DEVOPS", ha="center", va="center", fontsize=9.5, fontweight="bold",
+    ax.text(88.25, 79.8, "PLATFORM\nAND DEVOPS", ha="center", va="center", fontsize=9.5, fontweight="bold",
             color=MID, linespacing=1.3)
-    plat = [("Terraform", "AWS us-east-1", True), ("Docker Compose", "Airflow, MLflow,\nLocalStack, Mailpit", False),
-            ("GitHub Actions", "ci.yml, deploy.yml", True), ("CloudWatch, SNS", "logs and alerts", True),
-            ("ECR, IAM", "image registry, roles", True)]
-    for i, (t, s, code_only) in enumerate(plat):
-        box(ax, 79.5, 55.5 - i * 9.4, 17.5, 7.6, t, sub=s, fill=WHITE, dashed=code_only, fs=9.6, sub_fs=7.8,
+    plat = [("Terraform", "AWS us-east-1; validated\nin CI, never applied", "code"),
+            ("Docker Compose", "Airflow, MLflow,\nLocalStack, Mailpit", "stack"),
+            ("GitHub Actions", "CI on every push; lint\nfails, deploy not run", "stack"),
+            ("CloudWatch, SNS", "logs and alerts", "code"),
+            ("ECR, IAM", "image registry, roles", "code")]
+    for i, (t, s, st) in enumerate(plat):
+        box(ax, 79.5, 66.0 - i * 11.6, 17.5, 8.4, t, sub=s, fill=WHITE, dashed=st == "code", fs=9.6, sub_fs=7.8,
             lw=1.3)
     legend(ax, [("box_pale", "used for the reported results"),
-                ("box_white", "run only in the Docker Compose stack"),
-                ("dash", "defined in code; not run successfully")], y=10.5)
-    ax.text(50, 5.6, "The reported results came from the local run scripts, which pass data in memory. The Airflow DAG "
-                     "ran end to end in Docker Compose on 20 November 2026,\nwith LocalStack in place of S3 and a "
-                     "local Mailpit inbox for the email; Glue and the AWS services were not provisioned.",
+                ("box_white", "ran in Docker Compose or CI only"),
+                ("dash", "defined in code; not deployed")], y=10.5)
+    ax.text(50, 5.6, "The reported results, the quality gate and the paper trading came from local runs. The Airflow DAG, "
+                     "including the closed loop, ran end to end in Docker Compose\n(November 2026) with LocalStack in "
+                     "place of S3 and a local Mailpit inbox; retraining ran there only as a smoke test, and AWS was "
+                     "not provisioned.",
             ha="center", va="center", fontsize=9, color=MID, style="italic", linespacing=1.5)
     save(fig, OUT / "fig4_5_architecture.png")
 

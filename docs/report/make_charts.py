@@ -166,8 +166,48 @@ def fig_equity_curves():
     plt.close(fig)
 
 
+def fig_paper_trading():
+    """Figure 5.5: paper trading (simulated) of the champion against Buy & Hold since 7 July 2026, with the
+    Henry Hub price and the champion's position in separate panels (no dual axes).
+    Data: reports/live/paper_trading.csv (written by src/ml/drl/paper_trade.py)."""
+    df = pd.read_csv(ROOT / "reports" / "live" / "paper_trading.csv", parse_dates=["date"])
+    ret = lambda v: (v / v.iloc[0] - 1) * 100
+    champ, bh = ret(df.portfolio_value), ret(df.buy_hold_value)
+    fig, (a1, a2, a3) = plt.subplots(3, 1, figsize=(10, 7.2), dpi=220, sharex=True,
+                                     gridspec_kw={"height_ratios": [2.0, 1, 1]})
+    a1.axhline(0, color="#999999", lw=0.8)
+    a1.plot(df.date, champ, color=C_FIX, lw=2.0)
+    a1.plot(df.date, bh, color=C_BH, lw=1.4, ls="--")
+    lo, hi = min(champ.min(), bh.min()), max(champ.max(), bh.max())
+    a1.set_ylim(lo - 2, hi + 4)
+    end = df.date.iloc[-1] + pd.Timedelta(days=2)
+    a1.text(end, champ.iloc[-1] + 0.9, f"Champion v{df.model_version.iloc[-1]} ({champ.iloc[-1]:+.2f} %)",
+            fontsize=8, color=INK, va="center")
+    a1.text(end, bh.iloc[-1] - 0.9, f"Buy & Hold ({bh.iloc[-1]:+.2f} %)", fontsize=8, color=INK, va="center")
+    a1.set_ylabel("Return since 7 Jul 2026 (%)")
+    from matplotlib.lines import Line2D
+    a1.legend(handles=[Line2D([], [], color=C_FIX, lw=2.0, label="Champion (energy_trading_ppo v5, seed 4), "
+                                                                   "paper trading (simulated)"),
+                       Line2D([], [], color=C_BH, lw=1.4, ls="--", label="Buy & Hold")],
+              loc="upper left", fontsize=8.3, ncol=2)
+    a2.plot(df.date, df.price, color=INK, lw=0.9)
+    a2.set_ylabel("Henry Hub\n($/MMBtu)")
+    a2.set_ylim(df.price.min() - 0.2, df.price.max() + 0.2)
+    a3.fill_between(df.date, df.position_mmbtu, step="post", color=C_FIX, alpha=0.35, lw=0)
+    a3.set_ylabel("Champion position\n(MMBtu, after trade)")
+    a3.set_ylim(0, 26_000)
+    a3.yaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(lambda v, _: f"{v:,.0f}"))
+    a3.xaxis.set_major_locator(mdates.MonthLocator())
+    a3.xaxis.set_major_formatter(mdates.DateFormatter("%b %Y"))
+    a3.set_xlim(df.date.iloc[0], df.date.iloc[-1] + pd.Timedelta(days=24))
+    fig.tight_layout()
+    fig.savefig(OUT / "fig5_5_paper_trading.png", facecolor="white")
+    plt.close(fig)
+
+
 if __name__ == "__main__":
     fig_price_series()
     fig_training_curves()
     fig_equity_curves()
+    fig_paper_trading()
     print("Charts written to", OUT)
