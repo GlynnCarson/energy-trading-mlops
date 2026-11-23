@@ -1,0 +1,83 @@
+{
+  "name": "PPO-300k-fixed-s2",
+  "run_id": "702fe1b98dbf47138d5491921e2a1d19",
+  "seed": 2,
+  "total_timesteps": 300000,
+  "val_return_pct_final_model": 15.3116,
+  "val_return_pct_best_model": 14.8755,
+  "val_buy_and_hold_return_pct": -8.049,
+  "first_252": {
+    "agent": {
+      "total_return_pct": 60.1735,
+      "annualised_return_pct": 60.1735,
+      "sharpe": 1.1995,
+      "max_drawdown_pct": -25.4114,
+      "calmar_ratio": 2.368,
+      "win_rate_pct": 44.2231,
+      "var_95_pct": -3.3649,
+      "profit_factor": 1.395,
+      "final_portfolio_value": 160173.47,
+      "n_steps": 252,
+      "total_trades": 243,
+      "trade_freq_per_day": 0.9643,
+      "algorithm": "PPO",
+      "days_flat": 14,
+      "top5_days_share_of_gain_pct": 148.02713539333104
+    },
+    "buy_and_hold": {
+      "total_return_pct": 25.6765,
+      "annualised_return_pct": 25.6765,
+      "sharpe": 0.7828,
+      "max_drawdown_pct": -66.0434,
+      "calmar_ratio": 0.3888,
+      "win_rate_pct": 46.6135,
+      "var_95_pct": -6.5792,
+      "profit_factor": 1.2593,
+      "final_portfolio_value": 125676.5,
+      "n_steps": 252,
+      "algorithm": "Buy & Hold"
+    },
+    "random_return_mean": 11.979253333333332,
+    "random_return_std": 56.179820812528604,
+    "random_return_min": -52.9806,
+    "random_return_max": 138.1048,
+    "random_beats_agent_pct": 26.666666666666668
+  },
+  "full_test": {
+    "agent": {
+      "total_return_pct": 121.934,
+      "annualised_return_pct": 62.4594,
+      "sharpe": 1.3082,
+      "max_drawdown_pct": -25.4114,
+      "calmar_ratio": 4.7984,
+      "win_rate_pct": 40.4358,
+      "var_95_pct": -2.4478,
+      "profit_factor": 1.4654,
+      "final_portfolio_value": 221933.96,
+      "n_steps": 414,
+      "total_trades": 385,
+      "trade_freq_per_day": 0.93,
+      "algorithm": "PPO",
+      "days_flat": 42,
+      "top5_days_share_of_gain_pct": 98.99576212995352
+    },
+    "buy_and_hold": {
+      "total_return_pct": 8.6765,
+      "annualised_return_pct": 5.1951,
+      "sharpe": 0.6637,
+      "max_drawdown_pct": -68.1875,
+      "calmar_ratio": 0.1272,
+      "win_rate_pct": 45.0363,
+      "var_95_pct": -6.564,
+      "profit_factor": 1.207,
+      "final_portfolio_value": 108676.5,
+      "n_steps": 414,
+      "algorithm": "Buy & Hold"
+    },
+    "random_return_mean": 4.614059999999999,
+    "random_return_std": 68.84799524793539,
+    "random_return_min": -58.7364,
+    "random_return_max": 151.1603,
+    "random_beats_agent_pct": 13.333333333333334
+  }
+}

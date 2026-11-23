@@ -2,6 +2,7 @@
 Generates the Chapter 5 result figures from recorded evidence only:
   - reports/evaluation/*.csv / evaluation_summary.json  (evaluate_eia_runs.py)
   - mlruns/  (MLflow metric histories)
+  - reports/evaluation_reward_fix/  (retrain_fixed_reward.py: fixed-reward runs, Figures 5.3 and 5.4)
 
     python docs/report/make_charts.py
 """
@@ -61,54 +62,105 @@ def fig_price_series():
     plt.close(fig)
 
 
+# Fixed-reward runs (DEF-01 fix, retrain_fixed_reward.py) and the July cost-only run, for comparison
+FIX = ROOT / "reports" / "evaluation_reward_fix"
+JULY_300K = "dec62fade7684182a8bf58ab7fc13a0b"
+SEEDS = [42, 1, 2, 3, 4]
+C_FIX, C_FIX_LIGHT, C_JULY, C_BH = "#2a78d6", "#9ec5f4", "#1baf7a", "#eb6834"   # validated categorical slots 1-3
+
+
+def _fixed_run_ids():
+    return {s: json.load(open(FIX / "runs" / f"PPO-300k-fixed-s{s}.json"))["run_id"] for s in SEEDS}
+
+
+def _history(client, rid, key):
+    h = client.get_metric_history(rid, key)
+    return pd.DataFrame([(m.step, m.value) for m in h], columns=["step", "v"]).sort_values("step")
+
+
 def fig_training_curves():
+    """Figure 5.3: validation return and entropy loss during training, July cost-only run vs the five
+    fixed-reward runs."""
     mlflow.set_tracking_uri((ROOT / "mlruns").as_uri())
     c = MlflowClient()
-    rid = "dec62fade7684182a8bf58ab7fc13a0b"
-    val = pd.DataFrame([(m.step, m.value) for m in c.get_metric_history(rid, "portfolio_return_pct")],
-                       columns=["step", "v"]).sort_values("step")
-    ent = pd.DataFrame([(m.step, m.value) for m in c.get_metric_history(rid, "train_entropy_loss")],
-                       columns=["step", "v"]).sort_values("step")
-    fig, (a1, a2) = plt.subplots(1, 2, figsize=(10, 3.8), dpi=220)
+    runs = _fixed_run_ids()
+    val_bh = json.load(open(FIX / "runs" / "PPO-300k-fixed-s42.json"))["val_buy_and_hold_return_pct"]
+    fig, (a1, a2) = plt.subplots(1, 2, figsize=(10, 4.2), dpi=220)
+    for ax, key in [(a1, "portfolio_return_pct"), (a2, "train_entropy_loss")]:
+        for s in SEEDS[1:]:
+            h = _history(c, runs[s], key)
+            ax.plot(h.step / 1000, h.v, color=C_FIX_LIGHT, lw=1.1)
+        h = _history(c, runs[42], key)
+        ax.plot(h.step / 1000, h.v, color=C_FIX, lw=2.0)
+        h = _history(c, JULY_300K, key)
+        ax.plot(h.step / 1000, h.v, color=C_JULY, lw=1.8, ls=":")
+        ax.set_xlabel("Training timesteps (thousands)")
+        ax.set_xlim(0, 345)
+    a1.axhline(val_bh, color=C_BH, lw=1.4, ls="--")
     a1.axhline(0, color="#999999", lw=0.8)
-    a1.plot(val.step / 1000, val.v, color=C_PPO300, lw=1.6, marker="o", ms=3)
+    a1.text(305, val_bh - 2.5, f"Buy & Hold\n({val_bh:+.1f} %)", fontsize=8, color=INK, va="top")
     a1.set_title("Validation-episode portfolio return", fontsize=10.5, color=INK, loc="left")
-    a1.set_xlabel("Training timesteps (thousands)")
     a1.set_ylabel("Return over validation window (%)")
-    a2.plot(ent.step / 1000, ent.v, color=INK, lw=1.6, marker="o", ms=3)
     a2.set_title("PPO entropy loss", fontsize=10.5, color=INK, loc="left")
-    a2.set_xlabel("Training timesteps (thousands)")
     a2.set_ylabel("Entropy loss (rises as policy\nbecomes deterministic)")
-    fig.tight_layout()
+    from matplotlib.lines import Line2D
+    handles = [Line2D([], [], color=C_FIX, lw=2.0, label="Fixed reward, seed 42"),
+               Line2D([], [], color=C_FIX_LIGHT, lw=1.1, label="Fixed reward, seeds 1-4"),
+               Line2D([], [], color=C_JULY, lw=1.8, ls=":", label="Cost-only reward (July run)"),
+               Line2D([], [], color=C_BH, lw=1.4, ls="--", label="Buy & Hold on validation")]
+    fig.legend(handles=handles, loc="lower center", ncol=4, fontsize=8.8, bbox_to_anchor=(0.5, 0.0))
+    fig.tight_layout(rect=(0, 0.07, 1, 1))
     fig.savefig(OUT / "fig5_2_training_curves.png", facecolor="white")
     plt.close(fig)
 
 
 def fig_equity_curves():
-    t3 = pd.read_csv(EVAL / "PPO-300k_full_test_trajectory.csv", parse_dates=["date"])
-    t1 = pd.read_csv(EVAL / "PPO-10k_full_test_trajectory.csv", parse_dates=["date"])
+    """Figure 5.4: full-test cumulative return of the five fixed-reward agents, the July cost-only agent and
+    Buy & Hold, with the Henry Hub price and the seed-42 position in separate panels (no dual axes)."""
     init = 100_000
-    fig, (a1, a2) = plt.subplots(2, 1, figsize=(10, 6.2), dpi=220, sharex=True,
-                                 gridspec_kw={"height_ratios": [1.6, 1]})
+    t = {s: pd.read_csv(FIX / f"PPO-300k-fixed-s{s}_full_test_trajectory.csv", parse_dates=["date"]) for s in SEEDS}
+    july = pd.read_csv(EVAL / "PPO-300k_full_test_trajectory.csv", parse_dates=["date"])
+    t42 = t[42]
+    ret = lambda v: (v / init - 1) * 100
+    fig, (a1, a2, a3) = plt.subplots(3, 1, figsize=(10, 8.4), dpi=220, sharex=True,
+                                     gridspec_kw={"height_ratios": [2.0, 1, 1]})
+    spikes = [("2025-01-15", "2025-01-24", "Jan 2025 spike"), ("2026-01-20", "2026-02-06", "Jan 2026 spike")]
+    for ax in (a1, a2, a3):
+        for a, b, _ in spikes:
+            ax.axvspan(pd.Timestamp(a), pd.Timestamp(b), color="#efefef", zorder=0, lw=0)
     a1.axhline(0, color="#999999", lw=0.8)
-    a1.plot(t3.date, (t3.agent_value / init - 1) * 100, color=C_PPO300, lw=1.8, label="PPO-300k (best checkpoint)")
-    a1.plot(t1.date, (t1.agent_value / init - 1) * 100, color=C_PPO10, lw=1.4, label="PPO-10k (best checkpoint)")
-    a1.plot(t3.date, (t3.buy_hold_value / init - 1) * 100, color=C_BH, lw=1.2, ls="--", label="Buy & Hold")
+    for s in SEEDS[1:]:
+        a1.plot(t[s].date, ret(t[s].agent_value), color=C_FIX_LIGHT, lw=1.1)
+    a1.plot(t42.date, ret(t42.agent_value), color=C_FIX, lw=2.0)
+    a1.plot(july.date, ret(july.agent_value), color=C_JULY, lw=1.8, ls=":")
+    a1.plot(t42.date, ret(t42.buy_hold_value), color=C_BH, lw=1.4, ls="--")
+    vals = [ret(t[s].agent_value) for s in SEEDS] + [ret(july.agent_value), ret(t42.buy_hold_value)]
+    lo, hi = min(v.min() for v in vals), max(v.max() for v in vals)
+    a1.set_ylim(lo - 10, hi + 45)
+    for a, b, lab in spikes:   # label the spikes in the price panel, clear of the legend
+        a2.text(pd.Timestamp(b) + pd.Timedelta(days=5), 10.6, lab, ha="left", va="top", fontsize=7.8, color=MUTED)
+    end = t42.date.iloc[-1] + pd.Timedelta(days=6)
+    a1.text(end, ret(t42.agent_value).iloc[-1] - 9, "Fixed, seed 42", fontsize=8, color=INK, va="center")
+    a1.text(end, ret(july.agent_value).iloc[-1] + 12, "Cost-only (July)", fontsize=8, color=INK, va="center")
+    a1.text(end, ret(t42.buy_hold_value).iloc[-1], "Buy & Hold", fontsize=8, color=INK, va="center")
+    a1.text(end, max(ret(t[s].agent_value).iloc[-1] for s in SEEDS[1:]), "Fixed, seeds 1-4", fontsize=8,
+            color=INK, va="center")
     a1.set_ylabel("Cumulative return (%)")
-    a1.legend(loc="upper right", fontsize=8.8)
-    a1.annotate("17-20 Jan 2025 price spike\n(\\$4.30 to \\$9.86 per MMBtu)", xy=(pd.Timestamp("2025-01-20"), 124),
-                xytext=(pd.Timestamp("2025-04-15"), 150), fontsize=8.5, color=INK,
-                arrowprops=dict(arrowstyle="->", color=MUTED, lw=0.9))
-    a1.set_ylim(-60, 175)
-    a2b = a2.twinx()
-    a2.fill_between(t3.date, t3.position, step="post", color=C_PPO300, alpha=0.25, lw=0)
-    a2.set_ylabel("PPO-300k position\n(units held)", color=C_PPO300)
-    a2b.plot(t3.date, t3.price, color=INK, lw=0.9)
-    a2b.set_ylabel("Henry Hub ($/MMBtu)", color=MUTED)
-    a2b.grid(False)
-    a2b.spines["right"].set_visible(True)
-    a2.xaxis.set_major_locator(mdates.MonthLocator(interval=3))
-    a2.xaxis.set_major_formatter(mdates.DateFormatter("%b %Y"))
+    from matplotlib.lines import Line2D
+    a1.legend(handles=[Line2D([], [], color=C_FIX, lw=2.0, label="PPO-300k, fixed reward, seed 42"),
+                       Line2D([], [], color=C_FIX_LIGHT, lw=1.1, label="PPO-300k, fixed reward, seeds 1-4"),
+                       Line2D([], [], color=C_JULY, lw=1.8, ls=":", label="PPO-300k, cost-only reward (July)"),
+                       Line2D([], [], color=C_BH, lw=1.4, ls="--", label="Buy & Hold")],
+              loc="upper left", fontsize=8.3, ncol=2)
+    a2.plot(t42.date, t42.price, color=INK, lw=0.9)
+    a2.set_ylabel("Henry Hub\n($/MMBtu)")
+    a2.set_ylim(0, 11)
+    a3.fill_between(t42.date, t42.position, step="post", color=C_FIX, alpha=0.35, lw=0)
+    a3.set_ylabel("Seed-42 position\n(units held)")
+    a3.set_ylim(0, 26_000)
+    a3.xaxis.set_major_locator(mdates.MonthLocator(interval=3))
+    a3.xaxis.set_major_formatter(mdates.DateFormatter("%b %Y"))
+    a3.set_xlim(t42.date.iloc[0], t42.date.iloc[-1] + pd.Timedelta(days=75))
     fig.tight_layout()
     fig.savefig(OUT / "fig5_3_test_equity.png", facecolor="white")
     plt.close(fig)

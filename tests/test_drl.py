@@ -39,14 +39,18 @@ def splits(featured_df):
 
 
 @pytest.fixture(scope="module")
-def drl_cfg():
+def drl_cfg(tmp_path_factory):
     cfg = load_drl_config()
     cfg["training"]["total_timesteps"] = 1_000   # tiny for tests
     cfg["training"]["n_envs"] = 1
     cfg["training"]["eval_freq"] = 500
     cfg["training"]["save_freq"] = 500
     cfg["environment"]["episode_length"] = 100
-    cfg["mlflow"]["tracking_uri"] = "./mlruns"
+    # Keep test runs out of the project's real MLflow store and checkpoints (they are report evidence).
+    tmp = tmp_path_factory.mktemp("drl")
+    cfg["mlflow"]["tracking_uri"] = (tmp / "mlruns").as_uri()
+    cfg["training"]["checkpoint_dir"] = str(tmp / "checkpoints")
+    cfg["training"]["best_model_path"] = str(tmp / "checkpoints" / "best_model")
     return cfg
 
 
@@ -161,6 +165,48 @@ class TestEnergyTradingEnvContinuous:
             pytest.fail(f"check_env failed: {e}")
 
 
+class TestRewardIncludesPriceMoves:
+    """Regression tests for DEF-01 (TC-11): the reward must contain the profit
+    or loss of the position over the next price move, not only trading costs."""
+
+    @staticmethod
+    def _env_with_prices(featured_df, drl_cfg, start, end):
+        df = featured_df.iloc[:60].copy()
+        df["price_usd"] = np.linspace(start, end, len(df))
+        cfg = {**drl_cfg,
+               "action": {"type": "continuous", "discrete_trade_size_mwh": 10.0},
+               "environment": {**drl_cfg["environment"], "transaction_cost_pct": 0.0,
+                               "episode_length": 50, "stop_loss_pct": 0.99,
+                               "holding_penalty": 0.0, "use_sharpe_reward": False}}
+        return EnergyTradingEnv(df, cfg, mode="test")
+
+    def _hold_full_position(self, env):
+        env.reset()
+        rewards, done = [], False
+        while not done:
+            _, r, term, trunc, _ = env.step(np.array([1.0]))  # target = max position
+            rewards.append(r)
+            done = term or trunc
+        return np.array(rewards)
+
+    def test_rising_price_gives_positive_reward(self, featured_df, drl_cfg):
+        env = self._env_with_prices(featured_df, drl_cfg, 20.0, 160.0)
+        rewards = self._hold_full_position(env)
+        assert np.all(rewards > 0), "holding a long position while the price rises must be rewarded"
+
+    def test_falling_price_gives_negative_reward(self, featured_df, drl_cfg):
+        env = self._env_with_prices(featured_df, drl_cfg, 160.0, 20.0)
+        rewards = self._hold_full_position(env)
+        assert np.all(rewards < 0), "holding a long position while the price falls must be penalised"
+
+    def test_rewards_sum_to_portfolio_change(self, featured_df, drl_cfg):
+        env = self._env_with_prices(featured_df, drl_cfg, 20.0, 160.0)
+        rewards = self._hold_full_position(env)
+        pnl = env.portfolio_value - env.initial_cash
+        assert pnl > 0
+        assert rewards.sum() / env.reward_scaling == pytest.approx(pnl, rel=1e-6)
+
+
 class TestEnergyTradingEnvDiscrete:
 
     def test_action_space_is_discrete(self, disc_env):
@@ -208,7 +254,7 @@ class TestDRLTraining:
 
     def test_agent_can_learn(self, featured_df, splits, drl_cfg):
         import mlflow
-        mlflow.set_tracking_uri("./mlruns")
+        mlflow.set_tracking_uri(drl_cfg["mlflow"]["tracking_uri"])
         train, val, _ = splits
         cfg = {**drl_cfg}
         cfg["training"]["total_timesteps"] = 500
@@ -263,3 +309,12 @@ class TestBacktest:
         cfg["environment"]["episode_length"] = len(test) - 1
         result = run_random_agent(test, cfg, seed=42)
         assert "metrics" in result
+
+    def test_random_agent_is_reproducible(self, featured_df, splits, drl_cfg):
+        """DEF-09: the same seed must give the same random-agent result."""
+        _, _, test = splits
+        cfg = {**drl_cfg}
+        cfg["environment"]["episode_length"] = len(test) - 1
+        a = run_random_agent(test, cfg, seed=7)["portfolio_values"]
+        b = run_random_agent(test, cfg, seed=7)["portfolio_values"]
+        np.testing.assert_array_equal(a, b)

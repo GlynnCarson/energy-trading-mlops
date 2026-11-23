@@ -6,10 +6,14 @@
 environment:
   # ── Portfolio ──────────────────────────────────────────────────────────────
   initial_cash: 100_000.0          # Starting portfolio cash (USD)
-  max_position_mwh: 100.0          # Max MWh the agent can hold at once
+  # Defaults match the daily EIA Henry Hub runs (train_on_eia.py / the Chapter 5
+  # agents), so the Airflow DAG trains the evaluated configuration (DEF-13 fix).
+  # The original hourly synthetic values were: max_position 100, stop-loss 0.30,
+  # episode 720, 500k steps, hourly annualisation (see run_real_training.py).
+  max_position_mwh: 25_000         # Max position (MMBtu for gas; key name kept for code compatibility)
   transaction_cost_pct: 0.001      # 0.1% cost per trade (slippage + fees)
   min_trade_mwh: 1.0               # Minimum trade size (avoids spam)
-  stop_loss_pct: 0.30              # Episode ends if portfolio drops 30%
+  stop_loss_pct: 0.50              # Episode ends if portfolio drops 50%
 
   # ── Reward shaping ────────────────────────────────────────────────────────
   reward_scaling: 1e-4             # Scale rewards to ~[-1, 1] range for stability
@@ -22,7 +26,7 @@ environment:
   normalise_obs: true              # Z-score normalise the feature obs
 
   # ── Episodes ──────────────────────────────────────────────────────────────
-  episode_length: 720              # Timesteps per episode (720h = 30 days)
+  episode_length: 252              # Timesteps per episode (252 trading days = 1 year)
   random_start: true               # Randomly sample episode start each reset
 
 # ── Action space ─────────────────────────────────────────────────────────────
@@ -35,7 +39,7 @@ action:
 # ── Algorithm ────────────────────────────────────────────────────────────────
 training:
   algorithm: PPO                   # PPO | SAC | TD3 | A2C
-  total_timesteps: 500_000
+  total_timesteps: 300_000         # the PPO-300k configuration evaluated in Chapter 5
   n_envs: 4                        # Parallel environments for PPO/A2C
   eval_freq: 10_000                # Evaluate every N steps
   n_eval_episodes: 5
@@ -93,3 +97,9 @@ backtest:
   benchmark: buy_and_hold          # buy_and_hold | random_agent | none
   risk_free_rate: 0.05             # Annual risk-free rate for Sharpe calc
   output_dir: "./reports/backtest"
+  periods_per_year: 252            # daily data: 252 trading days per year
+  steps_per_day: 1
+  units:
+    step: trading days
+    price: $/MMBtu
+    position: MMBtu

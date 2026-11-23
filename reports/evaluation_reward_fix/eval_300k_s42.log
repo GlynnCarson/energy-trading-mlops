@@ -1,0 +1,266 @@
+[32m2026-11-20 13:48:03.979[0m | [1mINFO    [0m | [36msrc.ingestion.ingest[0m:[36m_fetch_series[0m:[36m88[0m - [1mFetched 4262 'price_usd' records (2010-01-04 \u2192 2026-11-17).[0m
+[32m2026-11-20 13:48:04.628[0m | [1mINFO    [0m | [36msrc.ingestion.ingest[0m:[36m_fetch_series[0m:[36m88[0m - [1mFetched 4240 'oil_price_usd' records (2010-01-04 \u2192 2026-11-17).[0m
+[32m2026-11-20 13:48:04.641[0m | [32m[1mSUCCESS [0m | [36msrc.ingestion.ingest[0m:[36mbuild_dataset[0m:[36m111[0m - [32m[1m[EIA] Built dataset: 4262 rows | target=price_usd (gas) | cols=['price_usd', 'oil_price_usd', 'data_source'][0m
+[32m2026-11-20 13:48:04.648[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m32[0m - [1m[CLEAN] Input shape: (4171, 3)[0m
+[32m2026-11-20 13:48:04.650[0m | [33m[1mWARNING [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m57[0m - [33m[1mRemoved 5 outliers in 'price_usd'.[0m
+[32m2026-11-20 13:48:04.860[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m70[0m - [1m[CLEAN] Detected frequency='B', ffill_limit=5[0m
+[32m2026-11-20 13:48:04.862[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m75[0m - [1mDropped 0 rows missing target 'price_usd'.[0m
+[32m2026-11-20 13:48:04.862[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m77[0m - [1m[CLEAN] Output shape: (4311, 3)[0m
+[32m2026-11-20 13:48:04.862[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: target_column_exists[0m
+[32m2026-11-20 13:48:04.863[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: no_null_target[0m
+[32m2026-11-20 13:48:04.864[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: target_is_numeric[0m
+[32m2026-11-20 13:48:04.864[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: price_non_negative[0m
+[32m2026-11-20 13:48:04.864[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: price_not_all_zero[0m
+[32m2026-11-20 13:48:04.864[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: min_row_count[0m
+[32m2026-11-20 13:48:04.864[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: index_is_datetime[0m
+[32m2026-11-20 13:48:04.864[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: index_monotonic[0m
+[32m2026-11-20 13:48:04.866[0m | [32m[1mSUCCESS [0m | [36msrc.transformation.transform[0m:[36mvalidate_dataframe[0m:[36m239[0m - [32m[1m[VALIDATION] All critical checks passed.[0m
+[32m2026-11-20 13:48:04.866[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mengineer_features[0m:[36m165[0m - [1m[FEATURES] Engineering features...[0m
+[32m2026-11-20 13:48:04.899[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mengineer_features[0m:[36m173[0m - [1m[FEATURES] Dropped 168 NaN rows after feature engineering.[0m
+[32m2026-11-20 13:48:04.899[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mengineer_features[0m:[36m174[0m - [1m[FEATURES] Final shape: (4143, 40) | 40 features[0m
+[32m2026-11-20 13:48:04.900[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mtemporal_split[0m:[36m195[0m - [1m[SPLIT] train=3314 | val=414 | test=415 (0.8/0.1/0.1)[0m
+[32m2026-11-20 13:48:04.901[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m32[0m - [1m[CLEAN] Input shape: (4170, 3)[0m
+[32m2026-11-20 13:48:04.903[0m | [33m[1mWARNING [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m57[0m - [33m[1mRemoved 5 outliers in 'price_usd'.[0m
+[32m2026-11-20 13:48:05.090[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m70[0m - [1m[CLEAN] Detected frequency='B', ffill_limit=5[0m
+[32m2026-11-20 13:48:05.093[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m75[0m - [1mDropped 0 rows missing target 'price_usd'.[0m
+[32m2026-11-20 13:48:05.094[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m77[0m - [1m[CLEAN] Output shape: (4310, 3)[0m
+[32m2026-11-20 13:48:05.094[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: target_column_exists[0m
+[32m2026-11-20 13:48:05.094[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: no_null_target[0m
+[32m2026-11-20 13:48:05.095[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: target_is_numeric[0m
+[32m2026-11-20 13:48:05.095[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: price_non_negative[0m
+[32m2026-11-20 13:48:05.096[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: price_not_all_zero[0m
+[32m2026-11-20 13:48:05.096[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: min_row_count[0m
+[32m2026-11-20 13:48:05.096[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: index_is_datetime[0m
+[32m2026-11-20 13:48:05.097[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: index_monotonic[0m
+[32m2026-11-20 13:48:05.097[0m | [32m[1mSUCCESS [0m | [36msrc.transformation.transform[0m:[36mvalidate_dataframe[0m:[36m239[0m - [32m[1m[VALIDATION] All critical checks passed.[0m
+[32m2026-11-20 13:48:05.097[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mengineer_features[0m:[36m165[0m - [1m[FEATURES] Engineering features...[0m
+[32m2026-11-20 13:48:05.144[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mengineer_features[0m:[36m173[0m - [1m[FEATURES] Dropped 168 NaN rows after feature engineering.[0m
+[32m2026-11-20 13:48:05.144[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mengineer_features[0m:[36m174[0m - [1m[FEATURES] Final shape: (4142, 40) | 40 features[0m
+[32m2026-11-20 13:48:05.145[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mtemporal_split[0m:[36m195[0m - [1m[SPLIT] train=3313 | val=414 | test=415 (0.8/0.1/0.1)[0m
+[32m2026-11-20 13:48:05.146[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m32[0m - [1m[CLEAN] Input shape: (4169, 3)[0m
+[32m2026-11-20 13:48:05.148[0m | [33m[1mWARNING [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m57[0m - [33m[1mRemoved 5 outliers in 'price_usd'.[0m
+[32m2026-11-20 13:48:05.357[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m70[0m - [1m[CLEAN] Detected frequency='B', ffill_limit=5[0m
+[32m2026-11-20 13:48:05.359[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m75[0m - [1mDropped 0 rows missing target 'price_usd'.[0m
+[32m2026-11-20 13:48:05.359[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m77[0m - [1m[CLEAN] Output shape: (4309, 3)[0m
+[32m2026-11-20 13:48:05.359[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: target_column_exists[0m
+[32m2026-11-20 13:48:05.360[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: no_null_target[0m
+[32m2026-11-20 13:48:05.360[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: target_is_numeric[0m
+[32m2026-11-20 13:48:05.360[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: price_non_negative[0m
+[32m2026-11-20 13:48:05.361[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: price_not_all_zero[0m
+[32m2026-11-20 13:48:05.361[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: min_row_count[0m
+[32m2026-11-20 13:48:05.361[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: index_is_datetime[0m
+[32m2026-11-20 13:48:05.361[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: index_monotonic[0m
+[32m2026-11-20 13:48:05.362[0m | [32m[1mSUCCESS [0m | [36msrc.transformation.transform[0m:[36mvalidate_dataframe[0m:[36m239[0m - [32m[1m[VALIDATION] All critical checks passed.[0m
+[32m2026-11-20 13:48:05.362[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mengineer_features[0m:[36m165[0m - [1m[FEATURES] Engineering features...[0m
+[32m2026-11-20 13:48:05.404[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mengineer_features[0m:[36m173[0m - [1m[FEATURES] Dropped 168 NaN rows after feature engineering.[0m
+[32m2026-11-20 13:48:05.404[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mengineer_features[0m:[36m174[0m - [1m[FEATURES] Final shape: (4141, 40) | 40 features[0m
+[32m2026-11-20 13:48:05.405[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mtemporal_split[0m:[36m195[0m - [1m[SPLIT] train=3312 | val=414 | test=415 (0.8/0.1/0.1)[0m
+[32m2026-11-20 13:48:05.406[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m32[0m - [1m[CLEAN] Input shape: (4168, 3)[0m
+[32m2026-11-20 13:48:05.408[0m | [33m[1mWARNING [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m57[0m - [33m[1mRemoved 5 outliers in 'price_usd'.[0m
+[32m2026-11-20 13:48:05.547[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m70[0m - [1m[CLEAN] Detected frequency='B', ffill_limit=5[0m
+[32m2026-11-20 13:48:05.550[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m75[0m - [1mDropped 0 rows missing target 'price_usd'.[0m
+[32m2026-11-20 13:48:05.550[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m77[0m - [1m[CLEAN] Output shape: (4308, 3)[0m
+[32m2026-11-20 13:48:05.550[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: target_column_exists[0m
+[32m2026-11-20 13:48:05.551[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: no_null_target[0m
+[32m2026-11-20 13:48:05.551[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: target_is_numeric[0m
+[32m2026-11-20 13:48:05.551[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: price_non_negative[0m
+[32m2026-11-20 13:48:05.552[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: price_not_all_zero[0m
+[32m2026-11-20 13:48:05.552[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: min_row_count[0m
+[32m2026-11-20 13:48:05.552[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: index_is_datetime[0m
+[32m2026-11-20 13:48:05.552[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: index_monotonic[0m
+[32m2026-11-20 13:48:05.552[0m | [32m[1mSUCCESS [0m | [36msrc.transformation.transform[0m:[36mvalidate_dataframe[0m:[36m239[0m - [32m[1m[VALIDATION] All critical checks passed.[0m
+[32m2026-11-20 13:48:05.552[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mengineer_features[0m:[36m165[0m - [1m[FEATURES] Engineering features...[0m
+[32m2026-11-20 13:48:05.583[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mengineer_features[0m:[36m173[0m - [1m[FEATURES] Dropped 168 NaN rows after feature engineering.[0m
+[32m2026-11-20 13:48:05.583[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mengineer_features[0m:[36m174[0m - [1m[FEATURES] Final shape: (4140, 40) | 40 features[0m
+[32m2026-11-20 13:48:05.583[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mtemporal_split[0m:[36m195[0m - [1m[SPLIT] train=3312 | val=414 | test=414 (0.8/0.1/0.1)[0m
+[32m2026-11-20 13:48:05.585[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m32[0m - [1m[CLEAN] Input shape: (4167, 3)[0m
+[32m2026-11-20 13:48:05.586[0m | [33m[1mWARNING [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m57[0m - [33m[1mRemoved 5 outliers in 'price_usd'.[0m
+[32m2026-11-20 13:48:05.774[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m70[0m - [1m[CLEAN] Detected frequency='B', ffill_limit=5[0m
+[32m2026-11-20 13:48:05.775[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m75[0m - [1mDropped 0 rows missing target 'price_usd'.[0m
+[32m2026-11-20 13:48:05.776[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m77[0m - [1m[CLEAN] Output shape: (4307, 3)[0m
+[32m2026-11-20 13:48:05.776[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: target_column_exists[0m
+[32m2026-11-20 13:48:05.776[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: no_null_target[0m
+[32m2026-11-20 13:48:05.777[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: target_is_numeric[0m
+[32m2026-11-20 13:48:05.777[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: price_non_negative[0m
+[32m2026-11-20 13:48:05.777[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: price_not_all_zero[0m
+[32m2026-11-20 13:48:05.777[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: min_row_count[0m
+[32m2026-11-20 13:48:05.777[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: index_is_datetime[0m
+[32m2026-11-20 13:48:05.777[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: index_monotonic[0m
+[32m2026-11-20 13:48:05.779[0m | [32m[1mSUCCESS [0m | [36msrc.transformation.transform[0m:[36mvalidate_dataframe[0m:[36m239[0m - [32m[1m[VALIDATION] All critical checks passed.[0m
+[32m2026-11-20 13:48:05.779[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mengineer_features[0m:[36m165[0m - [1m[FEATURES] Engineering features...[0m
+[32m2026-11-20 13:48:05.821[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mengineer_features[0m:[36m173[0m - [1m[FEATURES] Dropped 168 NaN rows after feature engineering.[0m
+[32m2026-11-20 13:48:05.822[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mengineer_features[0m:[36m174[0m - [1m[FEATURES] Final shape: (4139, 40) | 40 features[0m
+[32m2026-11-20 13:48:05.822[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mtemporal_split[0m:[36m195[0m - [1m[SPLIT] train=3311 | val=413 | test=415 (0.8/0.1/0.1)[0m
+[32m2026-11-20 13:48:05.823[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m32[0m - [1m[CLEAN] Input shape: (4166, 3)[0m
+[32m2026-11-20 13:48:05.826[0m | [33m[1mWARNING [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m57[0m - [33m[1mRemoved 5 outliers in 'price_usd'.[0m
+[32m2026-11-20 13:48:06.032[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m70[0m - [1m[CLEAN] Detected frequency='B', ffill_limit=5[0m
+[32m2026-11-20 13:48:06.035[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m75[0m - [1mDropped 0 rows missing target 'price_usd'.[0m
+[32m2026-11-20 13:48:06.035[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m77[0m - [1m[CLEAN] Output shape: (4306, 3)[0m
+[32m2026-11-20 13:48:06.036[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: target_column_exists[0m
+[32m2026-11-20 13:48:06.036[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: no_null_target[0m
+[32m2026-11-20 13:48:06.037[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: target_is_numeric[0m
+[32m2026-11-20 13:48:06.038[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: price_non_negative[0m
+[32m2026-11-20 13:48:06.038[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: price_not_all_zero[0m
+[32m2026-11-20 13:48:06.038[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: min_row_count[0m
+[32m2026-11-20 13:48:06.038[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: index_is_datetime[0m
+[32m2026-11-20 13:48:06.039[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: index_monotonic[0m
+[32m2026-11-20 13:48:06.040[0m | [32m[1mSUCCESS [0m | [36msrc.transformation.transform[0m:[36mvalidate_dataframe[0m:[36m239[0m - [32m[1m[VALIDATION] All critical checks passed.[0m
+[32m2026-11-20 13:48:06.040[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mengineer_features[0m:[36m165[0m - [1m[FEATURES] Engineering features...[0m
+[32m2026-11-20 13:48:06.083[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mengineer_features[0m:[36m173[0m - [1m[FEATURES] Dropped 168 NaN rows after feature engineering.[0m
+[32m2026-11-20 13:48:06.085[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mengineer_features[0m:[36m174[0m - [1m[FEATURES] Final shape: (4138, 40) | 40 features[0m
+[32m2026-11-20 13:48:06.086[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mtemporal_split[0m:[36m195[0m - [1m[SPLIT] train=3310 | val=413 | test=415 (0.8/0.1/0.1)[0m
+[32m2026-11-20 13:48:13.237[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=413 | episode_len=252[0m
+[32m2026-11-20 13:48:13.943[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=413 | episode_len=252[0m
+[32m2026-11-20 13:48:14.727[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=413 | episode_len=252[0m
+[32m2026-11-20 13:48:15.113[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 13:48:15.115[0m | [1mINFO    [0m | [36msrc.ml.drl.backtest[0m:[36mrun_backtest[0m:[36m94[0m - [1m[BACKTEST] Running agent on 415 test steps...[0m
+[32m2026-11-20 13:48:15.806[0m | [32m[1mSUCCESS [0m | [36msrc.ml.drl.backtest[0m:[36mrun_backtest[0m:[36m128[0m - [32m[1m[BACKTEST] Done. Return=+27.77% | Sharpe=0.805 | MaxDD=-53.44%[0m
+[32m2026-11-20 13:48:15.822[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 13:48:16.174[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 13:48:16.257[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 13:48:16.630[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 13:48:16.979[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 13:48:17.373[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 13:48:17.758[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 13:48:18.245[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 13:48:18.618[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 13:48:18.685[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 13:48:19.053[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 13:48:19.492[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 13:48:19.894[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 13:48:20.291[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 13:48:20.696[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 13:48:21.166[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 13:48:21.550[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 13:48:21.826[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 13:48:22.206[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 13:48:22.580[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 13:48:22.794[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 13:48:22.872[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 13:48:22.948[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 13:48:23.401[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 13:48:23.488[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 13:48:23.880[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 13:48:24.278[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 13:48:24.648[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 13:48:24.720[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 13:48:25.114[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 13:48:25.574[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 13:48:25.989[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 13:48:25.992[0m | [1mINFO    [0m | [36msrc.ml.drl.backtest[0m:[36mrun_backtest[0m:[36m94[0m - [1m[BACKTEST] Running agent on 415 test steps...[0m
+[32m2026-11-20 13:48:26.996[0m | [32m[1mSUCCESS [0m | [36msrc.ml.drl.backtest[0m:[36mrun_backtest[0m:[36m128[0m - [32m[1m[BACKTEST] Done. Return=+124.36% | Sharpe=1.153 | MaxDD=-53.44%[0m
+[32m2026-11-20 13:48:27.013[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 13:48:27.566[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 13:48:27.690[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 13:48:28.182[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 13:48:28.604[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 13:48:29.230[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 13:48:29.925[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 13:48:30.545[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 13:48:31.035[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 13:48:31.118[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 13:48:31.878[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 13:48:32.390[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 13:48:33.086[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 13:48:33.779[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 13:48:34.444[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 13:48:35.045[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 13:48:35.641[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 13:48:35.934[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 13:48:36.439[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 13:48:37.063[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 13:48:37.283[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 13:48:37.359[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 13:48:37.439[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 13:48:38.072[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 13:48:38.145[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 13:48:38.830[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 13:48:39.444[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 13:48:40.135[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 13:48:40.224[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 13:48:40.702[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 13:48:41.374[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[RETRAIN] July dataset rebuilt: last date 2026-07-06, train=3310 val=413 test=415
+PPO-300k-fixed-s42 {
+  "name": "PPO-300k-fixed-s42",
+  "run_id": "3bb7558ae769470eb3401596e16233f1",
+  "seed": 42,
+  "total_timesteps": 300000,
+  "val_return_pct_final_model": 43.7846,
+  "val_return_pct_best_model": 53.8625,
+  "val_buy_and_hold_return_pct": -8.049,
+  "first_252": {
+    "agent": {
+      "total_return_pct": 27.7716,
+      "annualised_return_pct": 27.7716,
+      "sharpe": 0.8054,
+      "max_drawdown_pct": -53.4429,
+      "calmar_ratio": 0.5196,
+      "win_rate_pct": 40.6375,
+      "var_95_pct": -4.6814,
+      "profit_factor": 1.2276,
+      "final_portfolio_value": 127771.6,
+      "n_steps": 252,
+      "total_trades": 222,
+      "trade_freq_per_day": 0.881,
+      "algorithm": "PPO",
+      "days_flat": 37,
+      "top5_days_share_of_gain_pct": 236.6580615532083
+    },
+    "buy_and_hold": {
+      "total_return_pct": 25.6765,
+      "annualised_return_pct": 25.6765,
+      "sharpe": 0.7828,
+      "max_drawdown_pct": -66.0434,
+      "calmar_ratio": 0.3888,
+      "win_rate_pct": 46.6135,
+      "var_95_pct": -6.5792,
+      "profit_factor": 1.2593,
+      "final_portfolio_value": 125676.5,
+      "n_steps": 252,
+      "algorithm": "Buy & Hold"
+    },
+    "random_return_mean": 11.979253333333332,
+    "random_return_std": 56.179820812528604,
+    "random_return_min": -52.9806,
+    "random_return_max": 138.1048,
+    "random_beats_agent_pct": 36.666666666666664
+  },
+  "full_test": {
+    "agent": {
+      "total_return_pct": 124.3604,
+      "annualised_return_pct": 63.5383,
+      "sharpe": 1.1527,
+      "max_drawdown_pct": -53.4429,
+      "calmar_ratio": 2.327,
+      "win_rate_pct": 38.2567,
+      "var_95_pct": -3.763,
+      "profit_factor": 1.4022,
+      "final_portfolio_value": 224360.38,
+      "n_steps": 414,
+      "total_trades": 370,
+      "trade_freq_per_day": 0.8937,
+      "algorithm": "PPO",
+      "days_flat": 74,
+      "top5_days_share_of_gain_pct": 105.31996602704807
+    },
+    "buy_and_hold": {
+      "total_return_pct": 8.6765,
+      "annualised_return_pct": 5.1951,
+      "sharpe": 0.6637,
+      "max_drawdown_pct": -68.1875,
+      "calmar_ratio": 0.1272,
+      "win_rate_pct": 45.0363,
+      "var_95_pct": -6.564,
+      "profit_factor": 1.207,
+      "final_portfolio_value": 108676.5,
+      "n_steps": 414,
+      "algorithm": "Buy & Hold"
+    },
+    "random_return_mean": 4.614059999999999,
+    "random_return_std": 68.84799524793539,
+    "random_return_min": -58.7364,
+    "random_return_max": 151.1603,
+    "random_beats_agent_pct": 10.0
+  }
+}

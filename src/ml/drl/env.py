@@ -383,18 +383,19 @@ class EnergyTradingEnv(gym.Env):
         """
         self.prev_portfolio_value = self.total_portfolio_value
 
-        # Execute trade
+        # Execute trade at today's price
         delta_mwh = self._interpret_action(action)
         tx_cost = self._execute_trade(delta_mwh)
 
-        # Update portfolio value
-        self.portfolio_value = self.total_portfolio_value
-
-        # Compute reward
-        reward = self._compute_reward(tx_cost)
-
-        # Advance time
+        # Advance time BEFORE valuing the portfolio, so the reward includes the
+        # profit or loss of the position over the next price move (DEF-01 fix:
+        # previously both values were taken at the same price, so the reward
+        # contained only transaction costs).
         self.current_step += 1
+
+        # Portfolio value at the next price, and the reward from that change
+        self.portfolio_value = self.total_portfolio_value
+        reward = self._compute_reward(tx_cost)
 
         # Termination conditions
         terminated = False

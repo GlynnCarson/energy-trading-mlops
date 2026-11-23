@@ -59,6 +59,7 @@ def main():
     cfg["backtest"]["periods_per_year"] = 252
     cfg["backtest"]["steps_per_day"] = 1
     cfg["backtest"]["output_dir"] = "./reports/backtest_eia"
+    cfg["backtest"]["units"] = {"step": "trading days", "price": "$/MMBtu", "position": "MMBtu"}
 
     mlflow.set_tracking_uri("./mlruns")
 

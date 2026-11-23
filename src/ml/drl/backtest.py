@@ -192,6 +192,7 @@ def run_random_agent(test_df: pd.DataFrame, drl_cfg: dict, seed: int = 0) -> dic
     """Uniformly random actions as a baseline."""
     env = EnergyTradingEnv(test_df, drl_cfg, mode="test")
     env.reset(seed=seed)
+    env.action_space.seed(seed)   # DEF-09 fix: seed the action sampler too, so results are reproducible
 
     portfolio_values = []
     done = False
@@ -297,11 +298,16 @@ def plot_backtest_report(
     buy_hold_results: dict,
     random_results: dict,
     output_dir: str = "./reports/backtest",
+    units: dict | None = None,
 ) -> str:
     """
     Generate a comprehensive 6-panel backtest dashboard.
     Returns path to the saved PNG.
+
+    `units` labels the axes: {"step": ..., "price": ..., "position": ...}.
+    Defaults to the hourly electricity setup (hours, USD/MWh, MWh).
     """
+    u = {"step": "hours", "price": "USD/MWh", "position": "MWh", **(units or {})}
     Path(output_dir).mkdir(parents=True, exist_ok=True)
     out_path = str(Path(output_dir) / "backtest_report.png")
 
@@ -314,18 +320,20 @@ def plot_backtest_report(
     initial = agent_results["initial_cash"]
     algo = agent_results["metrics"]["algorithm"]
 
-    # Normalise to % return for comparison
-    n = min(len(pv_agent), len(pv_bh), len(pv_rand))
-    ret_agent = (pv_agent[:n] / initial - 1) * 100
+    # Normalise to % return for comparison. Each series is plotted over its own length: a benchmark that is
+    # stopped out early (e.g. a Random Agent hitting the stop-loss) must not truncate the agent's curve.
+    n = len(pv_agent)
+    ret_agent = (pv_agent / initial - 1) * 100
     ret_bh = (pv_bh[:n] / initial - 1) * 100
     ret_rand = (pv_rand[:n] / initial - 1) * 100
     steps = np.arange(n)
+    rand_label = "Random Agent" + (f" (stopped out at step {len(ret_rand)})" if len(ret_rand) < n else "")
 
     with plt.rc_context(DARK):
         fig = plt.figure(figsize=(18, 14), constrained_layout=True)
         fig.suptitle(
             f"⚡  Energy Trading DRL Backtest  —  {algo}",
-            fontsize=17, fontweight="bold", color="#e6edf3", y=1.01,
+            fontsize=17, fontweight="bold", color="#e6edf3",   # no fixed y: let constrained_layout reserve space
         )
 
         gs = gridspec.GridSpec(3, 3, figure=fig)
@@ -333,13 +341,14 @@ def plot_backtest_report(
         # ── Panel 1: Portfolio Returns ─────────────────────────────────────
         ax1 = fig.add_subplot(gs[0, :2])
         ax1.plot(steps, ret_agent, label=f"{algo}", color=COLOURS["agent"], linewidth=1.8)
-        ax1.plot(steps, ret_bh[:n], label="Buy & Hold", color=COLOURS["buy_hold"], linewidth=1.2, alpha=0.8)
-        ax1.plot(steps, ret_rand[:n], label="Random Agent", color=COLOURS["random"], linewidth=1.0, alpha=0.6, linestyle="--")
+        ax1.plot(np.arange(len(ret_bh)), ret_bh, label="Buy & Hold", color=COLOURS["buy_hold"], linewidth=1.2, alpha=0.8)
+        ax1.plot(np.arange(len(ret_rand)), ret_rand, label=rand_label, color=COLOURS["random"], linewidth=1.0,
+                 alpha=0.6, linestyle="--")
         ax1.axhline(0, color="#c9d1d9", linewidth=0.5, linestyle=":")
         ax1.fill_between(steps, ret_agent, 0, alpha=0.12, color=COLOURS["agent"])
         ax1.set_title("Portfolio Return (%)", fontweight="bold")
         ax1.set_ylabel("Return (%)")
-        ax1.set_xlabel("Timestep (hours)")
+        ax1.set_xlabel(f"Timestep ({u['step']})")
         ax1.legend(loc="upper left")
         ax1.grid(True)
 
@@ -373,14 +382,17 @@ def plot_backtest_report(
         # ── Panel 3: Energy Price ──────────────────────────────────────────
         ax3 = fig.add_subplot(gs[1, :2])
         ax3.plot(steps, prices[:n], color=COLOURS["price"], linewidth=1.0, alpha=0.9)
-        ax3.set_title("Energy Spot Price (USD/MWh)", fontweight="bold")
-        ax3.set_ylabel("Price (USD/MWh)")
+        ax3.set_title(f"Energy Spot Price ({u['price']})", fontweight="bold")
+        ax3.set_ylabel(f"Price ({u['price']})")
         ax3.grid(True)
 
-        # Overlay buy/sell markers from trade log
+        # Overlay buy/sell markers from trade log. prices[i] is the price after step i, so a trade executed in
+        # step t (at that step's opening price) sits at plot index t - 1; a trade in step 0 has no point here.
         if agent_results.get("trade_log"):
-            buy_steps = [t["step"] for t in agent_results["trade_log"] if t["action"] == "BUY" and t["step"] < n]
-            sell_steps = [t["step"] for t in agent_results["trade_log"] if t["action"] == "SELL" and t["step"] < n]
+            buy_steps = [t["step"] - 1 for t in agent_results["trade_log"]
+                         if t["action"] == "BUY" and 1 <= t["step"] <= n]
+            sell_steps = [t["step"] - 1 for t in agent_results["trade_log"]
+                          if t["action"] == "SELL" and 1 <= t["step"] <= n]
             if buy_steps:
                 ax3.scatter(buy_steps, prices[buy_steps], marker="^", color=COLOURS["buy_marker"], s=40, zorder=5, label="Buy", alpha=0.8)
             if sell_steps:
@@ -391,9 +403,9 @@ def plot_backtest_report(
         ax4 = fig.add_subplot(gs[1, 2])
         ax4.fill_between(steps, positions[:n], alpha=0.5, color=COLOURS["agent"], step="pre")
         ax4.plot(steps, positions[:n], color=COLOURS["agent"], linewidth=0.8, alpha=0.7)
-        ax4.set_title("Position Held (MWh)", fontweight="bold")
-        ax4.set_ylabel("MWh")
-        ax4.set_xlabel("Timestep")
+        ax4.set_title(f"Position Held ({u['position']})", fontweight="bold")
+        ax4.set_ylabel(u["position"])
+        ax4.set_xlabel(f"Timestep ({u['step']})")
         ax4.grid(True)
 
         # ── Panel 5: Drawdown ──────────────────────────────────────────────
@@ -404,7 +416,7 @@ def plot_backtest_report(
         ax5.plot(steps, drawdown, color=COLOURS["drawdown"], linewidth=0.8)
         ax5.set_title("Drawdown (%)", fontweight="bold")
         ax5.set_ylabel("Drawdown (%)")
-        ax5.set_xlabel("Timestep (hours)")
+        ax5.set_xlabel(f"Timestep ({u['step']})")
         ax5.grid(True)
 
         # ── Panel 6: Action distribution ──────────────────────────────────
@@ -456,7 +468,8 @@ def run_full_backtest(
     bh_results = run_buy_and_hold(test_df, drl_cfg)
     rand_results = run_random_agent(test_df, drl_cfg)
 
-    plot_path = plot_backtest_report(agent_results, bh_results, rand_results, output_dir)
+    plot_path = plot_backtest_report(agent_results, bh_results, rand_results, output_dir,
+                                   units=drl_cfg.get("backtest", {}).get("units"))
 
     summary = {
         "agent": agent_results["metrics"],
@@ -501,6 +514,10 @@ if __name__ == "__main__":
     drl_cfg["training"]["total_timesteps"] = 20_000
     drl_cfg["training"]["n_envs"] = 1
     drl_cfg["mlflow"]["tracking_uri"] = "./mlruns"
+    # synthetic data is hourly; drl.yaml's defaults are for daily EIA data
+    drl_cfg["environment"].update({"episode_length": 720, "max_position_mwh": 100.0, "stop_loss_pct": 0.30})
+    drl_cfg["backtest"].update({"periods_per_year": 8760, "steps_per_day": 24})
+    drl_cfg["backtest"].pop("units", None)
 
     import mlflow
     mlflow.set_tracking_uri("./mlruns")

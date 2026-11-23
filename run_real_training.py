@@ -1,7 +1,7 @@
 """
 run_real_training.py
 ─────────────────────────────────────────────────────────────────────────────
-Full ("real") DRL training run using the settings in config/drl.yaml as-is
+Full ("real") DRL training run with the original hourly settings
 (500k timesteps, 4 parallel envs, PPO), on a full year of synthetic energy data.
 Tracks to a local MLflow store (./mlruns) and runs a full backtest at the end.
 
@@ -33,10 +33,16 @@ def main():
     train, val, test = temporal_split(df)
     print(f"[REAL TRAIN] Data ready | train={len(train)} val={len(val)} test={len(test)}")
 
-    # ── Config: use config/drl.yaml AS-IS (500k timesteps, n_envs=4) ──────────
+    # ── Config: config/drl.yaml with the original hourly settings ─────────────
     drl_cfg = load_drl_config()
-    # Only override the tracking URI so it writes to a LOCAL mlflow store
-    # (the configured http://mlflow-server:5000 only exists inside docker-compose).
+    # drl.yaml now holds the daily EIA settings used by the DAG (DEF-13 fix, Nov 2026).
+    # This script reproduces the earlier synthetic run, so it pins the hourly values
+    # that were the drl.yaml defaults when that run was made.
+    drl_cfg["training"]["total_timesteps"] = 500_000
+    drl_cfg["environment"].update({"episode_length": 720, "max_position_mwh": 100.0, "stop_loss_pct": 0.30})
+    drl_cfg["backtest"].update({"periods_per_year": 8760, "steps_per_day": 24})
+    drl_cfg["backtest"].pop("units", None)
+    # Write to a LOCAL mlflow store (the configured http://mlflow-server:5000 only exists inside docker-compose).
     drl_cfg["mlflow"]["tracking_uri"] = "./mlruns"
     mlflow.set_tracking_uri("./mlruns")
 

@@ -29,6 +29,13 @@ x-airflow-common: &airflow-common
     AWS_ACCESS_KEY_ID: test
     AWS_SECRET_ACCESS_KEY: test
     AWS_ENDPOINT_URL: http://localstack:4566
+    # Local SMTP catcher (Mailpit) instead of AWS SNS / a real mail server.
+    # Emails sent by the DAG appear at http://localhost:8026.
+    AIRFLOW__SMTP__SMTP_HOST: mailpit
+    AIRFLOW__SMTP__SMTP_PORT: "1025"
+    AIRFLOW__SMTP__SMTP_STARTTLS: "False"
+    AIRFLOW__SMTP__SMTP_SSL: "False"
+    AIRFLOW__SMTP__SMTP_MAIL_FROM: airflow@energy-trading.local
   volumes:
     - ./src/pipeline:/opt/airflow/dags
     - ./src:/opt/airflow/project/src
@@ -74,25 +81,35 @@ services:
       "
 
   # ── MLflow Tracking Server ─────────────────────────────────────────────────
+  # Official image: MLflow is pre-installed, so start-up needs no pip download.
+  # Artifacts are proxied by the server (--artifacts-destination), so clients
+  # upload over HTTP and never need write access to /mlflow.
   mlflow-server:
-    image: python:3.11-slim
+    image: ghcr.io/mlflow/mlflow:v3.14.0
     ports:
       - "5000:5000"
     volumes:
       - mlflow_data:/mlflow
     command: >
-      sh -c "pip install mlflow boto3 -q &&
-      mlflow server
+      sh -c "mlflow server
       --host 0.0.0.0
       --port 5000
       --backend-store-uri sqlite:///mlflow/mlflow.db
-      --default-artifact-root /mlflow/artifacts
+      --artifacts-destination /mlflow/artifacts
       --allowed-hosts mlflow-server:*,localhost:*,127.0.0.1:*"
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/health')"]
       interval: 15s
       timeout: 5s
       retries: 5
+
+  # ── Mailpit (local SMTP catcher for DAG notifications) ─────────────────────
+  mailpit:
+    image: axllent/mailpit:v1.21
+    ports:
+      # Web inbox on host port 8026 (8025 is often taken by other Mailpit/MailHog
+      # stacks). SMTP 1025 is only reached inside the compose network.
+      - "8026:8025"
 
   # ── PostgreSQL (Airflow metadata) ──────────────────────────────────────────
   postgres:
@@ -146,6 +163,11 @@ services:
     command: scheduler
     depends_on:
       airflow-init:
+        condition: service_completed_successfully
+      # Tasks need MLflow and the LocalStack bucket, so wait for both.
+      mlflow-server:
+        condition: service_healthy
+      localstack-init:
         condition: service_completed_successfully
 
   # ── Pipeline Runner (manual trigger) ──────────────────────────────────────

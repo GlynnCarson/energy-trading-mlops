@@ -43,11 +43,13 @@ Thumbs.db
 desktop.ini
 
 # ── Local tool settings ──────────────────────────────────────────────────────
-.claude/settings.local.json
-.claude/*.lock
 .vscode/
 
 # ── Course material and local backups (not the student's own work) ──────────
 Research Writing for CS 2 Projects*.pdf
 presentation.txt
 docs/report/backup/
+
+# ── Machine-specific Docker overrides (antivirus HTTPS-scanning certificate) ──
+docker-compose.override.yml
+docker/local-certs/

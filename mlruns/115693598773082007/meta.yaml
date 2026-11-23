@@ -1,0 +1,9 @@
+artifact_location: file:///C:/Users/cglyn/Downloads/energy-trading-mlops V2/energy-trading-mlops
+  v2/mlruns/115693598773082007
+creation_time: 1795169830249
+experiment_id: '115693598773082007'
+last_update_time: 1795169830249
+lifecycle_stage: active
+name: energy-drl-eia-gas-reward-fix
+trace_location: null
+workspace: default

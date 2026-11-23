@@ -1,0 +1,1398 @@
+[32m2026-11-20 13:48:03.680[0m | [1mINFO    [0m | [36msrc.ingestion.ingest[0m:[36m_fetch_series[0m:[36m88[0m - [1mFetched 4262 'price_usd' records (2010-01-04 \u2192 2026-11-17).[0m
+[32m2026-11-20 13:48:04.600[0m | [1mINFO    [0m | [36msrc.ingestion.ingest[0m:[36m_fetch_series[0m:[36m88[0m - [1mFetched 4240 'oil_price_usd' records (2010-01-04 \u2192 2026-11-17).[0m
+[32m2026-11-20 13:48:04.628[0m | [32m[1mSUCCESS [0m | [36msrc.ingestion.ingest[0m:[36mbuild_dataset[0m:[36m111[0m - [32m[1m[EIA] Built dataset: 4262 rows | target=price_usd (gas) | cols=['price_usd', 'oil_price_usd', 'data_source'][0m
+[32m2026-11-20 13:48:04.632[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m32[0m - [1m[CLEAN] Input shape: (4171, 3)[0m
+[32m2026-11-20 13:48:04.636[0m | [33m[1mWARNING [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m57[0m - [33m[1mRemoved 5 outliers in 'price_usd'.[0m
+[32m2026-11-20 13:48:04.850[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m70[0m - [1m[CLEAN] Detected frequency='B', ffill_limit=5[0m
+[32m2026-11-20 13:48:04.853[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m75[0m - [1mDropped 0 rows missing target 'price_usd'.[0m
+[32m2026-11-20 13:48:04.853[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m77[0m - [1m[CLEAN] Output shape: (4311, 3)[0m
+[32m2026-11-20 13:48:04.854[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: target_column_exists[0m
+[32m2026-11-20 13:48:04.854[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: no_null_target[0m
+[32m2026-11-20 13:48:04.854[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: target_is_numeric[0m
+[32m2026-11-20 13:48:04.855[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: price_non_negative[0m
+[32m2026-11-20 13:48:04.856[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: price_not_all_zero[0m
+[32m2026-11-20 13:48:04.856[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: min_row_count[0m
+[32m2026-11-20 13:48:04.856[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: index_is_datetime[0m
+[32m2026-11-20 13:48:04.856[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: index_monotonic[0m
+[32m2026-11-20 13:48:04.856[0m | [32m[1mSUCCESS [0m | [36msrc.transformation.transform[0m:[36mvalidate_dataframe[0m:[36m239[0m - [32m[1m[VALIDATION] All critical checks passed.[0m
+[32m2026-11-20 13:48:04.856[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mengineer_features[0m:[36m165[0m - [1m[FEATURES] Engineering features...[0m
+[32m2026-11-20 13:48:04.892[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mengineer_features[0m:[36m173[0m - [1m[FEATURES] Dropped 168 NaN rows after feature engineering.[0m
+[32m2026-11-20 13:48:04.892[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mengineer_features[0m:[36m174[0m - [1m[FEATURES] Final shape: (4143, 40) | 40 features[0m
+[32m2026-11-20 13:48:04.893[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mtemporal_split[0m:[36m195[0m - [1m[SPLIT] train=3314 | val=414 | test=415 (0.8/0.1/0.1)[0m
+[32m2026-11-20 13:48:04.893[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m32[0m - [1m[CLEAN] Input shape: (4170, 3)[0m
+[32m2026-11-20 13:48:04.894[0m | [33m[1mWARNING [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m57[0m - [33m[1mRemoved 5 outliers in 'price_usd'.[0m
+[32m2026-11-20 13:48:05.076[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m70[0m - [1m[CLEAN] Detected frequency='B', ffill_limit=5[0m
+[32m2026-11-20 13:48:05.079[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m75[0m - [1mDropped 0 rows missing target 'price_usd'.[0m
+[32m2026-11-20 13:48:05.080[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m77[0m - [1m[CLEAN] Output shape: (4310, 3)[0m
+[32m2026-11-20 13:48:05.080[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: target_column_exists[0m
+[32m2026-11-20 13:48:05.081[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: no_null_target[0m
+[32m2026-11-20 13:48:05.081[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: target_is_numeric[0m
+[32m2026-11-20 13:48:05.081[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: price_non_negative[0m
+[32m2026-11-20 13:48:05.083[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: price_not_all_zero[0m
+[32m2026-11-20 13:48:05.083[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: min_row_count[0m
+[32m2026-11-20 13:48:05.083[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: index_is_datetime[0m
+[32m2026-11-20 13:48:05.083[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: index_monotonic[0m
+[32m2026-11-20 13:48:05.083[0m | [32m[1mSUCCESS [0m | [36msrc.transformation.transform[0m:[36mvalidate_dataframe[0m:[36m239[0m - [32m[1m[VALIDATION] All critical checks passed.[0m
+[32m2026-11-20 13:48:05.084[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mengineer_features[0m:[36m165[0m - [1m[FEATURES] Engineering features...[0m
+[32m2026-11-20 13:48:05.131[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mengineer_features[0m:[36m173[0m - [1m[FEATURES] Dropped 168 NaN rows after feature engineering.[0m
+[32m2026-11-20 13:48:05.131[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mengineer_features[0m:[36m174[0m - [1m[FEATURES] Final shape: (4142, 40) | 40 features[0m
+[32m2026-11-20 13:48:05.133[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mtemporal_split[0m:[36m195[0m - [1m[SPLIT] train=3313 | val=414 | test=415 (0.8/0.1/0.1)[0m
+[32m2026-11-20 13:48:05.134[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m32[0m - [1m[CLEAN] Input shape: (4169, 3)[0m
+[32m2026-11-20 13:48:05.135[0m | [33m[1mWARNING [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m57[0m - [33m[1mRemoved 5 outliers in 'price_usd'.[0m
+[32m2026-11-20 13:48:05.348[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m70[0m - [1m[CLEAN] Detected frequency='B', ffill_limit=5[0m
+[32m2026-11-20 13:48:05.351[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m75[0m - [1mDropped 0 rows missing target 'price_usd'.[0m
+[32m2026-11-20 13:48:05.351[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m77[0m - [1m[CLEAN] Output shape: (4309, 3)[0m
+[32m2026-11-20 13:48:05.351[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: target_column_exists[0m
+[32m2026-11-20 13:48:05.352[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: no_null_target[0m
+[32m2026-11-20 13:48:05.353[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: target_is_numeric[0m
+[32m2026-11-20 13:48:05.353[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: price_non_negative[0m
+[32m2026-11-20 13:48:05.353[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: price_not_all_zero[0m
+[32m2026-11-20 13:48:05.355[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: min_row_count[0m
+[32m2026-11-20 13:48:05.355[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: index_is_datetime[0m
+[32m2026-11-20 13:48:05.355[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: index_monotonic[0m
+[32m2026-11-20 13:48:05.356[0m | [32m[1mSUCCESS [0m | [36msrc.transformation.transform[0m:[36mvalidate_dataframe[0m:[36m239[0m - [32m[1m[VALIDATION] All critical checks passed.[0m
+[32m2026-11-20 13:48:05.356[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mengineer_features[0m:[36m165[0m - [1m[FEATURES] Engineering features...[0m
+[32m2026-11-20 13:48:05.402[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mengineer_features[0m:[36m173[0m - [1m[FEATURES] Dropped 168 NaN rows after feature engineering.[0m
+[32m2026-11-20 13:48:05.402[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mengineer_features[0m:[36m174[0m - [1m[FEATURES] Final shape: (4141, 40) | 40 features[0m
+[32m2026-11-20 13:48:05.403[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mtemporal_split[0m:[36m195[0m - [1m[SPLIT] train=3312 | val=414 | test=415 (0.8/0.1/0.1)[0m
+[32m2026-11-20 13:48:05.404[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m32[0m - [1m[CLEAN] Input shape: (4168, 3)[0m
+[32m2026-11-20 13:48:05.405[0m | [33m[1mWARNING [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m57[0m - [33m[1mRemoved 5 outliers in 'price_usd'.[0m
+[32m2026-11-20 13:48:05.534[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m70[0m - [1m[CLEAN] Detected frequency='B', ffill_limit=5[0m
+[32m2026-11-20 13:48:05.536[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m75[0m - [1mDropped 0 rows missing target 'price_usd'.[0m
+[32m2026-11-20 13:48:05.537[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m77[0m - [1m[CLEAN] Output shape: (4308, 3)[0m
+[32m2026-11-20 13:48:05.537[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: target_column_exists[0m
+[32m2026-11-20 13:48:05.537[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: no_null_target[0m
+[32m2026-11-20 13:48:05.537[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: target_is_numeric[0m
+[32m2026-11-20 13:48:05.538[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: price_non_negative[0m
+[32m2026-11-20 13:48:05.538[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: price_not_all_zero[0m
+[32m2026-11-20 13:48:05.538[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: min_row_count[0m
+[32m2026-11-20 13:48:05.539[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: index_is_datetime[0m
+[32m2026-11-20 13:48:05.539[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: index_monotonic[0m
+[32m2026-11-20 13:48:05.539[0m | [32m[1mSUCCESS [0m | [36msrc.transformation.transform[0m:[36mvalidate_dataframe[0m:[36m239[0m - [32m[1m[VALIDATION] All critical checks passed.[0m
+[32m2026-11-20 13:48:05.539[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mengineer_features[0m:[36m165[0m - [1m[FEATURES] Engineering features...[0m
+[32m2026-11-20 13:48:05.569[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mengineer_features[0m:[36m173[0m - [1m[FEATURES] Dropped 168 NaN rows after feature engineering.[0m
+[32m2026-11-20 13:48:05.569[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mengineer_features[0m:[36m174[0m - [1m[FEATURES] Final shape: (4140, 40) | 40 features[0m
+[32m2026-11-20 13:48:05.570[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mtemporal_split[0m:[36m195[0m - [1m[SPLIT] train=3312 | val=414 | test=414 (0.8/0.1/0.1)[0m
+[32m2026-11-20 13:48:05.570[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m32[0m - [1m[CLEAN] Input shape: (4167, 3)[0m
+[32m2026-11-20 13:48:05.572[0m | [33m[1mWARNING [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m57[0m - [33m[1mRemoved 5 outliers in 'price_usd'.[0m
+[32m2026-11-20 13:48:05.710[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m70[0m - [1m[CLEAN] Detected frequency='B', ffill_limit=5[0m
+[32m2026-11-20 13:48:05.712[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m75[0m - [1mDropped 0 rows missing target 'price_usd'.[0m
+[32m2026-11-20 13:48:05.712[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m77[0m - [1m[CLEAN] Output shape: (4307, 3)[0m
+[32m2026-11-20 13:48:05.712[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: target_column_exists[0m
+[32m2026-11-20 13:48:05.712[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: no_null_target[0m
+[32m2026-11-20 13:48:05.713[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: target_is_numeric[0m
+[32m2026-11-20 13:48:05.713[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: price_non_negative[0m
+[32m2026-11-20 13:48:05.713[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: price_not_all_zero[0m
+[32m2026-11-20 13:48:05.713[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: min_row_count[0m
+[32m2026-11-20 13:48:05.715[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: index_is_datetime[0m
+[32m2026-11-20 13:48:05.715[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: index_monotonic[0m
+[32m2026-11-20 13:48:05.715[0m | [32m[1mSUCCESS [0m | [36msrc.transformation.transform[0m:[36mvalidate_dataframe[0m:[36m239[0m - [32m[1m[VALIDATION] All critical checks passed.[0m
+[32m2026-11-20 13:48:05.715[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mengineer_features[0m:[36m165[0m - [1m[FEATURES] Engineering features...[0m
+[32m2026-11-20 13:48:05.763[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mengineer_features[0m:[36m173[0m - [1m[FEATURES] Dropped 168 NaN rows after feature engineering.[0m
+[32m2026-11-20 13:48:05.764[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mengineer_features[0m:[36m174[0m - [1m[FEATURES] Final shape: (4139, 40) | 40 features[0m
+[32m2026-11-20 13:48:05.764[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mtemporal_split[0m:[36m195[0m - [1m[SPLIT] train=3311 | val=413 | test=415 (0.8/0.1/0.1)[0m
+[32m2026-11-20 13:48:05.766[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m32[0m - [1m[CLEAN] Input shape: (4166, 3)[0m
+[32m2026-11-20 13:48:05.768[0m | [33m[1mWARNING [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m57[0m - [33m[1mRemoved 5 outliers in 'price_usd'.[0m
+[32m2026-11-20 13:48:05.932[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m70[0m - [1m[CLEAN] Detected frequency='B', ffill_limit=5[0m
+[32m2026-11-20 13:48:05.936[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m75[0m - [1mDropped 0 rows missing target 'price_usd'.[0m
+[32m2026-11-20 13:48:05.936[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mclean_raw[0m:[36m77[0m - [1m[CLEAN] Output shape: (4306, 3)[0m
+[32m2026-11-20 13:48:05.936[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: target_column_exists[0m
+[32m2026-11-20 13:48:05.937[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: no_null_target[0m
+[32m2026-11-20 13:48:05.937[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: target_is_numeric[0m
+[32m2026-11-20 13:48:05.938[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: price_non_negative[0m
+[32m2026-11-20 13:48:05.939[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: price_not_all_zero[0m
+[32m2026-11-20 13:48:05.939[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: min_row_count[0m
+[32m2026-11-20 13:48:05.939[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: index_is_datetime[0m
+[32m2026-11-20 13:48:05.940[0m | [34m[1mDEBUG   [0m | [36msrc.transformation.transform[0m:[36mcheck[0m:[36m222[0m - [34m[1m[VALIDATION] OK: index_monotonic[0m
+[32m2026-11-20 13:48:05.940[0m | [32m[1mSUCCESS [0m | [36msrc.transformation.transform[0m:[36mvalidate_dataframe[0m:[36m239[0m - [32m[1m[VALIDATION] All critical checks passed.[0m
+[32m2026-11-20 13:48:05.941[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mengineer_features[0m:[36m165[0m - [1m[FEATURES] Engineering features...[0m
+[32m2026-11-20 13:48:05.990[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mengineer_features[0m:[36m173[0m - [1m[FEATURES] Dropped 168 NaN rows after feature engineering.[0m
+[32m2026-11-20 13:48:05.990[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mengineer_features[0m:[36m174[0m - [1m[FEATURES] Final shape: (4138, 40) | 40 features[0m
+[32m2026-11-20 13:48:05.991[0m | [1mINFO    [0m | [36msrc.transformation.transform[0m:[36mtemporal_split[0m:[36m195[0m - [1m[SPLIT] train=3310 | val=413 | test=415 (0.8/0.1/0.1)[0m
+[32m2026-11-20 13:48:06.024[0m | [1mINFO    [0m | [36msrc.ml.drl.train_drl[0m:[36mrun_drl_training[0m:[36m283[0m - [1m[DRL TRAIN] Algorithm=PPO | timesteps=300,000 | n_envs=4 | train_rows=3310 | val_rows=413[0m
+[32m2026-11-20 13:48:06.025[0m | [1mINFO    [0m | [36msrc.ml.drl.train_drl[0m:[36mrun_drl_training[0m:[36m289[0m - [1m[DRL] Validating environment with check_env()...[0m
+[32m2026-11-20 13:48:06.114[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=train | obs_dim=41 | action=continuous | rows=3310 | episode_len=252[0m
+C:\Users\cglyn\AppData\Local\Programs\Python\Python311\Lib\site-packages\gymnasium\utils\env_checker.py:367: UserWarning: [33mWARN: `check_env(warn=...)` parameter is now ignored.[0m
+  logger.warn("`check_env(warn=...)` parameter is now ignored.")
+C:\Users\cglyn\AppData\Local\Programs\Python\Python311\Lib\site-packages\gymnasium\utils\env_checker.py:311: UserWarning: [33mWARN: A Box observation space minimum value is -infinity. This is probably too low.[0m
+  logger.warn(
+C:\Users\cglyn\AppData\Local\Programs\Python\Python311\Lib\site-packages\gymnasium\utils\env_checker.py:315: UserWarning: [33mWARN: A Box observation space maximum value is infinity. This is probably too high.[0m
+  logger.warn(
+[32m2026-11-20 13:48:06.132[0m | [32m[1mSUCCESS [0m | [36msrc.ml.drl.train_drl[0m:[36mrun_drl_training[0m:[36m293[0m - [32m[1m[DRL] Environment validation passed.[0m
+[32m2026-11-20 13:48:06.196[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=train | obs_dim=41 | action=continuous | rows=3310 | episode_len=252[0m
+[32m2026-11-20 13:48:06.270[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=train | obs_dim=41 | action=continuous | rows=3310 | episode_len=252[0m
+[32m2026-11-20 13:48:06.343[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=train | obs_dim=41 | action=continuous | rows=3310 | episode_len=252[0m
+[32m2026-11-20 13:48:06.416[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=train | obs_dim=41 | action=continuous | rows=3310 | episode_len=252[0m
+[32m2026-11-20 13:48:06.431[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=413 | episode_len=252[0m
+[32m2026-11-20 13:48:13.082[0m | [1mINFO    [0m | [36msrc.ml.drl.train_drl[0m:[36mbuild_agent[0m:[36m242[0m - [1m[AGENT] PPO agent built | obs_dim=(41,) | action=Box(-1.0, 1.0, (1,), float32)[0m
+[32m2026-11-20 13:48:13.099[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=413 | episode_len=252[0m
+[32m2026-11-20 13:48:14.005[0m | [1mINFO    [0m | [36msrc.ml.drl.train_drl[0m:[36mrun_drl_training[0m:[36m356[0m - [1m[MLFLOW] DRL Run ID: 702fe1b98dbf47138d5491921e2a1d19[0m
+[32m2026-11-20 13:48:14.143[0m | [1mINFO    [0m | [36msrc.ml.drl.train_drl[0m:[36mrun_drl_training[0m:[36m382[0m - [1m[DRL TRAIN] Starting training for 300,000 timesteps...[0m
+[RETRAIN] July dataset rebuilt: last date 2026-07-06, train=3310 val=413 test=415
+[RETRAIN] Training PPO-300k-fixed-s2
+Using cpu device
+---------------------------------
+| rollout/           |          |
+|    ep_len_mean     | 239      |
+|    ep_rew_mean     | -0.97    |
+| time/              |          |
+|    fps             | 445      |
+|    iterations      | 1        |
+|    time_elapsed    | 18       |
+|    total_timesteps | 8192     |
+---------------------------------
+Eval num_timesteps=10000, episode_reward=0.02 +/- 0.00
+Episode length: 252.00 +/- 0.00
+------------------------------------------
+| eval/                   |              |
+|    mean_ep_length       | 252          |
+|    mean_reward          | 0.0191       |
+| time/                   |              |
+|    total_timesteps      | 10000        |
+| train/                  |              |
+|    approx_kl            | 0.0043073576 |
+|    clip_fraction        | 0.0335       |
+|    clip_range           | 0.2          |
+|    entropy_loss         | -1.42        |
+|    explained_variance   | 0.0156       |
+|    learning_rate        | 0.0003       |
+|    loss                 | 0.16         |
+|    n_updates            | 10           |
+|    policy_gradient_loss | -0.00238     |
+|    std                  | 1            |
+|    value_loss           | 0.526        |
+------------------------------------------
+[32m2026-11-20 13:49:03.585[0m | [1mINFO    [0m | [36msrc.ml.drl.train_drl[0m:[36m_on_step[0m:[36m112[0m - [1m[PORTFOLIO EVAL @ 10000] Return=+0.19% | Sharpe=0.308 | MaxDD=-131.46%[0m
+New best mean reward!
+---------------------------------
+| rollout/           |          |
+|    ep_len_mean     | 242      |
+|    ep_rew_mean     | -1       |
+| time/              |          |
+|    fps             | 259      |
+|    iterations      | 2        |
+|    time_elapsed    | 63       |
+|    total_timesteps | 16384    |
+---------------------------------
+Eval num_timesteps=20000, episode_reward=-0.21 +/- 0.00
+Episode length: 252.00 +/- 0.00
+------------------------------------------
+| eval/                   |              |
+|    mean_ep_length       | 252          |
+|    mean_reward          | -0.208       |
+| time/                   |              |
+|    total_timesteps      | 20000        |
+| train/                  |              |
+|    approx_kl            | 0.0067585427 |
+|    clip_fraction        | 0.0583       |
+|    clip_range           | 0.2          |
+|    entropy_loss         | -1.42        |
+|    explained_variance   | 0.407        |
+|    learning_rate        | 0.0003       |
+|    loss                 | 0.0455       |
+|    n_updates            | 20           |
+|    policy_gradient_loss | -0.00464     |
+|    std                  | 1            |
+|    value_loss           | 0.355        |
+------------------------------------------
+[32m2026-11-20 13:49:52.033[0m | [1mINFO    [0m | [36msrc.ml.drl.train_drl[0m:[36m_on_step[0m:[36m112[0m - [1m[PORTFOLIO EVAL @ 20000] Return=-2.08% | Sharpe=-0.180 | MaxDD=-151.90%[0m
+---------------------------------
+| rollout/           |          |
+|    ep_len_mean     | 243      |
+|    ep_rew_mean     | -0.629   |
+| time/              |          |
+|    fps             | 227      |
+|    iterations      | 3        |
+|    time_elapsed    | 108      |
+|    total_timesteps | 24576    |
+---------------------------------
+Eval num_timesteps=30000, episode_reward=0.06 +/- 0.00
+Episode length: 252.00 +/- 0.00
+------------------------------------------
+| eval/                   |              |
+|    mean_ep_length       | 252          |
+|    mean_reward          | 0.0615       |
+| time/                   |              |
+|    total_timesteps      | 30000        |
+| train/                  |              |
+|    approx_kl            | 0.0067452835 |
+|    clip_fraction        | 0.065        |
+|    clip_range           | 0.2          |
+|    entropy_loss         | -1.41        |
+|    explained_variance   | 0.431        |
+|    learning_rate        | 0.0003       |
+|    loss                 | 0.0282       |
+|    n_updates            | 30           |
+|    policy_gradient_loss | -0.00578     |
+|    std                  | 0.993        |
+|    value_loss           | 0.276        |
+------------------------------------------
+[32m2026-11-20 13:50:40.283[0m | [1mINFO    [0m | [36msrc.ml.drl.train_drl[0m:[36m_on_step[0m:[36m112[0m - [1m[PORTFOLIO EVAL @ 30000] Return=+0.62% | Sharpe=0.369 | MaxDD=-135.70%[0m
+New best mean reward!
+---------------------------------
+| rollout/           |          |
+|    ep_len_mean     | 247      |
+|    ep_rew_mean     | 0.564    |
+| time/              |          |
+|    fps             | 213      |
+|    iterations      | 4        |
+|    time_elapsed    | 153      |
+|    total_timesteps | 32768    |
+---------------------------------
+Eval num_timesteps=40000, episode_reward=0.88 +/- 0.00
+Episode length: 252.00 +/- 0.00
+------------------------------------------
+| eval/                   |              |
+|    mean_ep_length       | 252          |
+|    mean_reward          | 0.876        |
+| time/                   |              |
+|    total_timesteps      | 40000        |
+| train/                  |              |
+|    approx_kl            | 0.0077479393 |
+|    clip_fraction        | 0.0859       |
+|    clip_range           | 0.2          |
+|    entropy_loss         | -1.4         |
+|    explained_variance   | 0.506        |
+|    learning_rate        | 0.0003       |
+|    loss                 | 0.0766       |
+|    n_updates            | 40           |
+|    policy_gradient_loss | -0.00848     |
+|    std                  | 0.98         |
+|    value_loss           | 0.336        |
+------------------------------------------
+[32m2026-11-20 13:51:27.854[0m | [1mINFO    [0m | [36msrc.ml.drl.train_drl[0m:[36m_on_step[0m:[36m112[0m - [1m[PORTFOLIO EVAL @ 40000] Return=+8.76% | Sharpe=1.999 | MaxDD=-99.47%[0m
+New best mean reward!
+---------------------------------
+| rollout/           |          |
+|    ep_len_mean     | 249      |
+|    ep_rew_mean     | 1.61     |
+| time/              |          |
+|    fps             | 209      |
+|    iterations      | 5        |
+|    time_elapsed    | 195      |
+|    total_timesteps | 40960    |
+---------------------------------
+-----------------------------------------
+| rollout/                |             |
+|    ep_len_mean          | 252         |
+|    ep_rew_mean          | 2.74        |
+| time/                   |             |
+|    fps                  | 208         |
+|    iterations           | 6           |
+|    time_elapsed         | 235         |
+|    total_timesteps      | 49152       |
+| train/                  |             |
+|    approx_kl            | 0.011136105 |
+|    clip_fraction        | 0.0997      |
+|    clip_range           | 0.2         |
+|    entropy_loss         | -1.38       |
+|    explained_variance   | 0.668       |
+|    learning_rate        | 0.0003      |
+|    loss                 | -0.00366    |
+|    n_updates            | 50          |
+|    policy_gradient_loss | -0.0122     |
+|    std                  | 0.948       |
+|    value_loss           | 0.192       |
+-----------------------------------------
+Eval num_timesteps=50000, episode_reward=0.35 +/- 0.00
+Episode length: 252.00 +/- 0.00
+-----------------------------------------
+| eval/                   |             |
+|    mean_ep_length       | 252         |
+|    mean_reward          | 0.353       |
+| time/                   |             |
+|    total_timesteps      | 50000       |
+| train/                  |             |
+|    approx_kl            | 0.012598282 |
+|    clip_fraction        | 0.117       |
+|    clip_range           | 0.2         |
+|    entropy_loss         | -1.35       |
+|    explained_variance   | 0.785       |
+|    learning_rate        | 0.0003      |
+|    loss                 | 0.0595      |
+|    n_updates            | 60          |
+|    policy_gradient_loss | -0.0126     |
+|    std                  | 0.92        |
+|    value_loss           | 0.206       |
+-----------------------------------------
+[32m2026-11-20 13:52:38.109[0m | [1mINFO    [0m | [36msrc.ml.drl.train_drl[0m:[36m_on_step[0m:[36m112[0m - [1m[PORTFOLIO EVAL @ 50000] Return=+3.53% | Sharpe=0.938 | MaxDD=-119.78%[0m
+---------------------------------
+| rollout/           |          |
+|    ep_len_mean     | 252      |
+|    ep_rew_mean     | 3.83     |
+| time/              |          |
+|    fps             | 203      |
+|    iterations      | 7        |
+|    time_elapsed    | 281      |
+|    total_timesteps | 57344    |
+---------------------------------
+Eval num_timesteps=60000, episode_reward=0.88 +/- 0.00
+Episode length: 252.00 +/- 0.00
+-----------------------------------------
+| eval/                   |             |
+|    mean_ep_length       | 252         |
+|    mean_reward          | 0.885       |
+| time/                   |             |
+|    total_timesteps      | 60000       |
+| train/                  |             |
+|    approx_kl            | 0.014658018 |
+|    clip_fraction        | 0.134       |
+|    clip_range           | 0.2         |
+|    entropy_loss         | -1.32       |
+|    explained_variance   | 0.852       |
+|    learning_rate        | 0.0003      |
+|    loss                 | 0.0857      |
+|    n_updates            | 70          |
+|    policy_gradient_loss | -0.0121     |
+|    std                  | 0.891       |
+|    value_loss           | 0.22        |
+-----------------------------------------
+[32m2026-11-20 13:53:27.685[0m | [1mINFO    [0m | [36msrc.ml.drl.train_drl[0m:[36m_on_step[0m:[36m112[0m - [1m[PORTFOLIO EVAL @ 60000] Return=+8.85% | Sharpe=1.978 | MaxDD=-101.56%[0m
+New best mean reward!
+---------------------------------
+| rollout/           |          |
+|    ep_len_mean     | 252      |
+|    ep_rew_mean     | 4.84     |
+| time/              |          |
+|    fps             | 200      |
+|    iterations      | 8        |
+|    time_elapsed    | 326      |
+|    total_timesteps | 65536    |
+---------------------------------
+Eval num_timesteps=70000, episode_reward=0.77 +/- 0.00
+Episode length: 252.00 +/- 0.00
+-----------------------------------------
+| eval/                   |             |
+|    mean_ep_length       | 252         |
+|    mean_reward          | 0.768       |
+| time/                   |             |
+|    total_timesteps      | 70000       |
+| train/                  |             |
+|    approx_kl            | 0.016345542 |
+|    clip_fraction        | 0.147       |
+|    clip_range           | 0.2         |
+|    entropy_loss         | -1.28       |
+|    explained_variance   | 0.851       |
+|    learning_rate        | 0.0003      |
+|    loss                 | 0.0464      |
+|    n_updates            | 80          |
+|    policy_gradient_loss | -0.0144     |
+|    std                  | 0.858       |
+|    value_loss           | 0.152       |
+-----------------------------------------
+[32m2026-11-20 13:54:15.977[0m | [1mINFO    [0m | [36msrc.ml.drl.train_drl[0m:[36m_on_step[0m:[36m112[0m - [1m[PORTFOLIO EVAL @ 70000] Return=+7.68% | Sharpe=1.687 | MaxDD=-105.40%[0m
+---------------------------------
+| rollout/           |          |
+|    ep_len_mean     | 252      |
+|    ep_rew_mean     | 5.56     |
+| time/              |          |
+|    fps             | 198      |
+|    iterations      | 9        |
+|    time_elapsed    | 371      |
+|    total_timesteps | 73728    |
+---------------------------------
+Eval num_timesteps=80000, episode_reward=1.49 +/- 0.00
+Episode length: 252.00 +/- 0.00
+-----------------------------------------
+| eval/                   |             |
+|    mean_ep_length       | 252         |
+|    mean_reward          | 1.49        |
+| time/                   |             |
+|    total_timesteps      | 80000       |
+| train/                  |             |
+|    approx_kl            | 0.016527869 |
+|    clip_fraction        | 0.155       |
+|    clip_range           | 0.2         |
+|    entropy_loss         | -1.25       |
+|    explained_variance   | 0.882       |
+|    learning_rate        | 0.0003      |
+|    loss                 | 0.0548      |
+|    n_updates            | 90          |
+|    policy_gradient_loss | -0.0161     |
+|    std                  | 0.835       |
+|    value_loss           | 0.198       |
+-----------------------------------------
+[32m2026-11-20 13:55:03.962[0m | [1mINFO    [0m | [36msrc.ml.drl.train_drl[0m:[36m_on_step[0m:[36m112[0m - [1m[PORTFOLIO EVAL @ 80000] Return=+14.88% | Sharpe=3.207 | MaxDD=-83.89%[0m
+New best mean reward!
+---------------------------------
+| rollout/           |          |
+|    ep_len_mean     | 252      |
+|    ep_rew_mean     | 5.54     |
+| time/              |          |
+|    fps             | 197      |
+|    iterations      | 10       |
+|    time_elapsed    | 414      |
+|    total_timesteps | 81920    |
+---------------------------------
+Eval num_timesteps=90000, episode_reward=1.43 +/- 0.00
+Episode length: 252.00 +/- 0.00
+----------------------------------------
+| eval/                   |            |
+|    mean_ep_length       | 252        |
+|    mean_reward          | 1.43       |
+| time/                   |            |
+|    total_timesteps      | 90000      |
+| train/                  |            |
+|    approx_kl            | 0.01817108 |
+|    clip_fraction        | 0.161      |
+|    clip_range           | 0.2        |
+|    entropy_loss         | -1.23      |
+|    explained_variance   | 0.88       |
+|    learning_rate        | 0.0003     |
+|    loss                 | 0.304      |
+|    n_updates            | 100        |
+|    policy_gradient_loss | -0.0131    |
+|    std                  | 0.816      |
+|    value_loss           | 0.327      |
+----------------------------------------
+[32m2026-11-20 13:56:11.854[0m | [1mINFO    [0m | [36msrc.ml.drl.train_drl[0m:[36m_on_step[0m:[36m112[0m - [1m[PORTFOLIO EVAL @ 90000] Return=+14.26% | Sharpe=3.259 | MaxDD=-78.86%[0m
+---------------------------------
+| rollout/           |          |
+|    ep_len_mean     | 252      |
+|    ep_rew_mean     | 6.48     |
+| time/              |          |
+|    fps             | 188      |
+|    iterations      | 11       |
+|    time_elapsed    | 478      |
+|    total_timesteps | 90112    |
+---------------------------------
+-----------------------------------------
+| rollout/                |             |
+|    ep_len_mean          | 252         |
+|    ep_rew_mean          | 7.02        |
+| time/                   |             |
+|    fps                  | 188         |
+|    iterations           | 12          |
+|    time_elapsed         | 521         |
+|    total_timesteps      | 98304       |
+| train/                  |             |
+|    approx_kl            | 0.020866323 |
+|    clip_fraction        | 0.179       |
+|    clip_range           | 0.2         |
+|    entropy_loss         | -1.19       |
+|    explained_variance   | 0.93        |
+|    learning_rate        | 0.0003      |
+|    loss                 | -0.0122     |
+|    n_updates            | 110         |
+|    policy_gradient_loss | -0.0158     |
+|    std                  | 0.785       |
+|    value_loss           | 0.103       |
+-----------------------------------------
+Eval num_timesteps=100000, episode_reward=0.19 +/- 0.00
+Episode length: 252.00 +/- 0.00
+-----------------------------------------
+| eval/                   |             |
+|    mean_ep_length       | 252         |
+|    mean_reward          | 0.193       |
+| time/                   |             |
+|    total_timesteps      | 100000      |
+| train/                  |             |
+|    approx_kl            | 0.025902195 |
+|    clip_fraction        | 0.178       |
+|    clip_range           | 0.2         |
+|    entropy_loss         | -1.15       |
+|    explained_variance   | 0.932       |
+|    learning_rate        | 0.0003      |
+|    loss                 | 0.0805      |
+|    n_updates            | 120         |
+|    policy_gradient_loss | -0.0166     |
+|    std                  | 0.753       |
+|    value_loss           | 0.222       |
+-----------------------------------------
+[32m2026-11-20 13:57:31.068[0m | [1mINFO    [0m | [36msrc.ml.drl.train_drl[0m:[36m_on_step[0m:[36m112[0m - [1m[PORTFOLIO EVAL @ 100000] Return=+1.93% | Sharpe=0.443 | MaxDD=-197.79%[0m
+---------------------------------
+| rollout/           |          |
+|    ep_len_mean     | 252      |
+|    ep_rew_mean     | 8.1      |
+| time/              |          |
+|    fps             | 185      |
+|    iterations      | 13       |
+|    time_elapsed    | 572      |
+|    total_timesteps | 106496   |
+---------------------------------
+Eval num_timesteps=110000, episode_reward=0.54 +/- 0.00
+Episode length: 252.00 +/- 0.00
+-----------------------------------------
+| eval/                   |             |
+|    mean_ep_length       | 252         |
+|    mean_reward          | 0.541       |
+| time/                   |             |
+|    total_timesteps      | 110000      |
+| train/                  |             |
+|    approx_kl            | 0.026432563 |
+|    clip_fraction        | 0.214       |
+|    clip_range           | 0.2         |
+|    entropy_loss         | -1.12       |
+|    explained_variance   | 0.953       |
+|    learning_rate        | 0.0003      |
+|    loss                 | 0.0116      |
+|    n_updates            | 130         |
+|    policy_gradient_loss | -0.0148     |
+|    std                  | 0.728       |
+|    value_loss           | 0.0836      |
+-----------------------------------------
+[32m2026-11-20 13:58:27.688[0m | [1mINFO    [0m | [36msrc.ml.drl.train_drl[0m:[36m_on_step[0m:[36m112[0m - [1m[PORTFOLIO EVAL @ 110000] Return=+5.41% | Sharpe=1.141 | MaxDD=-173.58%[0m
+---------------------------------
+| rollout/           |          |
+|    ep_len_mean     | 252      |
+|    ep_rew_mean     | 9.22     |
+| time/              |          |
+|    fps             | 183      |
+|    iterations      | 14       |
+|    time_elapsed    | 624      |
+|    total_timesteps | 114688   |
+---------------------------------
+Eval num_timesteps=120000, episode_reward=0.72 +/- 0.00
+Episode length: 252.00 +/- 0.00
+-----------------------------------------
+| eval/                   |             |
+|    mean_ep_length       | 252         |
+|    mean_reward          | 0.724       |
+| time/                   |             |
+|    total_timesteps      | 120000      |
+| train/                  |             |
+|    approx_kl            | 0.025684316 |
+|    clip_fraction        | 0.205       |
+|    clip_range           | 0.2         |
+|    entropy_loss         | -1.08       |
+|    explained_variance   | 0.964       |
+|    learning_rate        | 0.0003      |
+|    loss                 | 0.064       |
+|    n_updates            | 140         |
+|    policy_gradient_loss | -0.0161     |
+|    std                  | 0.7         |
+|    value_loss           | 0.16        |
+-----------------------------------------
+[32m2026-11-20 13:59:25.174[0m | [1mINFO    [0m | [36msrc.ml.drl.train_drl[0m:[36m_on_step[0m:[36m112[0m - [1m[PORTFOLIO EVAL @ 120000] Return=+7.24% | Sharpe=1.508 | MaxDD=-211.32%[0m
+---------------------------------
+| rollout/           |          |
+|    ep_len_mean     | 252      |
+|    ep_rew_mean     | 8.85     |
+| time/              |          |
+|    fps             | 181      |
+|    iterations      | 15       |
+|    time_elapsed    | 678      |
+|    total_timesteps | 122880   |
+---------------------------------
+Eval num_timesteps=130000, episode_reward=0.30 +/- 0.00
+Episode length: 252.00 +/- 0.00
+-----------------------------------------
+| eval/                   |             |
+|    mean_ep_length       | 252         |
+|    mean_reward          | 0.297       |
+| time/                   |             |
+|    total_timesteps      | 130000      |
+| train/                  |             |
+|    approx_kl            | 0.036907203 |
+|    clip_fraction        | 0.236       |
+|    clip_range           | 0.2         |
+|    entropy_loss         | -1.02       |
+|    explained_variance   | 0.956       |
+|    learning_rate        | 0.0003      |
+|    loss                 | -0.00305    |
+|    n_updates            | 150         |
+|    policy_gradient_loss | -0.0184     |
+|    std                  | 0.652       |
+|    value_loss           | 0.0693      |
+-----------------------------------------
+[32m2026-11-20 14:00:14.437[0m | [1mINFO    [0m | [36msrc.ml.drl.train_drl[0m:[36m_on_step[0m:[36m112[0m - [1m[PORTFOLIO EVAL @ 130000] Return=+2.97% | Sharpe=0.634 | MaxDD=-284.09%[0m
+---------------------------------
+| rollout/           |          |
+|    ep_len_mean     | 252      |
+|    ep_rew_mean     | 9.4      |
+| time/              |          |
+|    fps             | 181      |
+|    iterations      | 16       |
+|    time_elapsed    | 723      |
+|    total_timesteps | 131072   |
+---------------------------------
+-----------------------------------------
+| rollout/                |             |
+|    ep_len_mean          | 252         |
+|    ep_rew_mean          | 10.3        |
+| time/                   |             |
+|    fps                  | 182         |
+|    iterations           | 17          |
+|    time_elapsed         | 764         |
+|    total_timesteps      | 139264      |
+| train/                  |             |
+|    approx_kl            | 0.036462232 |
+|    clip_fraction        | 0.242       |
+|    clip_range           | 0.2         |
+|    entropy_loss         | -0.968      |
+|    explained_variance   | 0.966       |
+|    learning_rate        | 0.0003      |
+|    loss                 | 0.0521      |
+|    n_updates            | 160         |
+|    policy_gradient_loss | -0.0186     |
+|    std                  | 0.622       |
+|    value_loss           | 0.0791      |
+-----------------------------------------
+Eval num_timesteps=140000, episode_reward=0.49 +/- 0.00
+Episode length: 252.00 +/- 0.00
+-----------------------------------------
+| eval/                   |             |
+|    mean_ep_length       | 252         |
+|    mean_reward          | 0.493       |
+| time/                   |             |
+|    total_timesteps      | 140000      |
+| train/                  |             |
+|    approx_kl            | 0.047619104 |
+|    clip_fraction        | 0.265       |
+|    clip_range           | 0.2         |
+|    entropy_loss         | -0.916      |
+|    explained_variance   | 0.984       |
+|    learning_rate        | 0.0003      |
+|    loss                 | -0.0251     |
+|    n_updates            | 170         |
+|    policy_gradient_loss | -0.022      |
+|    std                  | 0.59        |
+|    value_loss           | 0.0648      |
+-----------------------------------------
+[32m2026-11-20 14:01:25.144[0m | [1mINFO    [0m | [36msrc.ml.drl.train_drl[0m:[36m_on_step[0m:[36m112[0m - [1m[PORTFOLIO EVAL @ 140000] Return=+4.93% | Sharpe=1.052 | MaxDD=-155.71%[0m
+---------------------------------
+| rollout/           |          |
+|    ep_len_mean     | 252      |
+|    ep_rew_mean     | 12.6     |
+| time/              |          |
+|    fps             | 181      |
+|    iterations      | 18       |
+|    time_elapsed    | 812      |
+|    total_timesteps | 147456   |
+---------------------------------
+Eval num_timesteps=150000, episode_reward=1.18 +/- 0.00
+Episode length: 252.00 +/- 0.00
+-----------------------------------------
+| eval/                   |             |
+|    mean_ep_length       | 252         |
+|    mean_reward          | 1.18        |
+| time/                   |             |
+|    total_timesteps      | 150000      |
+| train/                  |             |
+|    approx_kl            | 0.049801257 |
+|    clip_fraction        | 0.258       |
+|    clip_range           | 0.2         |
+|    entropy_loss         | -0.883      |
+|    explained_variance   | 0.977       |
+|    learning_rate        | 0.0003      |
+|    loss                 | -0.0143     |
+|    n_updates            | 180         |
+|    policy_gradient_loss | -0.016      |
+|    std                  | 0.575       |
+|    value_loss           | 0.107       |
+-----------------------------------------
+[32m2026-11-20 14:02:19.875[0m | [1mINFO    [0m | [36msrc.ml.drl.train_drl[0m:[36m_on_step[0m:[36m112[0m - [1m[PORTFOLIO EVAL @ 150000] Return=+11.79% | Sharpe=2.343 | MaxDD=-100.44%[0m
+---------------------------------
+| rollout/           |          |
+|    ep_len_mean     | 252      |
+|    ep_rew_mean     | 13.8     |
+| time/              |          |
+|    fps             | 181      |
+|    iterations      | 19       |
+|    time_elapsed    | 858      |
+|    total_timesteps | 155648   |
+---------------------------------
+Eval num_timesteps=160000, episode_reward=0.82 +/- 0.00
+Episode length: 252.00 +/- 0.00
+-----------------------------------------
+| eval/                   |             |
+|    mean_ep_length       | 252         |
+|    mean_reward          | 0.82        |
+| time/                   |             |
+|    total_timesteps      | 160000      |
+| train/                  |             |
+|    approx_kl            | 0.051424656 |
+|    clip_fraction        | 0.277       |
+|    clip_range           | 0.2         |
+|    entropy_loss         | -0.863      |
+|    explained_variance   | 0.983       |
+|    learning_rate        | 0.0003      |
+|    loss                 | 0.0085      |
+|    n_updates            | 190         |
+|    policy_gradient_loss | -0.0185     |
+|    std                  | 0.564       |
+|    value_loss           | 0.0634      |
+-----------------------------------------
+[32m2026-11-20 14:03:09.157[0m | [1mINFO    [0m | [36msrc.ml.drl.train_drl[0m:[36m_on_step[0m:[36m112[0m - [1m[PORTFOLIO EVAL @ 160000] Return=+8.20% | Sharpe=1.751 | MaxDD=-103.02%[0m
+---------------------------------
+| rollout/           |          |
+|    ep_len_mean     | 252      |
+|    ep_rew_mean     | 12.9     |
+| time/              |          |
+|    fps             | 181      |
+|    iterations      | 20       |
+|    time_elapsed    | 902      |
+|    total_timesteps | 163840   |
+---------------------------------
+Eval num_timesteps=170000, episode_reward=0.71 +/- 0.00
+Episode length: 252.00 +/- 0.00
+-----------------------------------------
+| eval/                   |             |
+|    mean_ep_length       | 252         |
+|    mean_reward          | 0.711       |
+| time/                   |             |
+|    total_timesteps      | 170000      |
+| train/                  |             |
+|    approx_kl            | 0.052023828 |
+|    clip_fraction        | 0.283       |
+|    clip_range           | 0.2         |
+|    entropy_loss         | -0.822      |
+|    explained_variance   | 0.986       |
+|    learning_rate        | 0.0003      |
+|    loss                 | -0.0522     |
+|    n_updates            | 200         |
+|    policy_gradient_loss | -0.0202     |
+|    std                  | 0.539       |
+|    value_loss           | 0.0431      |
+-----------------------------------------
+[32m2026-11-20 14:04:02.335[0m | [1mINFO    [0m | [36msrc.ml.drl.train_drl[0m:[36m_on_step[0m:[36m112[0m - [1m[PORTFOLIO EVAL @ 170000] Return=+7.11% | Sharpe=1.479 | MaxDD=-105.41%[0m
+---------------------------------
+| rollout/           |          |
+|    ep_len_mean     | 252      |
+|    ep_rew_mean     | 12.7     |
+| time/              |          |
+|    fps             | 180      |
+|    iterations      | 21       |
+|    time_elapsed    | 952      |
+|    total_timesteps | 172032   |
+---------------------------------
+Eval num_timesteps=180000, episode_reward=0.39 +/- 0.00
+Episode length: 252.00 +/- 0.00
+----------------------------------------
+| eval/                   |            |
+|    mean_ep_length       | 252        |
+|    mean_reward          | 0.393      |
+| time/                   |            |
+|    total_timesteps      | 180000     |
+| train/                  |            |
+|    approx_kl            | 0.05408807 |
+|    clip_fraction        | 0.293      |
+|    clip_range           | 0.2        |
+|    entropy_loss         | -0.787     |
+|    explained_variance   | 0.99       |
+|    learning_rate        | 0.0003     |
+|    loss                 | -0.0295    |
+|    n_updates            | 210        |
+|    policy_gradient_loss | -0.0139    |
+|    std                  | 0.524      |
+|    value_loss           | 0.0648     |
+----------------------------------------
+[32m2026-11-20 14:04:54.756[0m | [1mINFO    [0m | [36msrc.ml.drl.train_drl[0m:[36m_on_step[0m:[36m112[0m - [1m[PORTFOLIO EVAL @ 180000] Return=+3.93% | Sharpe=0.868 | MaxDD=-115.60%[0m
+---------------------------------
+| rollout/           |          |
+|    ep_len_mean     | 252      |
+|    ep_rew_mean     | 12.7     |
+| time/              |          |
+|    fps             | 180      |
+|    iterations      | 22       |
+|    time_elapsed    | 1001     |
+|    total_timesteps | 180224   |
+---------------------------------
+-----------------------------------------
+| rollout/                |             |
+|    ep_len_mean          | 252         |
+|    ep_rew_mean          | 13.4        |
+| time/                   |             |
+|    fps                  | 180         |
+|    iterations           | 23          |
+|    time_elapsed         | 1045        |
+|    total_timesteps      | 188416      |
+| train/                  |             |
+|    approx_kl            | 0.052395225 |
+|    clip_fraction        | 0.29        |
+|    clip_range           | 0.2         |
+|    entropy_loss         | -0.775      |
+|    explained_variance   | 0.991       |
+|    learning_rate        | 0.0003      |
+|    loss                 | -0.00344    |
+|    n_updates            | 220         |
+|    policy_gradient_loss | -0.0163     |
+|    std                  | 0.519       |
+|    value_loss           | 0.0584      |
+-----------------------------------------
+Eval num_timesteps=190000, episode_reward=0.59 +/- 0.00
+Episode length: 252.00 +/- 0.00
+-----------------------------------------
+| eval/                   |             |
+|    mean_ep_length       | 252         |
+|    mean_reward          | 0.595       |
+| time/                   |             |
+|    total_timesteps      | 190000      |
+| train/                  |             |
+|    approx_kl            | 0.067651376 |
+|    clip_fraction        | 0.314       |
+|    clip_range           | 0.2         |
+|    entropy_loss         | -0.74       |
+|    explained_variance   | 0.992       |
+|    learning_rate        | 0.0003      |
+|    loss                 | -0.0371     |
+|    n_updates            | 230         |
+|    policy_gradient_loss | -0.0186     |
+|    std                  | 0.492       |
+|    value_loss           | 0.0394      |
+-----------------------------------------
+[32m2026-11-20 14:06:15.234[0m | [1mINFO    [0m | [36msrc.ml.drl.train_drl[0m:[36m_on_step[0m:[36m112[0m - [1m[PORTFOLIO EVAL @ 190000] Return=+5.95% | Sharpe=1.354 | MaxDD=-108.13%[0m
+---------------------------------
+| rollout/           |          |
+|    ep_len_mean     | 252      |
+|    ep_rew_mean     | 12.8     |
+| time/              |          |
+|    fps             | 179      |
+|    iterations      | 24       |
+|    time_elapsed    | 1097     |
+|    total_timesteps | 196608   |
+---------------------------------
+Eval num_timesteps=200000, episode_reward=0.71 +/- 0.00
+Episode length: 252.00 +/- 0.00
+----------------------------------------
+| eval/                   |            |
+|    mean_ep_length       | 252        |
+|    mean_reward          | 0.71       |
+| time/                   |            |
+|    total_timesteps      | 200000     |
+| train/                  |            |
+|    approx_kl            | 0.06884177 |
+|    clip_fraction        | 0.315      |
+|    clip_range           | 0.2        |
+|    entropy_loss         | -0.71      |
+|    explained_variance   | 0.989      |
+|    learning_rate        | 0.0003     |
+|    loss                 | -0.0189    |
+|    n_updates            | 240        |
+|    policy_gradient_loss | -0.0177    |
+|    std                  | 0.486      |
+|    value_loss           | 0.0459     |
+----------------------------------------
+[32m2026-11-20 14:07:08.728[0m | [1mINFO    [0m | [36msrc.ml.drl.train_drl[0m:[36m_on_step[0m:[36m112[0m - [1m[PORTFOLIO EVAL @ 200000] Return=+7.10% | Sharpe=1.574 | MaxDD=-96.12%[0m
+---------------------------------
+| rollout/           |          |
+|    ep_len_mean     | 252      |
+|    ep_rew_mean     | 13.3     |
+| time/              |          |
+|    fps             | 178      |
+|    iterations      | 25       |
+|    time_elapsed    | 1146     |
+|    total_timesteps | 204800   |
+---------------------------------
+Eval num_timesteps=210000, episode_reward=1.11 +/- 0.00
+Episode length: 252.00 +/- 0.00
+---------------------------------------
+| eval/                   |           |
+|    mean_ep_length       | 252       |
+|    mean_reward          | 1.11      |
+| time/                   |           |
+|    total_timesteps      | 210000    |
+| train/                  |           |
+|    approx_kl            | 0.0767254 |
+|    clip_fraction        | 0.339     |
+|    clip_range           | 0.2       |
+|    entropy_loss         | -0.682    |
+|    explained_variance   | 0.995     |
+|    learning_rate        | 0.0003    |
+|    loss                 | -0.007    |
+|    n_updates            | 250       |
+|    policy_gradient_loss | -0.0165   |
+|    std                  | 0.469     |
+|    value_loss           | 0.0384    |
+---------------------------------------
+[32m2026-11-20 14:08:02.598[0m | [1mINFO    [0m | [36msrc.ml.drl.train_drl[0m:[36m_on_step[0m:[36m112[0m - [1m[PORTFOLIO EVAL @ 210000] Return=+11.09% | Sharpe=2.495 | MaxDD=-126.56%[0m
+---------------------------------
+| rollout/           |          |
+|    ep_len_mean     | 252      |
+|    ep_rew_mean     | 12.8     |
+| time/              |          |
+|    fps             | 178      |
+|    iterations      | 26       |
+|    time_elapsed    | 1196     |
+|    total_timesteps | 212992   |
+---------------------------------
+Eval num_timesteps=220000, episode_reward=0.65 +/- 0.00
+Episode length: 252.00 +/- 0.00
+----------------------------------------
+| eval/                   |            |
+|    mean_ep_length       | 252        |
+|    mean_reward          | 0.648      |
+| time/                   |            |
+|    total_timesteps      | 220000     |
+| train/                  |            |
+|    approx_kl            | 0.09213235 |
+|    clip_fraction        | 0.338      |
+|    clip_range           | 0.2        |
+|    entropy_loss         | -0.643     |
+|    explained_variance   | 0.991      |
+|    learning_rate        | 0.0003     |
+|    loss                 | 0.0106     |
+|    n_updates            | 260        |
+|    policy_gradient_loss | -0.0199    |
+|    std                  | 0.445      |
+|    value_loss           | 0.0452     |
+----------------------------------------
+[32m2026-11-20 14:09:04.661[0m | [1mINFO    [0m | [36msrc.ml.drl.train_drl[0m:[36m_on_step[0m:[36m112[0m - [1m[PORTFOLIO EVAL @ 220000] Return=+6.48% | Sharpe=1.416 | MaxDD=-138.09%[0m
+---------------------------------
+| rollout/           |          |
+|    ep_len_mean     | 252      |
+|    ep_rew_mean     | 14       |
+| time/              |          |
+|    fps             | 176      |
+|    iterations      | 27       |
+|    time_elapsed    | 1253     |
+|    total_timesteps | 221184   |
+---------------------------------
+-----------------------------------------
+| rollout/                |             |
+|    ep_len_mean          | 252         |
+|    ep_rew_mean          | 12.7        |
+| time/                   |             |
+|    fps                  | 176         |
+|    iterations           | 28          |
+|    time_elapsed         | 1297        |
+|    total_timesteps      | 229376      |
+| train/                  |             |
+|    approx_kl            | 0.083435155 |
+|    clip_fraction        | 0.342       |
+|    clip_range           | 0.2         |
+|    entropy_loss         | -0.6        |
+|    explained_variance   | 0.993       |
+|    learning_rate        | 0.0003      |
+|    loss                 | -0.0738     |
+|    n_updates            | 270         |
+|    policy_gradient_loss | -0.0146     |
+|    std                  | 0.431       |
+|    value_loss           | 0.0498      |
+-----------------------------------------
+Eval num_timesteps=230000, episode_reward=0.30 +/- 0.00
+Episode length: 252.00 +/- 0.00
+----------------------------------------
+| eval/                   |            |
+|    mean_ep_length       | 252        |
+|    mean_reward          | 0.302      |
+| time/                   |            |
+|    total_timesteps      | 230000     |
+| train/                  |            |
+|    approx_kl            | 0.08001075 |
+|    clip_fraction        | 0.343      |
+|    clip_range           | 0.2        |
+|    entropy_loss         | -0.572     |
+|    explained_variance   | 0.993      |
+|    learning_rate        | 0.0003     |
+|    loss                 | 0.0113     |
+|    n_updates            | 280        |
+|    policy_gradient_loss | -0.0129    |
+|    std                  | 0.419      |
+|    value_loss           | 0.021      |
+----------------------------------------
+[32m2026-11-20 14:10:20.836[0m | [1mINFO    [0m | [36msrc.ml.drl.train_drl[0m:[36m_on_step[0m:[36m112[0m - [1m[PORTFOLIO EVAL @ 230000] Return=+3.02% | Sharpe=0.648 | MaxDD=-121.90%[0m
+---------------------------------
+| rollout/           |          |
+|    ep_len_mean     | 252      |
+|    ep_rew_mean     | 14.4     |
+| time/              |          |
+|    fps             | 176      |
+|    iterations      | 29       |
+|    time_elapsed    | 1345     |
+|    total_timesteps | 237568   |
+---------------------------------
+Eval num_timesteps=240000, episode_reward=0.59 +/- 0.00
+Episode length: 252.00 +/- 0.00
+---------------------------------------
+| eval/                   |           |
+|    mean_ep_length       | 252       |
+|    mean_reward          | 0.594     |
+| time/                   |           |
+|    total_timesteps      | 240000    |
+| train/                  |           |
+|    approx_kl            | 0.0932824 |
+|    clip_fraction        | 0.363     |
+|    clip_range           | 0.2       |
+|    entropy_loss         | -0.536    |
+|    explained_variance   | 0.995     |
+|    learning_rate        | 0.0003    |
+|    loss                 | -0.0151   |
+|    n_updates            | 290       |
+|    policy_gradient_loss | -0.016    |
+|    std                  | 0.403     |
+|    value_loss           | 0.0378    |
+---------------------------------------
+[32m2026-11-20 14:11:14.142[0m | [1mINFO    [0m | [36msrc.ml.drl.train_drl[0m:[36m_on_step[0m:[36m112[0m - [1m[PORTFOLIO EVAL @ 240000] Return=+5.94% | Sharpe=1.277 | MaxDD=-115.40%[0m
+---------------------------------
+| rollout/           |          |
+|    ep_len_mean     | 252      |
+|    ep_rew_mean     | 14.9     |
+| time/              |          |
+|    fps             | 176      |
+|    iterations      | 30       |
+|    time_elapsed    | 1393     |
+|    total_timesteps | 245760   |
+---------------------------------
+Eval num_timesteps=250000, episode_reward=0.24 +/- 0.00
+Episode length: 252.00 +/- 0.00
+-----------------------------------------
+| eval/                   |             |
+|    mean_ep_length       | 252         |
+|    mean_reward          | 0.237       |
+| time/                   |             |
+|    total_timesteps      | 250000      |
+| train/                  |             |
+|    approx_kl            | 0.092703864 |
+|    clip_fraction        | 0.361       |
+|    clip_range           | 0.2         |
+|    entropy_loss         | -0.513      |
+|    explained_variance   | 0.996       |
+|    learning_rate        | 0.0003      |
+|    loss                 | -0.0506     |
+|    n_updates            | 300         |
+|    policy_gradient_loss | -0.0116     |
+|    std                  | 0.397       |
+|    value_loss           | 0.0367      |
+-----------------------------------------
+[32m2026-11-20 14:12:03.684[0m | [1mINFO    [0m | [36msrc.ml.drl.train_drl[0m:[36m_on_step[0m:[36m112[0m - [1m[PORTFOLIO EVAL @ 250000] Return=+2.37% | Sharpe=0.518 | MaxDD=-121.71%[0m
+---------------------------------
+| rollout/           |          |
+|    ep_len_mean     | 252      |
+|    ep_rew_mean     | 16.9     |
+| time/              |          |
+|    fps             | 176      |
+|    iterations      | 31       |
+|    time_elapsed    | 1437     |
+|    total_timesteps | 253952   |
+---------------------------------
+Eval num_timesteps=260000, episode_reward=0.43 +/- 0.00
+Episode length: 252.00 +/- 0.00
+-----------------------------------------
+| eval/                   |             |
+|    mean_ep_length       | 252         |
+|    mean_reward          | 0.425       |
+| time/                   |             |
+|    total_timesteps      | 260000      |
+| train/                  |             |
+|    approx_kl            | 0.102022335 |
+|    clip_fraction        | 0.367       |
+|    clip_range           | 0.2         |
+|    entropy_loss         | -0.489      |
+|    explained_variance   | 0.998       |
+|    learning_rate        | 0.0003      |
+|    loss                 | -0.0112     |
+|    n_updates            | 310         |
+|    policy_gradient_loss | -0.0158     |
+|    std                  | 0.385       |
+|    value_loss           | 0.024       |
+-----------------------------------------
+[32m2026-11-20 14:12:50.300[0m | [1mINFO    [0m | [36msrc.ml.drl.train_drl[0m:[36m_on_step[0m:[36m112[0m - [1m[PORTFOLIO EVAL @ 260000] Return=+4.25% | Sharpe=1.034 | MaxDD=-123.28%[0m
+---------------------------------
+| rollout/           |          |
+|    ep_len_mean     | 252      |
+|    ep_rew_mean     | 16.4     |
+| time/              |          |
+|    fps             | 176      |
+|    iterations      | 32       |
+|    time_elapsed    | 1481     |
+|    total_timesteps | 262144   |
+---------------------------------
+Eval num_timesteps=270000, episode_reward=0.46 +/- 0.00
+Episode length: 252.00 +/- 0.00
+----------------------------------------
+| eval/                   |            |
+|    mean_ep_length       | 252        |
+|    mean_reward          | 0.456      |
+| time/                   |            |
+|    total_timesteps      | 270000     |
+| train/                  |            |
+|    approx_kl            | 0.11616643 |
+|    clip_fraction        | 0.389      |
+|    clip_range           | 0.2        |
+|    entropy_loss         | -0.457     |
+|    explained_variance   | 0.997      |
+|    learning_rate        | 0.0003     |
+|    loss                 | -0.0331    |
+|    n_updates            | 320        |
+|    policy_gradient_loss | -0.0162    |
+|    std                  | 0.373      |
+|    value_loss           | 0.0207     |
+----------------------------------------
+[32m2026-11-20 14:13:44.240[0m | [1mINFO    [0m | [36msrc.ml.drl.train_drl[0m:[36m_on_step[0m:[36m112[0m - [1m[PORTFOLIO EVAL @ 270000] Return=+4.56% | Sharpe=1.186 | MaxDD=-110.62%[0m
+---------------------------------
+| rollout/           |          |
+|    ep_len_mean     | 252      |
+|    ep_rew_mean     | 16.4     |
+| time/              |          |
+|    fps             | 176      |
+|    iterations      | 33       |
+|    time_elapsed    | 1530     |
+|    total_timesteps | 270336   |
+---------------------------------
+----------------------------------------
+| rollout/                |            |
+|    ep_len_mean          | 252        |
+|    ep_rew_mean          | 16         |
+| time/                   |            |
+|    fps                  | 177        |
+|    iterations           | 34         |
+|    time_elapsed         | 1572       |
+|    total_timesteps      | 278528     |
+| train/                  |            |
+|    approx_kl            | 0.11912224 |
+|    clip_fraction        | 0.386      |
+|    clip_range           | 0.2        |
+|    entropy_loss         | -0.445     |
+|    explained_variance   | 0.997      |
+|    learning_rate        | 0.0003     |
+|    loss                 | -0.019     |
+|    n_updates            | 330        |
+|    policy_gradient_loss | -0.0107    |
+|    std                  | 0.37       |
+|    value_loss           | 0.0248     |
+----------------------------------------
+Eval num_timesteps=280000, episode_reward=-0.70 +/- 0.00
+Episode length: 252.00 +/- 0.00
+----------------------------------------
+| eval/                   |            |
+|    mean_ep_length       | 252        |
+|    mean_reward          | -0.696     |
+| time/                   |            |
+|    total_timesteps      | 280000     |
+| train/                  |            |
+|    approx_kl            | 0.11987298 |
+|    clip_fraction        | 0.386      |
+|    clip_range           | 0.2        |
+|    entropy_loss         | -0.422     |
+|    explained_variance   | 0.997      |
+|    learning_rate        | 0.0003     |
+|    loss                 | -0.0567    |
+|    n_updates            | 340        |
+|    policy_gradient_loss | -0.0169    |
+|    std                  | 0.357      |
+|    value_loss           | 0.0204     |
+----------------------------------------
+[32m2026-11-20 14:14:57.878[0m | [1mINFO    [0m | [36msrc.ml.drl.train_drl[0m:[36m_on_step[0m:[36m112[0m - [1m[PORTFOLIO EVAL @ 280000] Return=-6.96% | Sharpe=-1.141 | MaxDD=-172.66%[0m
+---------------------------------
+| rollout/           |          |
+|    ep_len_mean     | 252      |
+|    ep_rew_mean     | 16.4     |
+| time/              |          |
+|    fps             | 176      |
+|    iterations      | 35       |
+|    time_elapsed    | 1619     |
+|    total_timesteps | 286720   |
+---------------------------------
+Eval num_timesteps=290000, episode_reward=0.15 +/- 0.00
+Episode length: 252.00 +/- 0.00
+----------------------------------------
+| eval/                   |            |
+|    mean_ep_length       | 252        |
+|    mean_reward          | 0.147      |
+| time/                   |            |
+|    total_timesteps      | 290000     |
+| train/                  |            |
+|    approx_kl            | 0.17540856 |
+|    clip_fraction        | 0.389      |
+|    clip_range           | 0.2        |
+|    entropy_loss         | -0.397     |
+|    explained_variance   | 0.996      |
+|    learning_rate        | 0.0003     |
+|    loss                 | -0.0114    |
+|    n_updates            | 350        |
+|    policy_gradient_loss | -0.0121    |
+|    std                  | 0.351      |
+|    value_loss           | 0.0284     |
+----------------------------------------
+[32m2026-11-20 14:16:05.689[0m | [1mINFO    [0m | [36msrc.ml.drl.train_drl[0m:[36m_on_step[0m:[36m112[0m - [1m[PORTFOLIO EVAL @ 290000] Return=+1.47% | Sharpe=0.497 | MaxDD=-133.01%[0m
+---------------------------------
+| rollout/           |          |
+|    ep_len_mean     | 252      |
+|    ep_rew_mean     | 16.8     |
+| time/              |          |
+|    fps             | 174      |
+|    iterations      | 36       |
+|    time_elapsed    | 1685     |
+|    total_timesteps | 294912   |
+---------------------------------
+Eval num_timesteps=300000, episode_reward=0.63 +/- 0.00
+Episode length: 252.00 +/- 0.00
+----------------------------------------
+| eval/                   |            |
+|    mean_ep_length       | 252        |
+|    mean_reward          | 0.63       |
+| time/                   |            |
+|    total_timesteps      | 300000     |
+| train/                  |            |
+|    approx_kl            | 0.16225898 |
+|    clip_fraction        | 0.415      |
+|    clip_range           | 0.2        |
+|    entropy_loss         | -0.366     |
+|    explained_variance   | 0.998      |
+|    learning_rate        | 0.0003     |
+|    loss                 | 0.00193    |
+|    n_updates            | 360        |
+|    policy_gradient_loss | -0.0114    |
+|    std                  | 0.34       |
+|    value_loss           | 0.0277     |
+----------------------------------------
+[32m2026-11-20 14:16:57.739[0m | [1mINFO    [0m | [36msrc.ml.drl.train_drl[0m:[36m_on_step[0m:[36m112[0m - [1m[PORTFOLIO EVAL @ 300000] Return=+6.30% | Sharpe=1.467 | MaxDD=-101.17%[0m
+---------------------------------
+| rollout/           |          |
+|    ep_len_mean     | 252      |
+|    ep_rew_mean     | 17.1     |
+| time/              |          |
+|    fps             | 175      |
+|    iterations      | 37       |
+|    time_elapsed    | 1730     |
+|    total_timesteps | 303104   |
+---------------------------------
+[32m2026-11-20 14:17:27.956[0m | [32m[1mSUCCESS [0m | [36msrc.ml.drl.train_drl[0m:[36mrun_drl_training[0m:[36m389[0m - [32m[1m[DRL TRAIN] Training complete.[0m
+[32m2026-11-20 14:17:28.000[0m | [1mINFO    [0m | [36msrc.ml.drl.train_drl[0m:[36mrun_drl_training[0m:[36m395[0m - [1m[DRL] Final model saved \u2192 checkpoints\drl_reward_fix\PPO-300k-fixed-s2\ppo_final.zip[0m
+[32m2026-11-20 14:17:28.029[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=413 | episode_len=252[0m
+[32m2026-11-20 14:17:33.562[0m | [1mINFO    [0m | [36msrc.ml.drl.train_drl[0m:[36mrun_drl_training[0m:[36m406[0m - [1m[DRL] Final eval: {'mean_return_pct': 15.3116, 'std_return_pct': 0.0, 'mean_sharpe': 3.9817, 'mean_trades': 210.0, 'win_rate': 1.0, 'min_return_pct': 15.3116, 'max_return_pct': 15.3116}[0m
+[32m2026-11-20 14:17:33.925[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=413 | episode_len=252[0m
+[32m2026-11-20 14:17:34.460[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=413 | episode_len=252[0m
+[32m2026-11-20 14:17:35.032[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=413 | episode_len=252[0m
+[32m2026-11-20 14:17:35.285[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 14:17:35.286[0m | [1mINFO    [0m | [36msrc.ml.drl.backtest[0m:[36mrun_backtest[0m:[36m94[0m - [1m[BACKTEST] Running agent on 415 test steps...[0m
+[32m2026-11-20 14:17:35.872[0m | [32m[1mSUCCESS [0m | [36msrc.ml.drl.backtest[0m:[36mrun_backtest[0m:[36m128[0m - [32m[1m[BACKTEST] Done. Return=+60.17% | Sharpe=1.200 | MaxDD=-25.41%[0m
+[32m2026-11-20 14:17:35.884[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 14:17:36.166[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 14:17:36.224[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 14:17:36.509[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 14:17:36.795[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 14:17:37.259[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 14:17:37.687[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 14:17:37.997[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 14:17:38.271[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 14:17:38.320[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 14:17:38.588[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 14:17:38.878[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 14:17:39.155[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 14:17:39.475[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 14:17:39.741[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 14:17:40.057[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 14:17:40.393[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 14:17:40.579[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 14:17:40.834[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 14:17:41.086[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 14:17:41.228[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 14:17:41.288[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 14:17:41.360[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 14:17:41.673[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 14:17:41.722[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 14:17:42.012[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 14:17:42.336[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 14:17:42.674[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 14:17:42.771[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 14:17:43.196[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 14:17:43.496[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=252[0m
+[32m2026-11-20 14:17:43.843[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 14:17:43.845[0m | [1mINFO    [0m | [36msrc.ml.drl.backtest[0m:[36mrun_backtest[0m:[36m94[0m - [1m[BACKTEST] Running agent on 415 test steps...[0m
+[32m2026-11-20 14:17:44.866[0m | [32m[1mSUCCESS [0m | [36msrc.ml.drl.backtest[0m:[36mrun_backtest[0m:[36m128[0m - [32m[1m[BACKTEST] Done. Return=+121.93% | Sharpe=1.308 | MaxDD=-25.41%[0m
+[32m2026-11-20 14:17:44.875[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 14:17:45.368[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 14:17:45.451[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 14:17:45.971[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 14:17:46.369[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 14:17:46.996[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 14:17:47.718[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 14:17:48.341[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 14:17:48.807[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 14:17:48.862[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 14:17:49.351[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 14:17:49.748[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 14:17:50.255[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 14:17:50.752[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 14:17:51.155[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 14:17:51.643[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 14:17:52.039[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 14:17:52.215[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 14:17:52.667[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 14:17:53.121[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 14:17:53.324[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 14:17:53.406[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 14:17:53.472[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 14:17:53.922[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 14:17:53.975[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 14:17:54.493[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 14:17:54.973[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 14:17:55.366[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 14:17:55.497[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 14:17:55.818[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+[32m2026-11-20 14:17:56.327[0m | [1mINFO    [0m | [36msrc.ml.drl.env[0m:[36m__init__[0m:[36m160[0m - [1m[ENV] EnergyTradingEnv ready | mode=test | obs_dim=41 | action=continuous | rows=415 | episode_len=415[0m
+PPO-300k-fixed-s2 {
+  "name": "PPO-300k-fixed-s2",
+  "run_id": "702fe1b98dbf47138d5491921e2a1d19",
+  "seed": 2,
+  "total_timesteps": 300000,
+  "val_return_pct_final_model": 15.3116,
+  "val_return_pct_best_model": 14.8755,
+  "val_buy_and_hold_return_pct": -8.049,
+  "first_252": {
+    "agent": {
+      "total_return_pct": 60.1735,
+      "annualised_return_pct": 60.1735,
+      "sharpe": 1.1995,
+      "max_drawdown_pct": -25.4114,
+      "calmar_ratio": 2.368,
+      "win_rate_pct": 44.2231,
+      "var_95_pct": -3.3649,
+      "profit_factor": 1.395,
+      "final_portfolio_value": 160173.47,
+      "n_steps": 252,
+      "total_trades": 243,
+      "trade_freq_per_day": 0.9643,
+      "algorithm": "PPO",
+      "days_flat": 14,
+      "top5_days_share_of_gain_pct": 148.02713539333104
+    },
+    "buy_and_hold": {
+      "total_return_pct": 25.6765,
+      "annualised_return_pct": 25.6765,
+      "sharpe": 0.7828,
+      "max_drawdown_pct": -66.0434,
+      "calmar_ratio": 0.3888,
+      "win_rate_pct": 46.6135,
+      "var_95_pct": -6.5792,
+      "profit_factor": 1.2593,
+      "final_portfolio_value": 125676.5,
+      "n_steps": 252,
+      "algorithm": "Buy & Hold"
+    },
+    "random_return_mean": 11.979253333333332,
+    "random_return_std": 56.179820812528604,
+    "random_return_min": -52.9806,
+    "random_return_max": 138.1048,
+    "random_beats_agent_pct": 26.666666666666668
+  },
+  "full_test": {
+    "agent": {
+      "total_return_pct": 121.934,
+      "annualised_return_pct": 62.4594,
+      "sharpe": 1.3082,
+      "max_drawdown_pct": -25.4114,
+      "calmar_ratio": 4.7984,
+      "win_rate_pct": 40.4358,
+      "var_95_pct": -2.4478,
+      "profit_factor": 1.4654,
+      "final_portfolio_value": 221933.96,
+      "n_steps": 414,
+      "total_trades": 385,
+      "trade_freq_per_day": 0.93,
+      "algorithm": "PPO",
+      "days_flat": 42,
+      "top5_days_share_of_gain_pct": 98.99576212995352
+    },
+    "buy_and_hold": {
+      "total_return_pct": 8.6765,
+      "annualised_return_pct": 5.1951,
+      "sharpe": 0.6637,
+      "max_drawdown_pct": -68.1875,
+      "calmar_ratio": 0.1272,
+      "win_rate_pct": 45.0363,
+      "var_95_pct": -6.564,
+      "profit_factor": 1.207,
+      "final_portfolio_value": 108676.5,
+      "n_steps": 414,
+      "algorithm": "Buy & Hold"
+    },
+    "random_return_mean": 4.614059999999999,
+    "random_return_std": 68.84799524793539,
+    "random_return_min": -58.7364,
+    "random_return_max": 151.1603,
+    "random_beats_agent_pct": 13.333333333333334
+  }
+}

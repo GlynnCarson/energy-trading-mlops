@@ -34,6 +34,14 @@ def task_train_drl(**context):
     val_df = load(split_paths["val"])
 
     drl_cfg = load_drl_config()
+
+    # Optional override from the DAG-run config, e.g. a short demo run:
+    #   airflow dags trigger energy_trading_mlops_pipeline -c '{"total_timesteps": 20000}'
+    conf = getattr(context.get("dag_run"), "conf", None) or {}
+    if "total_timesteps" in conf:
+        drl_cfg["training"]["total_timesteps"] = int(conf["total_timesteps"])
+        logger.info(f"[DRL] total_timesteps overridden by DAG-run conf: {conf['total_timesteps']}")
+
     run_id = run_drl_training(train_df, val_df, drl_cfg)
 
     context["ti"].xcom_push(key="drl_run_id", value=run_id)

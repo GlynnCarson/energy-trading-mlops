@@ -1,5 +1,8 @@
 """
-Generates the Chapter 4 analysis and design diagrams (Figures 4.1 - 4.8).
+Generates the report's diagrams: Figure 2.1 (conceptual framework), Figure 3.1 (Agile lifecycle) and
+the Chapter 4 analysis and design diagrams (Figures 4.1 - 4.6): use case,
+class, entity relationship, database schema, system architecture and user interface.
+These are the diagram types discussed in Chapter 3 (Sections 3.4 and 3.5).
 
     python docs/report/make_diagrams.py
 
@@ -18,107 +21,7 @@ OUT.mkdir(parents=True, exist_ok=True)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Figure 4.1  Context diagram
-# ─────────────────────────────────────────────────────────────────────────────
-def context_diagram():
-    fig, ax, H = canvas("Context Diagram", w=14, h=9.6)
-    # central system
-    ax.add_patch(Circle((50, 31), 12.5, fc=PALE, ec=BLACK, lw=2.0, zorder=3))
-    ax.text(50, 36.5, "0", ha="center", va="center", fontsize=12, fontweight="bold", zorder=4)
-    ax.add_line(Line2D([39.5, 60.5], [34.2, 34.2], color=BLACK, lw=1.1, zorder=4))
-    ax.text(50, 29.5, "Energy Trading\nMLOps Platform", ha="center", va="center", fontsize=12.5,
-            fontweight="bold", zorder=4, linespacing=1.3)
-
-    ent = dict(fill=WHITE, round_=False, lw=1.8, fs=10.5)
-    box(ax, 2, 45, 22, 8, "EIA Open Data API v2", sub="external data provider", **ent)
-    box(ax, 2, 10, 22, 8, "Airflow Scheduler", sub="time trigger (@daily)", **ent)
-    box(ax, 39, 54, 22, 6.5, "Object Storage", sub="AWS S3 / LocalStack", **ent)
-    box(ax, 76, 45, 22, 8, "Data Engineer", sub="maintains data pipeline", **ent)
-    box(ax, 76, 27.5, 22, 8, "ML Engineer", sub="trains and evaluates agent", **ent)
-    box(ax, 76, 10, 22, 8, "Energy Analyst", sub="reviews trading results", **ent)
-    box(ax, 39, 3, 22, 6.5, "Email Service", sub="SMTP (Airflow EmailOperator)", **ent)
-
-    # EIA
-    arrow(ax, (40.0, 39.5), (24, 51.5), None)
-    ax.text(30.5, 54.6, "price request\n(series ID, start date, API key)", ha="center", va="center", fontsize=8.5,
-            color=DARK, linespacing=1.2)
-    arrow(ax, (24, 46.5), (39.3, 37.4), None)
-    ax.text(28.0, 38.6, "daily price records\n(JSON)", ha="center", va="center", fontsize=8.5, color=DARK,
-            linespacing=1.2)
-    # Scheduler
-    arrow(ax, (24, 14), (40, 24), "daily run trigger", lpos=0.45, loff=(-1.5, 1.8))
-    # Object storage
-    arrow(ax, (47, 43.5), (47, 54), "raw / processed\nParquet, reports", lpos=0.5, loff=(-7.5, 0))
-    arrow(ax, (53, 54), (53, 43.5), "stored splits", lpos=0.5, loff=(5.5, 0))
-    # Data engineer
-    arrow(ax, (76, 51.0), (59.5, 39.0), None)
-    ax.text(70.0, 51.8, "pipeline.yaml settings", ha="center", va="center", fontsize=8.5, color=DARK)
-    arrow(ax, (61.0, 35.5), (76, 46.5), None)
-    ax.text(72.5, 40.0, "data-quality report", ha="center", va="center", fontsize=8.5, color=DARK)
-    # ML engineer
-    arrow(ax, (76, 33.5), (62.5, 32.5), "drl.yaml, training request", lpos=0.5, loff=(0, 1.8))
-    arrow(ax, (62.5, 29.5), (76, 30), "MLflow runs, metrics", lpos=0.5, loff=(0, -1.8))
-    # Analyst
-    arrow(ax, (59.5, 23.0), (76, 15), "backtest report,\ntrade replay", lpos=0.5, loff=(1.0, 2.6))
-    # Email
-    arrow(ax, (50, 18.5), (50, 9.5), "success / failure\nnotification", lpos=0.5, loff=(7, 0))
-    save(fig, OUT / "fig4_1_context.png")
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Figure 4.2  DFD Level 0
-# ─────────────────────────────────────────────────────────────────────────────
-def dfd_level0():
-    fig, ax, H = canvas("Data Flow Diagram - Level 0", w=14, h=10.5)
-    ent = dict(fill=WHITE, round_=False, lw=1.8, fs=10.5)
-    box(ax, 2, 55, 17, 7, "EIA API v2", sub="external entity", **ent)
-    box(ax, 81, 55, 17, 7, "ML Engineer", sub="external entity", **ent)
-    box(ax, 81, 4, 17, 7, "Email Service", sub="external entity", **ent)
-
-    P = dict(w=19, h=11)
-    process(ax, 24, 52, num="1.0", text="Ingest market\ndata", sub="EIAIngester", **P)
-    process(ax, 24, 30, num="2.0", text="Clean and\nvalidate", sub="clean_raw, validate_dataframe", **P)
-    process(ax, 24, 8, num="3.0", text="Engineer features\nand split", sub="engineer_features, temporal_split", **P)
-    process(ax, 56, 52, num="4.0", text="Train DRL\nagent", sub="run_drl_training (PPO)", **P)
-    process(ax, 56, 30, num="5.0", text="Backtest and\nevaluate", sub="run_full_backtest", **P)
-    process(ax, 56, 8, num="6.0", text="Notify\nstakeholders", sub="notify_success", **P)
-
-    datastore(ax, 2, 37, 19, 5.5, "D1", "Raw data", "s3://.../raw/energy/")
-    datastore(ax, 2, 19, 19, 5.5, "D2", "Processed splits", "train / val / test Parquet", dup=True)
-    datastore(ax, 56, 44.5, 19, 5.0, "D2", "Processed splits", "duplicate of D2", dup=True)
-    datastore(ax, 79, 41, 19.5, 5.5, "D3", "MLflow store", "runs, params, metrics")
-    datastore(ax, 79, 31, 19.5, 5.5, "D4", "Model checkpoints", "best_model, ppo_final")
-    datastore(ax, 79, 21, 19.5, 5.5, "D5", "Reports", "backtest PNG, DQ JSON")
-
-    arrow(ax, (19, 58.5), (24, 58.5), "prices", loff=(0, 1.4))
-    arrow(ax, (33.5, 52), (14, 42.5), "raw Parquet", lpos=0.55, loff=(2.5, 1.4))
-    arrow(ax, (12, 37), (24, 36), "raw records", lpos=0.45, loff=(0, -1.6))
-    arrow(ax, (33.5, 30), (33.5, 19), "validated series", lpos=0.5, loff=(-6.5, 0))
-    arrow(ax, (24, 13), (12, 19), "split files", lpos=0.5, loff=(-1, -1.8))
-    arrow(ax, (65.5, 49.5), (65.5, 52), None)
-    ax.text(70.5, 50.75, "train + val", ha="center", va="center", fontsize=8.3, color=DARK)
-    arrow(ax, (65.5, 44.5), (65.5, 41), None)
-    ax.text(69.5, 42.75, "test split", ha="center", va="center", fontsize=8.3, color=DARK)
-    arrow(ax, (81, 58.5), (75, 58.5), "drl.yaml", loff=(0, 1.4))
-    arrow(ax, (75, 56.0), (82, 46.5), None)
-    ax.text(83.0, 51.0, "params, metrics,\nartifacts", ha="left", va="center", fontsize=8.3, color=DARK,
-            linespacing=1.2)
-    arrow(ax, (75, 53.0), (79.5, 36.5), None)
-    ax.text(77.6, 39.3, "checkpoints", ha="left", va="center", fontsize=8.3, color=DARK,
-            bbox=dict(fc="white", ec="none", pad=0.3))
-    arrow(ax, (79, 33.0), (75, 33.0), None)
-    ax.text(77.0, 30.3, "best\nmodel", ha="center", va="center", fontsize=8.0, color=DARK, linespacing=1.1)
-    arrow(ax, (75, 31.0), (79.5, 26.5), None)
-    ax.text(79.5, 28.6, "report", ha="left", va="center", fontsize=8.3, color=DARK)
-    arrow(ax, (65.5, 30), (65.5, 19), "backtest summary", lpos=0.5, loff=(-7, 0))
-    arrow(ax, (75, 13.5), (81, 8.5), "email", lpos=0.5, loff=(-0.5, 1.7))
-    arrow(ax, (93, 46.5), (93, 55), None)
-    ax.text(95.0, 50.8, "run results", rotation=90, ha="center", va="center", fontsize=8.3, color=DARK)
-    save(fig, OUT / "fig4_2_dfd0.png")
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Figure 4.3  Use case diagram
+# Figure 4.1  Use case diagram
 # ─────────────────────────────────────────────────────────────────────────────
 def use_case():
     fig, ax, H = canvas("Use Case Diagram", w=14, h=11.2)
@@ -155,7 +58,9 @@ def use_case():
     system_actor(ax, 88, 11, "Email Service", "SMTP")
 
     def link(a, b):
-        ax.add_line(Line2D([a[0], b[0]], [a[1], b[1]], color=MID, lw=1.1, zorder=0.5))
+        # zorder 1.5: above the boundary's white fill (1) but below the ellipses (3), so every line visibly
+        # reaches the edge of its use case
+        ax.add_line(Line2D([a[0], b[0]], [a[1], b[1]], color=MID, lw=1.1, zorder=1.5))
 
     de, ml, an = (16, 53), (16, 34), (16, 16)
     for k in ["cfg", "ing", "tr", "dq"]:
@@ -176,119 +81,21 @@ def use_case():
             bbox=dict(fc="white", ec="none", pad=0.4), zorder=8)
     legend(ax, [("box_white", "Data pipeline"), ("box_pale", "Model lifecycle"),
                 ("box_mid", "Results and delivery"), ("solid", "association"), ("dash", "«include»")], y=1.3)
-    save(fig, OUT / "fig4_3_usecase.png")
+    save(fig, OUT / "fig4_1_usecase.png")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Figure 4.4  Activity diagram of the orchestrated pipeline
-# ─────────────────────────────────────────────────────────────────────────────
-def activity():
-    fig, ax, H = canvas("Activity Diagram - Daily Pipeline Run", w=14, h=11.0)
-    cx = 38
-
-    def act(y, text, sub=None, x=cx, w=26, h=5.2):
-        box(ax, x - w / 2, y - h / 2, w, h, text, sub=sub, fill=WHITE, fs=10.2, sub_fs=8.2)
-
-    ax.add_patch(Circle((cx, 66), 1.4, fc=BLACK, zorder=4))
-    act(59.5, "ingest", "EIA API v2 -> raw Parquet (S3)")
-    act(51.0, "transform: clean_raw", "UTC index, de-duplicate, outliers, asfreq")
-    # decision
-    ax.add_patch(Polygon([[cx, 46.3], [cx + 3.2, 43.5], [cx, 40.7], [cx - 3.2, 43.5]], fc="white", ec=BLACK,
-                         lw=1.5, zorder=4))
-    act(35.0, "engineer_features + temporal_split", "lags, rolling stats, RSI, MACD, BB; 80/10/10")
-    # fork bar
-    ax.add_patch(Rectangle((cx - 22, 29.4), 44, 0.9, fc=BLACK, zorder=4))
-    act(23.5, "train_drl", "PPO, MLflow logging, checkpoints", x=cx - 11, w=22)
-    act(15.5, "backtest_drl", "vs Buy & Hold and Random", x=cx - 11, w=22)
-    act(23.5, "data_quality_report", "rows, nulls, price stats -> JSON", x=cx + 15, w=22)
-    act(7.5, "notify_success", "email with run ID + summary", x=cx - 11, w=22)
-    ax.add_patch(Rectangle((cx - 22, 2.5), 44, 0.9, fc=BLACK, zorder=4))
-    ax.add_patch(Circle((cx, -0.5 + 0.0), 0.01, fc=BLACK))
-
-    # end node next to join (right)
-    ax.add_patch(Circle((cx + 30, 2.95), 1.5, fc="white", ec=BLACK, lw=1.6, zorder=4))
-    ax.add_patch(Circle((cx + 30, 2.95), 0.9, fc=BLACK, zorder=5))
-
-    arrow(ax, (cx, 64.6), (cx, 62.1))
-    arrow(ax, (cx, 56.9), (cx, 53.6))
-    arrow(ax, (cx, 48.4), (cx, 46.3))
-    arrow(ax, (cx, 40.7), (cx, 37.6), "[critical checks passed]", loff=(9.5, 0.3))
-    arrow(ax, (cx, 32.4), (cx, 30.3))
-    arrow(ax, (cx - 11, 29.4), (cx - 11, 26.1))
-    arrow(ax, (cx + 15, 29.4), (cx + 15, 26.1))
-    arrow(ax, (cx - 11, 20.9), (cx - 11, 18.1))
-    arrow(ax, (cx - 11, 12.9), (cx - 11, 10.1))
-    arrow(ax, (cx - 11, 4.9), (cx - 11, 3.4))
-    poly_arrow(ax, [(cx + 15, 20.9), (cx + 15, 3.4)])
-    arrow(ax, (cx + 22, 2.95), (cx + 28.5, 2.95))
-    ax.text(cx + 24.8, 4.6, "end", fontsize=8.5, color=DARK, ha="center")
-    ax.text(cx - 23.0, 29.85, "fork", fontsize=8.5, color=DARK, ha="right", va="center")
-    ax.text(cx - 23.0, 2.95, "join (trigger: all_done)", fontsize=8.5, color=DARK, ha="right", va="center")
-
-    # failure branch
-    box(ax, 72, 40.5, 25, 6, "Task fails", sub="validation error / exception", fill=PALE, fs=10, sub_fs=8.2)
-    arrow(ax, (cx + 3.2, 43.5), (72, 43.5), "[critical check failed]", loff=(0, 1.5))
-    box(ax, 72, 28.5, 25, 7.2, "Retry (max 2, 5 min)", sub="then email_on_failure", fill=PALE, fs=10, sub_fs=8.2)
-    arrow(ax, (84.5, 40.5), (84.5, 35.7))
-    ax.text(90.0, 59.5, "Applies to every task:\nretries = 2, retry_delay = 5 min,\nexecution_timeout = 2 h,\nmax_active_runs = 1",
-            ha="center", va="center", fontsize=8.6, color=DARK, linespacing=1.35,
-            bbox=dict(fc=PALE, ec=MID, boxstyle="round,pad=0.6", lw=1.0))
-    save(fig, OUT / "fig4_4_activity.png")
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Figure 4.5  Reinforcement-learning design (agent-environment loop)
-# ─────────────────────────────────────────────────────────────────────────────
-def rl_design():
-    fig, ax, H = canvas("Reinforcement Learning Design", subtitle="PPO agent and EnergyTradingEnv (Gymnasium)",
-                        w=14, h=8.6)
-    # agent
-    header_box(ax, 3, 52, 32, "PPO Agent", stereo="stable-baselines3", head_fill=BLACK, sections=[
-        ["policy: MlpPolicy (actor-critic)", "net_arch: [256, 256, 128]", "learning_rate: 3e-4, gamma: 0.99",
-         "n_steps: 2048, batch_size: 64", "clip_range: 0.2, ent_coef: 0.01", "n_envs: 4 (DummyVecEnv), seed: 42"]])
-    # env
-    header_box(ax, 64, 52, 33, "EnergyTradingEnv", stereo="gymnasium.Env", head_fill=DARK, sections=[
-        ["data: engineered daily price frame", "initial_cash: 100,000 USD", "max_position: 25,000 units",
-         "transaction_cost: 0.1 % of trade value", "stop_loss: 50 % portfolio drop", "episode: 252 trading days"]])
-
-    # action arrow (top)
-    poly_arrow(ax, [(35, 47), (64, 47)])
-    ax.text(49.5, 49.6, "Action  a_t  in  [-1, 1]", ha="center", fontsize=10.5, fontweight="bold")
-    ax.text(49.5, 44.4, "target position = (a_t + 1) / 2 x max_position\n(long-only: -1 = flat, +1 = fully long)",
-            ha="center", va="center", fontsize=8.6, color=DARK, linespacing=1.3)
-    # observation / reward arrows (bottom)
-    poly_arrow(ax, [(64, 37), (35, 37)])
-    ax.text(49.5, 39.4, "Observation  s_t+1  (41 values)", ha="center", fontsize=10.5, fontweight="bold")
-    ax.text(49.5, 34.3, "38 Z-score-normalised market features\n+ cash ratio, position ratio, unrealised PnL",
-            ha="center", va="center", fontsize=8.6, color=DARK, linespacing=1.3)
-    poly_arrow(ax, [(80, 32.6), (80, 23.5), (19, 23.5), (19, 32.6)])
-    ax.text(49.5, 25.4, "Reward  r_t+1", ha="center", fontsize=10.5, fontweight="bold",
-            bbox=dict(fc="white", ec="none", pad=0.4))
-
-    # reward design note
-    box(ax, 8, 2.5, 84, 12.0, "", fill=PALE, lw=1.2)
-    ax.text(50, 12.0, "Designed reward (per step)", ha="center", va="center", fontsize=10.5, fontweight="bold")
-    ax.text(50, 8.4, "r_t+1 = scale x [ V(t+1) - V(t) ]  -  transaction costs  ;   V = cash + position x price ;   "
-                     "scale = 1e-4",
-            ha="center", va="center", fontsize=9.6, family="DejaVu Sans Mono")
-    ax.text(50, 5.0, "Terminate when the portfolio falls 50 % below initial cash (penalty -1);  "
-                     "truncate at the end of the 252-day window.",
-            ha="center", va="center", fontsize=9.0, color=DARK)
-    save(fig, OUT / "fig4_5_rl_design.png")
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Figure 4.6  Class diagram
+# Figure 4.2  Class diagram
 # ─────────────────────────────────────────────────────────────────────────────
 def class_diagram():
     fig, ax, H = canvas("Class Diagram", w=14, h=16.0)
     top = H - 9
-    a = header_box(ax, 2, top, 30, "EIAIngester", sections=[
+    a = header_box(ax, 1.5, top, 29, "EIAIngester", sections=[
         ["- api_key : str", "- session : requests.Session", "+ SERIES : dict{gas, oil}"],
         ["- _get(route, params) : dict", "- _fetch_series(...) : DataFrame", "+ build_dataset(start, commodity)"]])
-    b = header_box(ax, 35, top, 30, "SyntheticEnergyGenerator", sections=[
+    b = header_box(ax, 35.5, top, 29, "SyntheticEnergyGenerator", sections=[
         ["- seed : int = 42"], ["+ generate(days) : DataFrame"]])
-    c = header_box(ax, 68, top, 30, "transform", stereo="module", head_fill=BLACK, sections=[
+    c = header_box(ax, 69.5, top, 29, "transform", stereo="module", head_fill=BLACK, sections=[
         ["TARGET = 'price_usd'"],
         ["+ clean_raw(df)", "+ validate_dataframe(df) : dict", "+ engineer_features(df)",
          "+ temporal_split(df) : (train, val, test)", "+ run_transformation(raw_path)"]])
@@ -302,22 +109,22 @@ def class_diagram():
     f = header_box(ax, 66, row2, 20, "RunningNorm", head_fill=DARK, sections=[
         ["- mean, var : ndarray", "- clip : float = 5"], ["+ update(x)", "+ normalise(x)"]])
     row3 = row2 - 32
-    g = header_box(ax, 2, row3, 30, "train_drl", stereo="module", head_fill=DARK, sections=[
+    g = header_box(ax, 1.5, row3, 29, "train_drl", stereo="module", head_fill=DARK, sections=[
         ["SB3_ALGOS = {PPO, SAC, TD3, A2C}"],
         ["+ load_drl_config() : dict", "+ build_agent(algo, env, cfg)", "+ run_drl_training(train, val) : run_id",
          "+ evaluate_agent(agent, env, n) : dict"]])
-    h = header_box(ax, 35, row3, 30, "MLflowCallback /\nPortfolioMetricsCallback", head_fill=DARK, head_h=5.0, sections=[
+    h = header_box(ax, 35.5, row3, 29, "MLflowCallback /\nPortfolioMetricsCallback", head_fill=DARK, head_h=5.0, sections=[
         ["- log_freq / eval_freq : int"], ["+ _on_step() : bool", "  -> mlflow.log_metrics()"]])
-    i = header_box(ax, 68, row3, 30, "backtest", stereo="module", head_fill=DARK, sections=[
+    i = header_box(ax, 69.5, row3, 29, "backtest", stereo="module", head_fill=DARK, sections=[
         ["+ run_backtest(agent, test_df, cfg)", "+ run_buy_and_hold(test_df, cfg)", "+ run_random_agent(test_df, cfg)",
          "- _compute_metrics(values, ...) : dict", "+ run_full_backtest(...) : dict"]])
     row4 = row3 - 22
-    j = header_box(ax, 2, row4, 30, "energy_trading_mlops_pipeline", stereo="Airflow DAG", head_fill=MID,
+    j = header_box(ax, 1.5, row4, 29, "energy_trading_mlops_pipeline", stereo="Airflow DAG", head_fill=MID,
                    body_fill=PALE, sections=[["schedule : @daily, retries : 2"],
                                              ["ingest, transform, data_quality_report,", "train_drl, backtest_drl, notify_success"]])
-    k = header_box(ax, 35, row4, 30, "drl_tasks", stereo="module", head_fill=MID, body_fill=PALE, sections=[
+    k = header_box(ax, 35.5, row4, 29, "drl_tasks", stereo="module", head_fill=MID, body_fill=PALE, sections=[
         ["+ task_train_drl(**context)", "+ task_backtest_drl(**context)"]])
-    l = header_box(ax, 68, row4, 30, "helpers", stereo="utility", head_fill=MID, body_fill=PALE, sections=[
+    l = header_box(ax, 69.5, row4, 29, "helpers", stereo="utility", head_fill=MID, body_fill=PALE, sections=[
         ["+ load_pipeline_config() : dict", "+ upload_df_to_s3(df, bucket, key)", "+ download_df_from_s3(bucket, key)",
          "+ get_env(key) : str"]])
 
@@ -327,8 +134,9 @@ def class_diagram():
     # dependencies (dashed, open arrow)
     poly_arrow(ax, [(a[0] + a[2] / 2, a[1]), (a[0] + a[2] / 2, a[1] - 2.0), (c[0] + 6, a[1] - 2.0), (c[0] + 6, c[1])],
                dashed=True, open_head=True)
-    poly_arrow(ax, [(b[0] + b[2] / 2, b[1]), (b[0] + b[2] / 2, b[1] - 1.2), (c[0] + 4, b[1] - 1.2), (c[0] + 4, c[1])],
-               dashed=True, open_head=True, label="DataFrame", lidx=1, loff=(0, -1.3))
+    yb = b[1] + b[3] / 2
+    arrow(ax, (b[0] + b[2], yb), (c[0], yb), dashed=True, open_head=True)
+    ax.text((b[0] + b[2] + c[0]) / 2, yb + 1.3, "DataFrame", ha="center", fontsize=8.0, color=DARK)
     poly_arrow(ax, [(c[0] + c[2] / 2, c[1]), (c[0] + c[2] / 2, e[1] + e[3] + 3), (e[0] + e[2] / 2 + 6, e[1] + e[3] + 3),
                     (e[0] + e[2] / 2 + 6, e[1] + e[3])], dashed=True, open_head=True, label="engineered frame", lidx=1,
                loff=(0, 1.3))
@@ -337,7 +145,7 @@ def class_diagram():
     ax.add_line(Line2D([e[0], d[0] + d[2] + 1.6], [ey, ey], color=BLACK, lw=1.4, zorder=2))
     ax.add_patch(Polygon([[d[0] + d[2], ey], [d[0] + d[2] + 1.8, ey + 1.0], [d[0] + d[2] + 1.8, ey - 1.0]],
                          fc="white", ec=BLACK, lw=1.4, zorder=3))
-    ax.text((e[0] + d[0] + d[2]) / 2 + 0.8, ey + 1.4, "extends", fontsize=8.5, color=DARK, ha="center")
+    ax.text((e[0] + d[0] + d[2]) / 2 + 0.8, ey + 2.2, "extends", fontsize=8.5, color=DARK, ha="center")
     # composition Env <>- RunningNorm (filled diamond at Env side)
     fy = f[1] + f[3] - 6
     ax.add_line(Line2D([e[0] + e[2] + 2.4, f[0]], [fy, fy], color=BLACK, lw=1.4, zorder=2))
@@ -350,7 +158,7 @@ def class_diagram():
     poly_arrow(ax, [(i[0] + i[2] / 2, i[1] + i[3]), (i[0] + i[2] / 2, i[1] + i[3] + 3.0), (e[0] + e[2] - 6, i[1] + i[3] + 3.0),
                     (e[0] + e[2] - 6, e[1])], dashed=True, open_head=True, label="walks test split", lidx=1, loff=(0, 1.2))
     arrow(ax, (g[0] + g[2], g[1] + g[3] - 6), (h[0], g[1] + g[3] - 6), "registers", dashed=True, open_head=True,
-          loff=(0, 1.2))
+          loff=(0, 1.3), fs=8.0)
     # bottom row
     arrow(ax, (j[0] + j[2], j[1] + j[3] - 7), (k[0], j[1] + j[3] - 7), "calls", dashed=True, open_head=True, loff=(0, 1.2))
     poly_arrow(ax, [(k[0] + 8, k[1] + k[3]), (k[0] + 8, g[1] - 1.5), (g[0] + g[2] / 2, g[1] - 1.5), (g[0] + g[2] / 2, g[1])],
@@ -358,22 +166,22 @@ def class_diagram():
     poly_arrow(ax, [(k[0] + k[2] - 8, k[1] + k[3]), (k[0] + k[2] - 8, i[1] - 1.5), (i[0] + i[2] / 2, i[1] - 1.5),
                     (i[0] + i[2] / 2, i[1])], dashed=True, open_head=True)
     arrow(ax, (k[0] + k[2], k[1] + k[3] - 7), (l[0], k[1] + k[3] - 7), "S3 I/O,\nconfig", dashed=True, open_head=True,
-          loff=(0, -2.6))
+          loff=(0, 2.1), fs=8.0)
     legend(ax, [("box_dark", "ML layer"), ("box_white", "Data layer"), ("box_mid", "Orchestration / utility"),
                 ("dash", "dependency"), ("solid", "inheritance / composition")], y=2.2)
-    save(fig, OUT / "fig4_6_class.png")
+    save(fig, OUT / "fig4_2_class.png")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Figure 4.7  Logical data design
+# Figure 4.3  Entity relationship diagram
 # ─────────────────────────────────────────────────────────────────────────────
-def data_design():
-    fig, ax, H = canvas("Logical Data Design", subtitle="S3 data lake datasets and MLflow tracking store",
+def erd():
+    fig, ax, H = canvas("Entity Relationship Diagram", subtitle="Data lake datasets and MLflow tracking entities",
                         w=14, h=11.0)
     top = H - 9.5
     ax.text(25, top + 0.4, "Data lake  (bucket: energy-trading-mlops-data)", ha="center", fontsize=10.5,
             fontweight="bold", color=DARK)
-    ax.text(76, top + 0.4, "MLflow tracking store", ha="center", fontsize=10.5, fontweight="bold", color=DARK)
+    ax.text(78, top + 0.4, "MLflow tracking store", ha="center", fontsize=10.5, fontweight="bold", color=DARK)
     raw = header_box(ax, 3, top - 1.5, 44, "RAW_ENERGY", stereo="raw/energy/{start}_to_{end}/raw_energy.parquet",
                      sections=[["PK  timestamp : datetime (UTC, business day)", "     price_usd : float  (Henry Hub $/MMBtu)",
                                 "     oil_price_usd : float  (WTI $/bbl)", "     data_source : str  {eia_api, synthetic}",
@@ -388,12 +196,13 @@ def data_design():
     rep = header_box(ax, 26, proc[1] - 6, 21, "BACKTEST_REPORT", stereo="reports/drl/{ds}/", head_fill=MID,
                      body_fill=PALE, sections=[["backtest_report.png", "metrics in XCom"]])
 
-    exp = header_box(ax, 56, top - 1.5, 40, "EXPERIMENT", sections=[["PK  experiment_id", "     name  e.g. energy-drl-eia-gas"]])
-    run = header_box(ax, 56, exp[1] - 6, 40, "RUN", head_fill=DARK, sections=[
+    exp = header_box(ax, 60, top - 1.5, 36, "EXPERIMENT", sections=[["PK  experiment_id", "     name  e.g. energy-drl-eia-gas"]])
+    run = header_box(ax, 60, exp[1] - 6, 36, "RUN", head_fill=DARK, sections=[
         ["PK  run_id", "FK  experiment_id", "     run_name, status, start/end time"]])
-    par = header_box(ax, 56, run[1] - 6, 19, "PARAM", head_fill=DARK, sections=[["FK run_id", "key, value", "e.g. train_rows"]])
-    met = header_box(ax, 77, run[1] - 6, 19, "METRIC", head_fill=DARK, sections=[["FK run_id", "key, value, step", "e.g. final_*"]])
-    art = header_box(ax, 56, par[1] - 6, 40, "ARTIFACT", head_fill=DARK, sections=[
+    par = header_box(ax, 60, run[1] - 6, 11, "PARAM", head_fill=DARK, sections=[["FK run_id", "key, value", "e.g. seed"]])
+    met = header_box(ax, 72.5, run[1] - 6, 11, "METRIC", head_fill=DARK, sections=[["FK run_id", "key, value,", "step"]])
+    tag = header_box(ax, 85, run[1] - 6, 11, "TAG", head_fill=DARK, sections=[["FK run_id", "key, value", "e.g. algorithm"]])
+    art = header_box(ax, 60, par[1] - 6, 36, "ARTIFACT", head_fill=DARK, sections=[
         ["FK  run_id", "     model/ppo_final.zip", "     best_model/best_model.zip", "     config/*.yaml (full drl.yaml)"]])
 
     def crow(p1, p2, label, lab_off=(0, 1.2)):
@@ -402,79 +211,341 @@ def data_design():
     crow((25, raw[1]), (25, proc[1] + proc[3]), "1 : 3  (one ingestion -> train/val/test)", lab_off=(0, 0))
     crow((13.5, proc[1]), (13.5, dq[1] + dq[3]), "1 : 1", lab_off=(3, 0))
     crow((36.5, proc[1]), (36.5, rep[1] + rep[3]), "1 : 1 (test)", lab_off=(5, 0))
-    crow((76, exp[1]), (76, run[1] + run[3]), "1 : N", lab_off=(3, 0))
-    crow((65.5, run[1]), (65.5, par[1] + par[3]), "1 : N", lab_off=(3, 0))
-    crow((86.5, run[1]), (86.5, met[1] + met[3]), "1 : N", lab_off=(3, 0))
-    poly_arrow(ax, [(96, run[1] + 3), (98, run[1] + 3), (98, art[1] + art[3] - 3), (96, art[1] + art[3] - 3)],
-               dashed=False, label="1 : N", lidx=1, loff=(-1.6, 0))
-    # lineage link
-    poly_arrow(ax, [(47, proc[1] + proc[3] - 6), (52, proc[1] + proc[3] - 6), (52, run[1] + 4), (56, run[1] + 4)],
-               dashed=True, open_head=True, label="lineage: params\ntrain_rows / val_rows", lidx=1, loff=(-0.2, -3),
-               fs=8)
-    save(fig, OUT / "fig4_7_data_design.png")
+    crow((78, exp[1]), (78, run[1] + run[3]), "1 : N", lab_off=(2.6, 0))
+    for bx_ in (par, met, tag):
+        crow((bx_[0] + bx_[2] / 2, run[1]), (bx_[0] + bx_[2] / 2, bx_[1] + bx_[3]), "1 : N", lab_off=(2.6, 0))
+    # RUN 1 : N ARTIFACT, drawn as plain lines (same notation as the other relationships)
+    ya, yb_ = run[1] + 1.5, art[1] + art[3] - 3
+    for (x1, y1), (x2, y2) in (((60, ya), (57.5, ya)), ((57.5, ya), (57.5, yb_)), ((57.5, yb_), (60, yb_))):
+        ax.add_line(Line2D([x1, x2], [y1, y2], color=BLACK, lw=1.4, zorder=2))
+    ax.text(55.6, (ya + yb_) / 2 - 6, "1 : N", ha="center", va="center", fontsize=8.3, color=DARK)
+    # lineage link (dashed): processed split -> run, via the logged row counts
+    yP = proc[1] + proc[3] - 6
+    poly_arrow(ax, [(47, yP), (53.5, yP), (53.5, run[1] + 4), (60, run[1] + 4)], dashed=True, open_head=True)
+    ax.text(51.6, (yP + run[1] + 4) / 2, "lineage", ha="center", va="center", fontsize=8.0, color=DARK, rotation=90)
+    save(fig, OUT / "fig4_3_erd.png")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Figure 4.8  Deployment diagram
+# Figure 4.4  Database schema (physical)
 # ─────────────────────────────────────────────────────────────────────────────
-def deployment():
-    fig, ax, H = canvas("Deployment Diagram", subtitle="Development, container and cloud environments",
-                        w=14, h=10.0)
+def db_schema():
+    fig, ax, H = canvas("Database Schema", subtitle="MLflow tracking database and AWS Glue Data Catalog",
+                        w=14, h=10.4)
+    top = H - 9.5
+    ax.text(30, top + 0.4, "MLflow tracking database  (SQLite, MLflow server in Docker Compose)", ha="center",
+            fontsize=10.5, fontweight="bold", color=DARK)
+    ax.text(81, top + 0.4, "AWS Glue Data Catalog  (database energy_trading_db)", ha="center", fontsize=10.5,
+            fontweight="bold", color=DARK)
+    exp = header_box(ax, 3, top - 1.5, 26, "experiments", sections=[[
+        "PK  experiment_id : INTEGER", "     name : VARCHAR (unique)", "     artifact_location : VARCHAR",
+        "     lifecycle_stage : VARCHAR", "     creation_time : BIGINT"]])
+    run = header_box(ax, 33, top - 1.5, 27, "runs", head_fill=DARK, sections=[[
+        "PK  run_uuid : VARCHAR(32)", "FK  experiment_id : INTEGER", "     name : VARCHAR", "     status : VARCHAR",
+        "     start_time, end_time : BIGINT", "     artifact_uri : VARCHAR", "     lifecycle_stage : VARCHAR"]])
+    par = header_box(ax, 3, run[1] - 5, 18, "params", head_fill=DARK, sections=[[
+        "PK FK run_uuid", "PK  key : VARCHAR", "     value : VARCHAR"]])
+    met = header_box(ax, 23, run[1] - 5, 19, "metrics", head_fill=DARK, sections=[[
+        "PK FK run_uuid", "PK  key : VARCHAR", "PK  timestamp, step : BIGINT", "     value : FLOAT"]])
+    tag = header_box(ax, 44, run[1] - 5, 16, "tags", head_fill=DARK, sections=[[
+        "PK FK run_uuid", "PK  key : VARCHAR", "     value : VARCHAR"]])
+    ax.text(31.5, met[1] - 2.5, "Artefacts (model .zip files, drl.yaml) are stored as files under each run's "
+                                "artifact_uri, not in the database.", ha="center", fontsize=8.6, color=MID,
+            style="italic")
 
-    def node(x, y, w, h, title, status, dashed=False):
-        ax.add_patch(Polygon([[x, y + h], [x + 1.5, y + h + 1.5], [x + w + 1.5, y + h + 1.5], [x + w, y + h]],
-                             fc=LIGHT, ec=BLACK, lw=1.3, zorder=2))
-        ax.add_patch(Polygon([[x + w, y], [x + w + 1.5, y + 1.5], [x + w + 1.5, y + h + 1.5], [x + w, y + h]],
-                             fc=LIGHT, ec=BLACK, lw=1.3, zorder=2))
-        ax.add_patch(Rectangle((x, y), w, h, fc="white", ec=BLACK, lw=1.6, ls="--" if dashed else "-", zorder=2))
-        ax.text(x + 1.2, y + h - 2.0, f"«node»  {title}", fontsize=10.5, fontweight="bold", va="center", zorder=3)
-        ax.text(x + 1.2, y + h - 4.2, status, fontsize=8.6, style="italic", color=MID, va="center", zorder=3)
+    raw = header_box(ax, 66, top - 1.5, 31, "raw zone table", stereo="crawler: raw-crawler (hourly)",
+                     head_fill=MID, body_fill=PALE, sections=[[
+                         "LOCATION  s3://energy-trading-mlops-data/", "                   raw/energy/  (Parquet)",
+                         "     timestamp : TIMESTAMP", "     price_usd : DOUBLE", "     oil_price_usd : DOUBLE",
+                         "     data_source : STRING", "     ingestion_timestamp : TIMESTAMP",
+                         "PART  partition_0 : STRING  ({start}_to_{end})"]])
+    proc = header_box(ax, 66, raw[1] - 4, 31, "processed zone table", stereo="crawler: processed-crawler (hourly)",
+                      head_fill=MID, body_fill=PALE, sections=[[
+                          "LOCATION  s3://energy-trading-mlops-data/", "                   processed/energy/  (Parquet)",
+                          "     timestamp : TIMESTAMP", "     price_usd : DOUBLE", "     38 feature columns : DOUBLE",
+                          "PART  partition_0 : STRING  ({YYYYMMDD_HH})", "     split : file name train | val | test"]])
 
-    def comp(x, y, w, h, t, s=None, fill=PALE):
-        box(ax, x, y, w, h, t, sub=s, fill=fill, fs=9.4, sub_fs=7.8, lw=1.2)
+    def link(p1, p2, lab):
+        arrow(ax, p1, p2, lab, head=False, lw=1.4, color=BLACK, fs=8.3, loff=(2.8, 0))
 
-    node(2, 23, 30, 40, "Developer workstation", "Windows 11, Python 3.11.5, CPU only - used for all reported runs")
-    comp(4, 47, 26, 6, "Pipeline code (src/)", "ingest, transform, env, train, backtest")
-    comp(4, 39.5, 26, 6, "Local MLflow file store", "./mlruns (experiments, runs, artifacts)")
-    comp(4, 32, 26, 6, "Checkpoints and reports", "./checkpoints/drl, ./reports")
-    comp(4, 24.5, 26, 6, "Tkinter replay app", "trading_replay_app.py (offline)")
+    poly_arrow(ax, [(29, exp[1] + exp[3] - 6), (33, exp[1] + exp[3] - 6)], dashed=False)
+    ax.text(31, exp[1] + exp[3] - 4.6, "1 : N", ha="center", fontsize=8.3, color=DARK)
+    for box_ in (par, met, tag):
+        x = box_[0] + box_[2] / 2
+        poly_arrow(ax, [(46.5, run[1]), (46.5, run[1] - 2.5), (x, run[1] - 2.5), (x, box_[1] + box_[3])])
+    ax.text(49.5, run[1] - 1.3, "1 : N", ha="center", fontsize=8.3, color=DARK)
+    legend(ax, [("box_dark", "MLflow tables"), ("box_mid", "Glue external tables (defined in Terraform)"),
+                ("solid", "foreign key, arrow at the 'many' side")], y=1.6)
+    save(fig, OUT / "fig4_4_db_schema.png")
 
-    node(37, 23, 30, 40, "Docker Compose stack", "defined in docker-compose.yml - configuration validated", dashed=True)
-    comp(39, 47, 12.5, 6, "Airflow", "webserver, scheduler")
-    comp(53, 47, 12, 6, "MLflow server", "+ PostgreSQL")
-    comp(39, 39.5, 12.5, 6, "LocalStack", "S3 emulation")
-    comp(53, 39.5, 12, 6, "pipeline", "Dockerfile image")
-    comp(39, 32, 26, 6, "Airflow image", "Dockerfile.airflow (2.8.1)")
 
-    node(72, 23, 26, 40, "AWS us-east-1", "defined in Terraform - not provisioned", dashed=True)
-    comp(74, 49, 22, 4.6, "S3 data lake", "versioned, encrypted")
-    comp(74, 43.3, 10.5, 4.6, "Glue", "DB + crawlers")
-    comp(85.5, 43.3, 10.5, 4.6, "ECR", "image repo")
-    comp(74, 37.6, 10.5, 4.6, "SNS", "email alerts")
-    comp(85.5, 37.6, 10.5, 4.6, "CloudWatch", "30-day logs")
-    comp(74, 31.9, 22, 4.6, "IAM roles", "Glue, SageMaker")
+# ─────────────────────────────────────────────────────────────────────────────
+# Figure 4.5  System architecture (layered)
+# ─────────────────────────────────────────────────────────────────────────────
+def architecture():
+    fig, ax, H = canvas("System Architecture", subtitle="Energy Trading MLOps Platform - as implemented",
+                        w=14, h=11.2)
+    rows = [("DATA\nSOURCES", 61.0), ("INGESTION\nAND STORAGE", 50.0), ("PROCESSING\nAND ML", 39.0),
+            ("ORCHESTRATION", 28.0), ("EVALUATION\nAND DELIVERY", 17.0)]
+    rh = 8.6
+    for label, y in rows:
+        box(ax, 1.5, y, 14, rh, label, fill=WHITE, edge="#BBBBBB", fs=9.5, lw=1.2)
 
-    box(ax, 2, 6.5, 22, 8, "EIA Open Data API v2", sub="HTTPS, JSON, API key", fill=WHITE, round_=False, fs=10)
-    box(ax, 39, 6.5, 26, 8, "GitHub Actions", sub="ci.yml (lint, test, smoke, build,\nTF validate) / deploy.yml", fill=WHITE,
-        round_=False, fs=10)
-    arrow(ax, (13, 14.5), (13, 23), "HTTPS GET", loff=(-5, 0))
-    arrow(ax, (32, 43), (37, 43), None, head=True)
-    ax.text(34.5, 37.2, "docker\ncompose\nup", ha="center", fontsize=8.0, color=DARK, linespacing=1.15)
-    arrow(ax, (67, 43), (72, 43), None, head=True)
-    ax.text(69.5, 37.2, "terraform\napply,\nECR push", ha="center", fontsize=8.0, color=DARK, linespacing=1.15)
-    arrow(ax, (65, 10.5), (85, 10.5), "deploy.yml (on push to main)", loff=(0, 1.4), dashed=True, head=False)
-    arrow(ax, (85, 10.5), (85, 23), dashed=True)
-    legend(ax, [("solid", "implemented and executed"), ("dash", "defined, not executed in this study")], y=1.4)
-    save(fig, OUT / "fig4_8_deployment.png")
+    # Three states: "used" = produced the reported results (pale, solid); "stack" = ran end to end in the
+    # local Docker Compose stack on 20 Nov 2026 but not used for the reported results (white, solid);
+    # "code" = defined in code or configuration only, never run successfully (white, dashed).
+    def comp(x, y, w, t, s, state="used"):
+        box(ax, x, y, w, rh, t, sub=s, fill=PALE if state == "used" else WHITE, dashed=state == "code",
+            fs=10, sub_fs=8.2, lw=1.4)
+
+    X0, X1 = 17.5, 75.5  # usable width for the layers
+    comp(X0, 61.0, 28, "EIA Open Data API v2", "daily Henry Hub gas + WTI oil")
+    comp(X0 + 30, 61.0, 28, "Synthetic generator", "seeded hourly data for tests")
+    comp(X0, 50.0, 18, "S3 raw zone", "raw/energy/ Parquet\n(LocalStack)", state="stack")
+    comp(X0 + 20, 50.0, 18, "S3 processed zone", "processed/energy/ Parquet\n(LocalStack)", state="stack")
+    comp(X0 + 40, 50.0, 18, "Glue crawlers", "Data Catalog tables", state="code")
+    comp(X0, 39.0, 13.5, "Transform", "clean, validate,\n38 features")
+    comp(X0 + 14.6, 39.0, 13.5, "TradingEnv", "Gymnasium,\ncosts, stop-loss")
+    comp(X0 + 29.2, 39.0, 13.5, "PPO trainer", "SB3, 4 envs,\nseed 42")
+    comp(X0 + 43.8, 39.0, 14.2, "MLflow tracking", "params, metrics, models\n(./mlruns; server in\nDocker for the DAG)")
+    # orchestration: Airflow DAG (run in the Docker stack) + local scripts (used for the reported results)
+    ax.add_patch(FancyBboxPatch((X0, 28.0), 36, rh, boxstyle="round,pad=0,rounding_size=1.0", fc=WHITE,
+                                ec=BLACK, lw=1.4, zorder=3))
+    ax.text(X0 + 18, 28.0 + rh - 1.6, "Airflow DAG  (@daily, retries 2)", ha="center", fontsize=10,
+            fontweight="bold", zorder=4)
+    for i, t in enumerate(["ingest", "transform", "train_drl", "backtest", "notify"]):
+        bx = X0 + 1.2 + i * 6.9
+        box(ax, bx, 29.0, 6.3, 3.6, t, fill=WHITE, fs=8.2, bold=False, lw=1.0, z=5)
+        if i:
+            ax.add_line(Line2D([bx - 0.6, bx], [30.8, 30.8], color=DARK, lw=1.0, zorder=5))
+    comp(X0 + 38, 28.0, 20, "Local run scripts", "train_on_eia.py,\nevaluate_eia_runs.py")
+    comp(X0, 17.0, 18, "Email notification", "EmailOperator to a\nlocal Mailpit inbox", state="stack")
+    comp(X0 + 20, 17.0, 18, "Trade replay app", "Tkinter, offline")
+    comp(X0 + 40, 17.0, 18, "Backtest report", "vs Buy & Hold and\nRandom (PNG)")
+
+    # vertical flow arrows between layers
+    arrow(ax, (X0 + 9, 61.0), (X0 + 9, 58.6))      # EIA -> raw zone
+    arrow(ax, (X0 + 9, 50.0), (X0 + 9, 47.6))      # raw zone -> transform
+    arrow(ax, (X0 + 9, 28.0), (X0 + 9, 25.6))      # Airflow notify -> email
+    arrow(ax, (X0 + 48, 28.0), (X0 + 48, 25.6))    # local scripts -> backtest report
+
+    # platform column
+    ax.add_patch(FancyBboxPatch((78, 17.0), 20.5, 52.6, boxstyle="round,pad=0,rounding_size=1.0", fc="white",
+                                ec="#BBBBBB", lw=1.2, ls="--", zorder=1))
+    ax.text(88.25, 66.6, "PLATFORM\nAND DEVOPS", ha="center", va="center", fontsize=9.5, fontweight="bold",
+            color=MID, linespacing=1.3)
+    plat = [("Terraform", "AWS us-east-1", True), ("Docker Compose", "Airflow, MLflow,\nLocalStack, Mailpit", False),
+            ("GitHub Actions", "ci.yml, deploy.yml", True), ("CloudWatch, SNS", "logs and alerts", True),
+            ("ECR, IAM", "image registry, roles", True)]
+    for i, (t, s, code_only) in enumerate(plat):
+        box(ax, 79.5, 55.5 - i * 9.4, 17.5, 7.6, t, sub=s, fill=WHITE, dashed=code_only, fs=9.6, sub_fs=7.8,
+            lw=1.3)
+    legend(ax, [("box_pale", "used for the reported results"),
+                ("box_white", "run only in the Docker Compose stack"),
+                ("dash", "defined in code; not run successfully")], y=10.5)
+    ax.text(50, 5.6, "The reported results came from the local run scripts, which pass data in memory. The Airflow DAG "
+                     "ran end to end in Docker Compose on 20 November 2026,\nwith LocalStack in place of S3 and a "
+                     "local Mailpit inbox for the email; Glue and the AWS services were not provisioned.",
+            ha="center", va="center", fontsize=9, color=MID, style="italic", linespacing=1.5)
+    save(fig, OUT / "fig4_5_architecture.png")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Figure 4.6  User interface design (wireframe of the trade-replay application)
+# ─────────────────────────────────────────────────────────────────────────────
+def ui_wireframe():
+    fig, ax, H = canvas("User Interface Design", subtitle="Wireframe of the trade-replay application "
+                                                         "(trading_replay_app.py)", w=14, h=10.4)
+    # window frame
+    wx, wy, ww, wh = 3, 3, 72, 63.5
+    ax.add_patch(FancyBboxPatch((wx, wy), ww, wh, boxstyle="round,pad=0,rounding_size=0.8", fc="white", ec=BLACK,
+                                lw=1.8, zorder=1))
+    ax.add_patch(Rectangle((wx, wy + wh - 3.2), ww, 3.2, fc=LIGHT, ec=BLACK, lw=1.2, zorder=2))
+    ax.text(wx + 1.5, wy + wh - 1.6, "PPO Agent - Live Trading Replay", fontsize=10, fontweight="bold",
+            va="center", zorder=3)
+    ax.text(wx + ww - 1.5, wy + wh - 1.6, "step / date clock", fontsize=8.8, color=MID, ha="right",
+            va="center", zorder=3)
+    # KPI cards
+    kpis = ["HOUR", "SPOT PRICE", "POSITION MWH", "AGENT RETURN", "LEAD VS B&H", "TRADES"]
+    cw = (ww - 3 - 5 * 1.0) / 6
+    for i, k in enumerate(kpis):
+        x = wx + 1.5 + i * (cw + 1.0)
+        box(ax, x, wy + wh - 10.8, cw, 6.4, k, sub="value", fill=PALE, fs=8.0, sub_fs=9.5, lw=1.0, z=3)
+    # chart panels
+    panels = [("Energy Spot Price - USD/MWh  (buy and sell markers)", 19.0), ("Position Held - MWh", 6.6),
+              ("Cumulative Return - Agent vs Buy&Hold vs Random", 13.8)]
+    y = wy + wh - 12.8
+    for title, ph in panels:
+        y -= ph
+        ax.add_patch(Rectangle((wx + 1.5, y), ww - 3, ph, fc="white", ec=MID, lw=1.1, zorder=3))
+        ax.text(wx + 2.5, y + ph - 1.3, title, fontsize=8.8, color=DARK, va="center", zorder=4)
+        ax.add_line(Line2D([wx + 3, wx + ww - 4], [y + ph * 0.35, y + ph * 0.55], color="#BBBBBB", lw=1.0,
+                           zorder=4))
+        ax.add_line(Line2D([wx + ww * 0.55, wx + ww * 0.55], [y + 0.5, y + ph - 2.2], color=MID, lw=0.8,
+                           ls=(0, (2, 2)), zorder=4))
+        y -= 1.2
+    # control bar
+    cy = wy + 1.4
+    for i, (t, w_) in enumerate([("Play / Pause", 9), ("Reset", 6), ("1x", 3), ("2x", 3), ("4x", 3), ("8x", 3)]):
+        x = wx + 1.5 + sum(v for _, v in [("", 9), ("", 6), ("", 3), ("", 3), ("", 3), ("", 3)][:i]) + i * 0.8
+        box(ax, x, cy, w_, 3.6, t, fill=PALE if i < 2 else WHITE, fs=8.2, bold=(i < 2), lw=1.0, z=3)
+    sx = wx + 1.5 + 27 + 6 * 0.8 + 1.5
+    ax.add_line(Line2D([sx, wx + ww - 2], [cy + 1.8, cy + 1.8], color=DARK, lw=2.0, zorder=3))
+    ax.add_patch(Circle((sx + 12, cy + 1.8), 0.8, fc=BLACK, zorder=4))
+    ax.text(sx + 18, cy + 3.6, "timeline slider (scrub)", fontsize=8.2, color=MID, ha="center", zorder=4)
+
+    # annotations
+    notes = [(wy + wh - 1.6, "1  Title and clock"),
+             (wy + wh - 7.6, "2  Six live KPI cards, updated\n    every frame"),
+             (wy + wh - 22.0, "3  Price chart; the dashed line\n    marks the current step"),
+             (wy + wh - 36.3, "4  Position held by the agent"),
+             (wy + wh - 47.7, "5  Return race against the two\n    baselines"),
+             (cy + 1.8, "6  Playback controls: play,\n    reset, speed, scrub")]
+    for ny, t in notes:
+        ax.text(78, ny, t, fontsize=9.2, va="center", color=DARK, linespacing=1.25)
+        ax.add_line(Line2D([wx + ww, 77.3], [ny, ny], color="#BBBBBB", lw=0.8, ls=(0, (2, 2)), zorder=0))
+    ax.text(87, 9.0, "Reads reports/animation/\ntrajectory.json; runs fully\noffline (Tkinter + matplotlib).",
+            fontsize=8.6, color=MID, ha="center", va="center", style="italic", linespacing=1.3)
+    save(fig, OUT / "fig4_6_ui_wireframe.png")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Figure 2.1  Conceptual framework (matches the text of Section 2.7)
+# ─────────────────────────────────────────────────────────────────────────────
+def conceptual_framework():
+    fig, ax, H = canvas("Conceptual Framework", subtitle="Five layers of the MLOps lifecycle, orchestrated daily "
+                                                        "by Apache Airflow", w=14, h=7.4)
+    layers = [
+        ("Layer 1", "ACTORS AND USERS", ["Data Engineer", "ML Engineer", "Airflow Scheduler"]),
+        ("Layer 2", "DATA COLLECTION", ["EIA API v2", "Synthetic generator", "Raw Parquet in S3", "Glue crawler (hourly)"]),
+        ("Layer 3", "PROCESSING AND AI", ["Cleaning, outliers", "50+ features", "PPO in trading env",
+                                          "MLflow tracking", "Quality gate"]),
+        ("Layer 4", "STORAGE AND INFRA", ["S3 data lake", "MLflow Model Registry", "Glue Data Catalog",
+                                          "Terraform, ECR"]),
+        ("Layer 5", "OUTPUTS AND FEEDBACK", ["24-hour price forecast", "SNS email alert", "CloudWatch logs",
+                                             "Daily retraining"]),
+    ]
+    bw, gap, x0 = 17.4, 2.4, 1.8
+    top, bh = H - 13.0, 26.0
+    fills = [BLACK, DARK, BLACK, DARK, BLACK]
+    xs = []
+    for i, (lab, title, items) in enumerate(layers):
+        x = x0 + i * (bw + gap)
+        xs.append(x)
+        ax.add_patch(FancyBboxPatch((x, top - bh), bw, bh, boxstyle="round,pad=0,rounding_size=0.9", fc=PALE,
+                                    ec=BLACK, lw=1.5, zorder=3))
+        ax.add_patch(FancyBboxPatch((x, top - 7.4), bw, 7.4, boxstyle="round,pad=0,rounding_size=0.9",
+                                    fc=fills[i], ec=BLACK, lw=1.5, zorder=4))
+        ax.add_patch(Rectangle((x, top - 7.4), bw, 2.5, fc=fills[i], ec="none", zorder=4))
+        ax.text(x + bw / 2, top - 2.2, lab, ha="center", va="center", fontsize=9, color="#CCCCCC", zorder=5)
+        ax.text(x + bw / 2, top - 4.9, title, ha="center", va="center", fontsize=9.6, fontweight="bold",
+                color="white", zorder=5)
+        for k, item in enumerate(items):
+            bullet = True
+            ty = top - 10.6 - k * 3.4
+            if bullet:
+                ax.add_patch(Circle((x + 1.6, ty), 0.45, fc=BLACK, zorder=5))
+            ax.text(x + 2.8, ty, item, ha="left", va="center", fontsize=9.2, color=BLACK, zorder=5)
+        if i:
+            arrow(ax, (x - gap + 0.15, top - bh / 2), (x - 0.15, top - bh / 2), lw=1.6, color=BLACK)
+
+    # feedback loop: Layer 5 back to Layer 2 (data collection), drawn above the layers so it crosses nothing
+    yl = top + 2.4
+    l2c, l5c = xs[1] + bw / 2, xs[4] + bw / 2
+    poly_arrow(ax, [(l5c, top), (l5c, yl), (l2c, yl), (l2c, top)], color=MID, lw=1.4)
+    ax.text((l2c + l5c) / 2, yl + 1.3, "feedback loop: new data each day triggers retraining", ha="center",
+            va="center", fontsize=9, color=DARK, style="italic")
+
+    # orchestration and platform bars
+    yb = top - bh - 3.0
+    box(ax, x0, yb - 4.6, 5 * bw + 4 * gap, 4.6, "APACHE AIRFLOW DAG  -  runs every stage daily:  ingest -> transform -> "
+        "train -> quality gate -> forecast -> notify", fill=BLACK, text_color="white", fs=9.6, lw=1.2)
+    box(ax, x0, yb - 10.0, 5 * bw + 4 * gap, 4.2, "PLATFORM  -  AWS cloud  |  Terraform IaC  |  GitHub Actions "
+        "CI/CD  |  Docker and ECR", fill=LIGHT, fs=9.6, lw=1.2)
+    save(fig, OUT / "fig2_1_conceptual.png")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Figure 3.1  Agile development lifecycle (sprints match Figure A1 and the real files)
+# ─────────────────────────────────────────────────────────────────────────────
+def agile_lifecycle():
+    fig, ax, H = canvas("Agile Development Lifecycle", subtitle="Six two- to three-week sprints, one pipeline stage "
+                                                               "per sprint", w=14, h=10.4)
+    # 1. the cycle
+    stages = ["Plan", "Design", "Develop", "Test", "Review", "Deploy"]
+    sw, sg, sx0, sy = 12.5, 3.9, 2.5, H - 16.0
+    for i, s in enumerate(stages):
+        x = sx0 + i * (sw + sg)
+        box(ax, x, sy, sw, 4.6, s, fill=PALE if i % 2 else WHITE, fs=10.5, lw=1.4)
+        if i:
+            arrow(ax, (x - sg + 0.2, sy + 2.3), (x - 0.2, sy + 2.3), lw=1.4, color=BLACK)
+    last_c = sx0 + 5 * (sw + sg) + sw / 2
+    first_c = sx0 + sw / 2
+    poly_arrow(ax, [(last_c, sy), (last_c, sy - 2.4), (first_c, sy - 2.4), (first_c, sy)], dashed=True, color=MID)
+    ax.text((first_c + last_c) / 2, sy - 3.6, "feedback loop: each sprint's review informs the next sprint",
+            ha="center", va="center", fontsize=9, color=DARK, style="italic")
+    ax.text(2.5, sy + 6.6, "1  Sprint cycle", fontsize=10.5, fontweight="bold", color=DARK)
+
+    # 2. sprint breakdown
+    sprints = [
+        ("Sprint 1  |  weeks 1-2", "Plan, Design", "Requirements and literature review; environment and EIA API setup",
+         "Deliverable: project scope, config/*.yaml"),
+        ("Sprint 2  |  weeks 3-4", "Develop, Test", "Data ingestion and transformation pipeline",
+         "Deliverable: ingest.py, transform.py, unit tests"),
+        ("Sprint 3  |  weeks 5-7", "Develop, Test, Review", "Trading environment, PPO training, MLflow, backtest",
+         "Deliverable: env.py, train_drl.py, backtest.py"),
+        ("Sprint 4  |  weeks 8-9", "Develop, Test", "Airflow DAG and Terraform infrastructure",
+         "Deliverable: dag.py, drl_tasks.py, main.tf"),
+        ("Sprint 5  |  weeks 10-11", "Develop, Deploy", "CI/CD workflows and Docker stack",
+         "Deliverable: ci.yml, deploy.yml, Dockerfile"),
+        ("Sprint 6  |  weeks 12-14", "Test, Review", "Integration testing, documentation and report",
+         "Deliverable: test suite, README, final report"),
+    ]
+    ax.text(2.5, sy - 7.6, "2  Sprint breakdown (weeks as in Figure A1)", fontsize=10.5, fontweight="bold",
+            color=DARK)
+    cw, ch, cgx, cgy = 44.5, 9.6, 6.0, 2.6
+    ytop = sy - 9.4
+    centres = []
+    for n, (title, acts, work, deliv) in enumerate(sprints):
+        col, row = n % 2, n // 2
+        x = 2.5 + col * (cw + cgx)
+        y = ytop - row * (ch + cgy) - ch
+        ax.add_patch(FancyBboxPatch((x, y), cw, ch, boxstyle="round,pad=0,rounding_size=0.9",
+                                    fc=PALE if col else WHITE, ec=BLACK, lw=1.4, zorder=3))
+        ax.text(x + 1.4, y + ch - 1.7, title, fontsize=10, fontweight="bold", va="center", zorder=4)
+        ax.text(x + cw - 1.4, y + ch - 1.7, acts, fontsize=8.8, color=MID, ha="right", va="center", zorder=4,
+                style="italic")
+        ax.text(x + 1.4, y + ch - 4.6, work, fontsize=9.2, va="center", zorder=4)
+        ax.text(x + 1.4, y + ch - 7.4, deliv, fontsize=9.2, va="center", zorder=4, family="DejaVu Sans")
+        centres.append((x, y))
+    # order arrows: 1->2 (right), 2->3 (down-left), 3->4, 4->5, 5->6
+    for n in range(5):
+        (x1, y1), (x2, y2) = centres[n], centres[n + 1]
+        if y1 == y2:                      # same row, left -> right
+            arrow(ax, (x1 + cw + 0.2, y1 + ch / 2), (x2 - 0.2, y2 + ch / 2), lw=1.4, color=BLACK)
+        else:                             # next row: from right box down-left to the next row's left box
+            poly_arrow(ax, [(x1 + cw / 2, y1), (x1 + cw / 2, y1 - cgy / 2), (x2 + cw / 2, y1 - cgy / 2),
+                            (x2 + cw / 2, y2 + ch)], color=BLACK, lw=1.2)
+
+    # 3. principles
+    py = centres[-1][1] - 9.0
+    ax.text(2.5, py + 5.8, "3  Agile principles applied", fontsize=10.5, fontweight="bold", color=DARK)
+    princ = [("Iterative delivery", "one pipeline stage per sprint"), ("Continuous testing", "pytest on every commit"),
+             ("Working software first", "pipeline runs end to end"), ("Feedback integration", "supervisor review "
+                                                                                              "each sprint")]
+    pw, pg = 21.5, 3.0
+    for i, (t, s) in enumerate(princ):
+        box(ax, 2.5 + i * (pw + pg), py - 0.6, pw, 5.6, t, sub=s, fill=WHITE, fs=10, sub_fs=8.8, lw=1.3)
+    save(fig, OUT / "fig3_1_agile.png")
 
 
 if __name__ == "__main__":
-    context_diagram()
-    dfd_level0()
+    conceptual_framework()
+    agile_lifecycle()
     use_case()
-    activity()
-    rl_design()
     class_diagram()
-    data_design()
-    deployment()
+    erd()
+    db_schema()
+    architecture()
+    ui_wireframe()
     print("Diagrams written to", OUT)

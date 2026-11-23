@@ -8,8 +8,7 @@ from datetime import datetime, timedelta
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.operators.email import EmailOperator
-from airflow.operators.dummy import DummyOperator
-from airflow.utils.trigger_rule import TriggerRule
+from airflow.operators.empty import EmptyOperator
 
 # ── Default DAG args ──────────────────────────────────────────────────────────
 default_args = {
@@ -85,8 +84,11 @@ with DAG(
     # Task definitions
     # ──────────────────────────────────────────
 
-    start = DummyOperator(task_id="start")
-    end = DummyOperator(task_id="end", trigger_rule=TriggerRule.ALL_DONE)
+    start = EmptyOperator(task_id="start")
+    # Default trigger rule (ALL_SUCCESS): `end` is the DAG's only leaf, so if any task fails, `end` becomes
+    # upstream_failed and Airflow marks the whole run failed. With ALL_DONE a run whose training failed was
+    # still shown as successful (DEF-12).
+    end = EmptyOperator(task_id="end")
 
     ingest = PythonOperator(
         task_id="ingest",

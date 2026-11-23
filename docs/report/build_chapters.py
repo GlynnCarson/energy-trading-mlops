@@ -1,6 +1,10 @@
 """
+HISTORICAL - do not rerun. This script performed the first insertion of Chapters 4 and 5. The document has
+since been changed (section 5.8 removed, section 5.7 updated, diagrams restructured by restructure_ch3_ch4.py
+after supervisor feedback), so its Chapter 4 content is out of date. Edit the docx directly instead.
+
 Inserts Chapter 4 and Chapter 5 into energy_trading_mlops_proposal_v17.docx,
-between Chapter 3 and References, using the document's own styles (CLAUDE.md).
+between Chapter 3 and References, using the document's own styles (proposal styles).
 
     python docs/report/make_diagrams.py
     python docs/report/make_charts.py
@@ -8,7 +12,7 @@ between Chapter 3 and References, using the document's own styles (CLAUDE.md).
 
 It also adds the new figures, tables, abbreviations and the ISO/IEC 25010
 reference to the front-matter lists and reference list, and applies the
-formatting fixes listed in CLAUDE.md (Chapter Three and 2.5.x headings, Fig 3.1).
+formatting fixes listed in the project notes (Chapter Three and 2.5.x headings, Fig 3.1).
 A copy of the document as it was before the first insertion is kept in
 docs/report/backup/. The script refuses to run if Chapter Four already exists.
 All result numbers are read from reports/evaluation/evaluation_summary.json.
@@ -37,7 +41,7 @@ EVAL = json.load(open(ROOT / "reports" / "evaluation" / "evaluation_summary.json
 SUFFIX = " – Energy Trading MLOps Platform"
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Document helpers (formatting values from CLAUDE.md / proposal styles)
+# Document helpers (formatting values from the proposal styles)
 # ─────────────────────────────────────────────────────────────────────────────
 
 doc = Document(str(TARGET))
@@ -1031,7 +1035,7 @@ hossain.getnext().addnext(_clone_with_text(hossain, [
     "– Systems and software Quality Requirements and Evaluation (SQuaRE) – Product quality model. "
     "Geneva: ISO."]))
 
-# ── Formatting fixes listed in CLAUDE.md ─────────────────────────────────────
+# ── Formatting fixes listed in the project notes ─────────────────────────────────────
 # Chapter Three: make it a real Heading 1 preceded by a page-break paragraph, like the other chapters.
 ch3 = _find(lambda t: t == "Chapter Three: Development Methodology")[0]
 for r in list(ch3.iter(qn("w:r"))):
