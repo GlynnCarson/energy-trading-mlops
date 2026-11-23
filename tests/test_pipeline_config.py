@@ -66,3 +66,11 @@ def test_dag_has_the_closed_loop_and_its_join_does_not_hide_failures():
     src = DAG_FILE.read_text(encoding="utf-8")
     assert "closed_loop_done >> end" in src
     assert 'f"train_challenger_s{s}"' in src          # one training task per seed in retraining.seeds
+
+
+def test_training_tasks_share_a_one_slot_pool():
+    """Four PPO trainings in parallel oversubscribed the CPU (~20x slower, past the 2-hour timeout)."""
+    src = DAG_FILE.read_text(encoding="utf-8")
+    assert src.count('pool="training"') == 2           # train_drl and the challenger factory
+    compose = (DAG_FILE.parents[2] / "docker-compose.yml").read_text(encoding="utf-8")
+    assert "airflow pools set training 1" in compose

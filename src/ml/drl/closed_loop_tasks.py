@@ -12,6 +12,8 @@ Airflow callables for the closed loop:
                       └── alert_champion_kept         (passed the gate, did not beat the champion)
 
 A retrain drill is started with:  airflow dags trigger ... -c '{"force_retrain": true}'
+A wiring check (tiny budget, never registers or promotes):
+    -c '{"force_retrain": true, "smoke_test": true, "retrain_timesteps": 4096, "total_timesteps": 4096}'
 Paper trading is simulated: no real money is involved.
 """
 
@@ -49,7 +51,8 @@ def branch_on_health(**context):
 
 def task_prepare_retrain(**context):
     from src.ml.drl.retrain import prepare
-    meta = prepare(drill=bool(_conf(context).get("force_retrain", False)))
+    conf = _conf(context)
+    meta = prepare(drill=bool(conf.get("force_retrain", False)), smoke_test=bool(conf.get("smoke_test", False)))
     context["ti"].xcom_push(key="retrain_id", value=meta["retrain_id"])
     return meta
 
@@ -58,7 +61,8 @@ def make_train_challenger(seed: int):
     def _train(**context):
         from src.ml.drl.retrain import train
         rid = context["ti"].xcom_pull(task_ids="prepare_retrain", key="retrain_id")
-        run_id = train(rid, seed)
+        t = _conf(context).get("retrain_timesteps")
+        run_id = train(rid, seed, timesteps=int(t) if t else None)
         context["ti"].xcom_push(key="run_id", value=run_id)
         return run_id
     return _train
@@ -71,7 +75,7 @@ def make_evaluate_and_promote(seeds: list[int]):
         rid = ti.xcom_pull(task_ids="prepare_retrain", key="retrain_id")
         ids = {s: ti.xcom_pull(task_ids=f"train_challenger_s{s}", key="run_id") for s in seeds}
         out = evaluate_and_promote(rid, ids)
-        slim = {k: out[k] for k in ("retrain_id", "drill", "result", "reason", "promoted",
+        slim = {k: out[k] for k in ("retrain_id", "drill", "smoke_test", "result", "reason", "promoted",
                                     "champion_version", "new_champion_version", "val_window")}
         slim["challengers"] = [{k: c.get(k) for k in ("seed", "passed", "val_return_pct", "reasons", "version")}
                                for c in out["challengers"]]

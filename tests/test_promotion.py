@@ -74,6 +74,8 @@ def test_retrain_round_promotes_only_a_better_challenger(sandbox, raw, monkeypat
 
     # Round 1: no champion yet -> the passing challenger becomes champion.
     meta = retrain.prepare(cfg, raw=raw, drill=True)
+    # DEF-14: the experiment exists before any (parallel) training task starts
+    assert registry.client(cfg).get_experiment_by_name(retrain.EXPERIMENT) is not None
     out1 = retrain.evaluate_and_promote(meta["retrain_id"], {7: retrain.train(meta["retrain_id"], 7, cfg, 512)}, cfg)
     assert out1["promoted"] and out1["result"] == "champion_replaced"
     champ1 = registry.current_champion(cfg)["version"]
@@ -90,3 +92,14 @@ def test_retrain_round_promotes_only_a_better_challenger(sandbox, raw, monkeypat
     events = json.loads(registry.REGISTRY_JSON.read_text())["events"]
     assert [e["type"] for e in events].count("retrain") == 2
     assert all(e["drill"] for e in events if e["type"] == "retrain")
+
+
+def test_smoke_test_never_registers_or_promotes(sandbox, raw, monkeypatch):
+    """A wiring check of the retrain branch must not change the registry, even if the gate would pass."""
+    cfg = sandbox
+    monkeypatch.setattr(retrain, "decide", lambda m, g: GateResult(True, [], {**m, "random_beaten_pct": 100.0}))
+    meta = retrain.prepare(cfg, raw=raw, smoke_test=True)
+    out = retrain.evaluate_and_promote(meta["retrain_id"], {9: retrain.train(meta["retrain_id"], 9, cfg, 512)}, cfg)
+    assert out["smoke_test"] and not out["promoted"] and "smoke test" in out["reason"]
+    assert registry.current_champion(cfg) is None
+    assert registry.client(cfg).search_model_versions(f"name='{cfg['registry']['model_name']}'") == []

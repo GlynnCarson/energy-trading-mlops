@@ -70,7 +70,10 @@ def walk_forward(raw: pd.DataFrame, cfg: dict) -> dict:
     return {"train": train, "val": val, "prep": prep}
 
 
-def prepare(cfg: dict | None = None, raw: pd.DataFrame | None = None, drill: bool = False) -> dict:
+def prepare(cfg: dict | None = None, raw: pd.DataFrame | None = None, drill: bool = False,
+            smoke_test: bool = False) -> dict:
+    """smoke_test: a wiring check of the retrain branch with a tiny training budget. The gate still runs
+    and is logged, but nothing is registered or promoted, so it can never change the champion."""
     cfg = cfg or load_drl_config()
     if raw is None:
         from src.ingestion.ingest import EIAIngester
@@ -80,8 +83,13 @@ def prepare(cfg: dict | None = None, raw: pd.DataFrame | None = None, drill: boo
     d = WORK / rid
     d.mkdir(parents=True, exist_ok=True)
     raw.to_pickle(d / "raw.pkl")
+    # Create the MLflow experiment here, once, before the per-seed training tasks start in parallel:
+    # concurrent creation in the file store produced two experiments with the same name (DEF-14).
+    cl = registry.client(cfg)
+    if cl.get_experiment_by_name(EXPERIMENT) is None:
+        cl.create_experiment(EXPERIMENT)
     split = walk_forward(raw, cfg)
-    meta = {"retrain_id": rid, "drill": drill, "data_last_date": last, **{k: split["prep"][k] for k in
+    meta = {"retrain_id": rid, "drill": drill or smoke_test, "smoke_test": smoke_test, "data_last_date": last, **{k: split["prep"][k] for k in
             ("train_start", "train_end", "val_start", "val_end")},
             "train_rows": len(split["train"]), "val_rows": len(split["val"])}
     (d / "meta.json").write_text(json.dumps(meta, indent=2))
@@ -122,6 +130,7 @@ def train(rid: str, seed: int, cfg: dict | None = None, timesteps: int | None = 
     run_id = run_drl_training(split["train"], split["val"], c)
     cl = registry.client(cfg)
     for k, v in {"retrain_id": rid, "role": "challenger", "drill": str(meta["drill"]).lower(),
+                 "smoke_test": str(meta.get("smoke_test", False)).lower(),
                  "data_last_date": meta["data_last_date"], "split": split["prep"]["split"]}.items():
         cl.set_tag(run_id, k, v)
     registry.save_preprocessing(cfg, run_id, split["prep"])
@@ -177,10 +186,12 @@ def evaluate_and_promote(rid: str, run_ids: dict, cfg: dict | None = None) -> di
         champ_ret = evaluate_on_window(cagent, cwin, cfg, cp["norm_stats"], 0)["return_pct"]
 
     best, promote, why = select_challenger(challengers, champ_ret)
-    name = cfg["registry"]["model_name"]
+    smoke = bool(meta.get("smoke_test", False))
+    if smoke:   # wiring check: the decision is reported, but nothing is registered or promoted
+        promote, why = False, f"smoke test, promotion disabled (decision would have been: {why})"
     versions = {}
     for c in challengers:
-        if not c["passed"]:
+        if not c["passed"] or smoke:
             continue
         p = split["prep"]
         versions[c["seed"]] = registry.register(cfg, c["run_id"], which, {
@@ -201,7 +212,8 @@ def evaluate_and_promote(rid: str, run_ids: dict, cfg: dict | None = None) -> di
     if promote:
         new_version = versions[best["seed"]]
         registry.promote(cfg, new_version, why)
-    outcome = {"retrain_id": rid, "drill": meta["drill"], "data_last_date": meta["data_last_date"],
+    outcome = {"retrain_id": rid, "drill": meta["drill"], "smoke_test": smoke,
+               "data_last_date": meta["data_last_date"],
                "val_window": f"{meta['val_start']} to {meta['val_end']}", "model_file": which,
                "champion_version": champ["version"] if champ else None,
                "champion_val_return_pct": champ_ret, "challengers": challengers,

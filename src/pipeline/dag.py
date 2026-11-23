@@ -113,9 +113,12 @@ with DAG(
 
     from src.ml.drl.drl_tasks import task_train_drl, task_backtest_drl
 
+    # Every PPO training task uses the 1-slot "training" pool (created by airflow-init), so trainings run one
+    # at a time: four in parallel on one machine oversubscribed the CPU and each ran ~20x slower.
     train_drl = PythonOperator(
         task_id="train_drl",
         python_callable=task_train_drl,
+        pool="training",
     )
 
     backtest_drl = PythonOperator(
@@ -156,7 +159,8 @@ with DAG(
     )
     prepare_retrain = PythonOperator(task_id="prepare_retrain", python_callable=cl.task_prepare_retrain)
     train_challengers = [
-        PythonOperator(task_id=f"train_challenger_s{s}", python_callable=cl.make_train_challenger(s))
+        PythonOperator(task_id=f"train_challenger_s{s}", python_callable=cl.make_train_challenger(s),
+                       pool="training")
         for s in RETRAIN_SEEDS
     ]
     evaluate_promote = PythonOperator(task_id="evaluate_and_promote",
@@ -165,7 +169,8 @@ with DAG(
 
     _outcome_body = """
         {% set o = ti.xcom_pull(task_ids='evaluate_and_promote', key='outcome') %}
-        <p><b>Retrain:</b> {{ o['retrain_id'] }}{{ ' (drill)' if o['drill'] }} |
+        <p><b>Retrain:</b> {{ o['retrain_id'] }}{{ ' (smoke test: nothing registered or promoted)' if o['smoke_test']
+           else (' (drill)' if o['drill']) }} |
            <b>validation window:</b> {{ o['val_window'] }}</p>
         <p><b>Decision:</b> {{ o['reason'] }}</p>
         <p><b>Champion on the same window:</b> {{ o['champion_val_return_pct'] }} %</p>
