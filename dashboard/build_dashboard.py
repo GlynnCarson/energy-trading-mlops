@@ -4,11 +4,10 @@ Every figure on the page is read from a file in the repository, so the page
 cannot drift away from the report:
 
 - energy_trading_mlops_proposal_v17.docx: Table 5.6 (test cases),
-  Table 5.7 (defects), Table 5.8 (results before/after the reward fix),
-  Table 5.10 (objectives)
+  Table 5.7 (defects), Table 5.8 (results; only the fixed-reward agents and
+  Buy & Hold are shown), Table 5.10 (objectives)
 - reports/evaluation_reward_fix/seed_results.csv and *_full_test_trajectory.csv:
   the five fixed-reward PPO-300k runs and Buy & Hold
-- reports/evaluation/PPO-300k_full_test_trajectory.csv: the July cost-only agent
 - dashboard/status.json: component status, latest DAG run, limitations
   (hand-maintained, mirrors Figure 4.5 and Chapter 5)
 - git log: recent activity
@@ -32,7 +31,6 @@ from docx.table import Table
 ROOT = Path(__file__).resolve().parent.parent
 REPORT = ROOT / "energy_trading_mlops_proposal_v17.docx"
 FIX_DIR = ROOT / "reports" / "evaluation_reward_fix"
-JULY_TRAJ = ROOT / "reports" / "evaluation" / "PPO-300k_full_test_trajectory.csv"
 TEMPLATE = Path(__file__).with_name("template.html")
 STATUS = Path(__file__).with_name("status.json")
 REPO_URL = "https://github.com/GlynnCarson/energy-trading-mlops"
@@ -94,9 +92,6 @@ def trajectories() -> dict:
         rows = read_csv(FIX_DIR / f"PPO-300k-fixed-s{seed}_full_test_trajectory.csv")
         assert [r["date"] for r in rows] == out["dates"], f"seed {seed} dates differ"
         out["seeds"][str(seed)] = [round(float(r["agent_value"]), 2) for r in rows]
-    july = read_csv(JULY_TRAJ)
-    assert [r["date"] for r in july] == out["dates"], "July trajectory dates differ"
-    out["july"] = [round(float(r["agent_value"]), 2) for r in july]
     return out
 
 
@@ -142,7 +137,7 @@ def build(out_dir: Path) -> Path:
     defects = [{"id": r[0], "severity": r[1], "text": r[2], "status": r[3], "state": defect_state(r[3])}
                for r in tables["Table 5.7"][1:]]
     results = [dict(zip(("window", "strategy", "ret", "sharpe", "dd", "trades"), r))
-               for r in tables["Table 5.8"][1:]]
+               for r in tables["Table 5.8"][1:] if "cost-only" not in r[1]]
     objectives = [{"objective": r[0], "evidence": r[1], "outcome": r[2], "state": objective_state(r[2])}
                   for r in tables["Table 5.10"][1:]]
 
