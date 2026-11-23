@@ -3,13 +3,13 @@ pandas==2.1.4
 numpy==1.26.4
 scipy==1.12.0
 
-# Deep Reinforcement Learning
-gymnasium==0.29.1
-stable-baselines3==2.2.1
-torch==2.2.0
+# Deep Reinforcement Learning (versions used to train the reported models; DEF-07)
+gymnasium==1.2.3
+stable-baselines3==2.8.0
+torch==2.12.0
 
 # MLOps
-mlflow==2.10.2
+mlflow==3.12.0
 boto3==1.34.34
 
 # Orchestration

@@ -40,6 +40,11 @@ x-airflow-common: &airflow-common
     - ./src/pipeline:/opt/airflow/dags
     - ./src:/opt/airflow/project/src
     - ./config:/opt/airflow/project/config
+    # Closed loop: one MLflow model registry (file store) and one paper-trading ledger,
+    # shared with the host so the dashboard export and the report evidence stay in the repo.
+    - ./mlruns:/opt/airflow/project/mlruns
+    - ./reports:/opt/airflow/project/reports
+    - ./checkpoints:/opt/airflow/project/checkpoints
     - airflow_logs:/opt/airflow/logs
   depends_on:
     postgres:
@@ -132,6 +137,7 @@ services:
     command: >
       bash -c "
       airflow db upgrade &&
+      airflow pools set training 1 'PPO training tasks run one at a time (CPU oversubscription otherwise)' &&
       airflow users create
       --username admin
       --password admin
