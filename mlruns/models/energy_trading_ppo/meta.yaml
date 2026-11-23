@@ -1,0 +1,10 @@
+aliases:
+  champion: '5'
+creation_timestamp: 1795449116551
+deployment_job_id: null
+deployment_job_state: null
+description: PPO agent trading daily Henry Hub natural gas (EIA RNGWHHD). Versions
+  are registered only after passing the quality gate.
+last_updated_timestamp: 1795449122855
+name: energy_trading_ppo
+workspace: default

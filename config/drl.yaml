@@ -103,3 +103,37 @@ backtest:
     step: trading days
     price: $/MMBtu
     position: MMBtu
+
+# ── Closed loop: quality gate, registry, paper trading, monitoring, retraining ──
+# Thresholds were fixed on 2026-11-23, before the gate was run on any model.
+quality_gate:
+  # Judged on the validation split only (never the test split), with the
+  # training-split normaliser so validation rows never see their own statistics.
+  n_random_agents: 30              # seeded Random Agents (seeds 0..29), as in Chapter 5
+  min_random_beaten_pct: 80.0      # (b) must beat at least 80 % of them (24 of 30)
+  max_drawdown_floor_pct: -40.0    # (c) worst peak-to-trough fall on validation; stop-loss is -50 %
+  # (a) is fixed: validation return must be strictly higher than Buy & Hold's
+
+registry:
+  tracking_uri: "./mlruns"         # same store as the Chapter 5 runs (committed to git)
+  model_name: energy_trading_ppo
+  champion_alias: champion         # MLflow alias, not the deprecated stages
+
+paper_trading:                     # paper trading (simulated): no real money
+  start_date: "2026-07-07"         # first day after the July training data ended
+  output_dir: "./reports/live"
+
+monitoring:
+  min_days: 20                     # no alarm before 20 trading days of paper trading
+  max_gap_since_deploy_pp: -10.0   # champion return minus Buy & Hold since promotion
+  rolling_window_days: 60
+  max_rolling_gap_pp: -10.0        # same gap over the last 60 trading days
+  max_drawdown_from_peak_pct: -30.0
+  watch_fraction: 0.5              # "watch" when a metric is past half of its threshold
+  retrain_cooldown_days: 20        # trading days to wait after a retrain that failed the gate
+
+retraining:
+  seeds: [42, 1, 2]
+  total_timesteps: 300_000
+  validation_days: 252             # walk-forward: the most recent 252 trading days are validation
+  use_final_model: true            # challenger = final model, so the validation window stays unseen

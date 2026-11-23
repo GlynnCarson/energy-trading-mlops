@@ -75,12 +75,14 @@ def run_backtest(
     test_df: pd.DataFrame,
     drl_cfg: dict,
     deterministic: bool = True,
+    norm_stats: dict | None = None,
 ) -> dict:
     """
     Walk the agent through the entire test set step-by-step (no random starts).
     Returns a results dict with time-series arrays and aggregate metrics.
+    norm_stats: frozen training-split normaliser (see EnergyTradingEnv); None = fit on test_df.
     """
-    env = EnergyTradingEnv(test_df, drl_cfg, mode="test")
+    env = EnergyTradingEnv(test_df, drl_cfg, mode="test", norm_stats=norm_stats)
     obs, _ = env.reset()
 
     prices = []

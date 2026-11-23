@@ -1,0 +1,16 @@
+creation_timestamp: 1795449117327
+current_stage: None
+deployment_job_state: null
+description: null
+last_updated_timestamp: 1795449117327
+model_id: null
+name: energy_trading_ppo
+run_id: 6827b382e80e4a94b28469c98b248725
+run_link: null
+source: runs:/6827b382e80e4a94b28469c98b248725/best_model
+status: READY
+status_message: null
+storage_location: runs:/6827b382e80e4a94b28469c98b248725/best_model
+user_id: null
+version: 2
+workspace: default

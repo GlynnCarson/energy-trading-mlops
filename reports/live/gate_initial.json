@@ -1,0 +1,239 @@
+{
+  "thresholds": {
+    "n_random_agents": 30,
+    "min_random_beaten_pct": 80.0,
+    "max_drawdown_floor_pct": -40.0
+  },
+  "results": [
+    {
+      "name": "PPO-300k-fixed-s42",
+      "seed": 42,
+      "run_id": "3bb7558ae769470eb3401596e16233f1",
+      "passed": true,
+      "reasons": "(a) validation return +56.10% > Buy & Hold +27.20%; (b) beats 30/30 Random Agents (100%, needs 80%); (c) max drawdown -28.03% within floor -40%",
+      "checks": [
+        {
+          "name": "beats_buy_and_hold",
+          "passed": true,
+          "value": 56.1033,
+          "threshold": 27.201,
+          "reason": "(a) validation return +56.10% > Buy & Hold +27.20%"
+        },
+        {
+          "name": "beats_random_agents",
+          "passed": true,
+          "value": 100.0,
+          "threshold": 80.0,
+          "reason": "(b) beats 30/30 Random Agents (100%, needs 80%)"
+        },
+        {
+          "name": "drawdown_floor",
+          "passed": true,
+          "value": -28.0327755445997,
+          "threshold": -40.0,
+          "reason": "(c) max drawdown -28.03% within floor -40%"
+        }
+      ],
+      "metrics": {
+        "window_start": "2023-05-04",
+        "window_end": "2024-12-02",
+        "window_days": 413,
+        "return_pct": 56.1033,
+        "max_drawdown_pct": -28.0327755445997,
+        "sharpe": 0.8671,
+        "n_steps": 412,
+        "stopped_out": false,
+        "buy_and_hold_return_pct": 27.201,
+        "buy_and_hold_max_drawdown_pct": -39.605506838922736,
+        "random_beaten_pct": 100.0,
+        "random_mean_return_pct": 4.66576
+      },
+      "old_protocol_val_best_pct": 53.8625,
+      "test_full_return_pct_not_used": 124.3604
+    },
+    {
+      "name": "PPO-300k-fixed-s1",
+      "seed": 1,
+      "run_id": "6827b382e80e4a94b28469c98b248725",
+      "passed": true,
+      "reasons": "(a) validation return +82.91% > Buy & Hold +27.20%; (b) beats 30/30 Random Agents (100%, needs 80%); (c) max drawdown -24.75% within floor -40%",
+      "checks": [
+        {
+          "name": "beats_buy_and_hold",
+          "passed": true,
+          "value": 82.9102,
+          "threshold": 27.201,
+          "reason": "(a) validation return +82.91% > Buy & Hold +27.20%"
+        },
+        {
+          "name": "beats_random_agents",
+          "passed": true,
+          "value": 100.0,
+          "threshold": 80.0,
+          "reason": "(b) beats 30/30 Random Agents (100%, needs 80%)"
+        },
+        {
+          "name": "drawdown_floor",
+          "passed": true,
+          "value": -24.752269673766463,
+          "threshold": -40.0,
+          "reason": "(c) max drawdown -24.75% within floor -40%"
+        }
+      ],
+      "metrics": {
+        "window_start": "2023-05-04",
+        "window_end": "2024-12-02",
+        "window_days": 413,
+        "return_pct": 82.9102,
+        "max_drawdown_pct": -24.752269673766463,
+        "sharpe": 1.1554,
+        "n_steps": 412,
+        "stopped_out": false,
+        "buy_and_hold_return_pct": 27.201,
+        "buy_and_hold_max_drawdown_pct": -39.605506838922736,
+        "random_beaten_pct": 100.0,
+        "random_mean_return_pct": 4.66576
+      },
+      "old_protocol_val_best_pct": 45.3588,
+      "test_full_return_pct_not_used": 170.7922
+    },
+    {
+      "name": "PPO-300k-fixed-s2",
+      "seed": 2,
+      "run_id": "702fe1b98dbf47138d5491921e2a1d19",
+      "passed": true,
+      "reasons": "(a) validation return +44.90% > Buy & Hold +27.20%; (b) beats 28/30 Random Agents (93%, needs 80%); (c) max drawdown -32.50% within floor -40%",
+      "checks": [
+        {
+          "name": "beats_buy_and_hold",
+          "passed": true,
+          "value": 44.9003,
+          "threshold": 27.201,
+          "reason": "(a) validation return +44.90% > Buy & Hold +27.20%"
+        },
+        {
+          "name": "beats_random_agents",
+          "passed": true,
+          "value": 93.33333333333333,
+          "threshold": 80.0,
+          "reason": "(b) beats 28/30 Random Agents (93%, needs 80%)"
+        },
+        {
+          "name": "drawdown_floor",
+          "passed": true,
+          "value": -32.50447514615823,
+          "threshold": -40.0,
+          "reason": "(c) max drawdown -32.50% within floor -40%"
+        }
+      ],
+      "metrics": {
+        "window_start": "2023-05-04",
+        "window_end": "2024-12-02",
+        "window_days": 413,
+        "return_pct": 44.9003,
+        "max_drawdown_pct": -32.50447514615823,
+        "sharpe": 0.7739,
+        "n_steps": 412,
+        "stopped_out": false,
+        "buy_and_hold_return_pct": 27.201,
+        "buy_and_hold_max_drawdown_pct": -39.605506838922736,
+        "random_beaten_pct": 93.33333333333333,
+        "random_mean_return_pct": 4.66576
+      },
+      "old_protocol_val_best_pct": 14.8755,
+      "test_full_return_pct_not_used": 121.934
+    },
+    {
+      "name": "PPO-300k-fixed-s3",
+      "seed": 3,
+      "run_id": "ed7c963b5f9f424d8ddd3bfb05c25600",
+      "passed": true,
+      "reasons": "(a) validation return +57.13% > Buy & Hold +27.20%; (b) beats 30/30 Random Agents (100%, needs 80%); (c) max drawdown -29.11% within floor -40%",
+      "checks": [
+        {
+          "name": "beats_buy_and_hold",
+          "passed": true,
+          "value": 57.1308,
+          "threshold": 27.201,
+          "reason": "(a) validation return +57.13% > Buy & Hold +27.20%"
+        },
+        {
+          "name": "beats_random_agents",
+          "passed": true,
+          "value": 100.0,
+          "threshold": 80.0,
+          "reason": "(b) beats 30/30 Random Agents (100%, needs 80%)"
+        },
+        {
+          "name": "drawdown_floor",
+          "passed": true,
+          "value": -29.1073959383594,
+          "threshold": -40.0,
+          "reason": "(c) max drawdown -29.11% within floor -40%"
+        }
+      ],
+      "metrics": {
+        "window_start": "2023-05-04",
+        "window_end": "2024-12-02",
+        "window_days": 413,
+        "return_pct": 57.1308,
+        "max_drawdown_pct": -29.1073959383594,
+        "sharpe": 0.8741,
+        "n_steps": 412,
+        "stopped_out": false,
+        "buy_and_hold_return_pct": 27.201,
+        "buy_and_hold_max_drawdown_pct": -39.605506838922736,
+        "random_beaten_pct": 100.0,
+        "random_mean_return_pct": 4.66576
+      },
+      "old_protocol_val_best_pct": 51.9564,
+      "test_full_return_pct_not_used": 190.9113
+    },
+    {
+      "name": "PPO-300k-fixed-s4",
+      "seed": 4,
+      "run_id": "f30adaf11eeb41f98059f8ab282e8370",
+      "passed": true,
+      "reasons": "(a) validation return +85.10% > Buy & Hold +27.20%; (b) beats 30/30 Random Agents (100%, needs 80%); (c) max drawdown -17.89% within floor -40%",
+      "checks": [
+        {
+          "name": "beats_buy_and_hold",
+          "passed": true,
+          "value": 85.1046,
+          "threshold": 27.201,
+          "reason": "(a) validation return +85.10% > Buy & Hold +27.20%"
+        },
+        {
+          "name": "beats_random_agents",
+          "passed": true,
+          "value": 100.0,
+          "threshold": 80.0,
+          "reason": "(b) beats 30/30 Random Agents (100%, needs 80%)"
+        },
+        {
+          "name": "drawdown_floor",
+          "passed": true,
+          "value": -17.88594601437777,
+          "threshold": -40.0,
+          "reason": "(c) max drawdown -17.89% within floor -40%"
+        }
+      ],
+      "metrics": {
+        "window_start": "2023-05-04",
+        "window_end": "2024-12-02",
+        "window_days": 413,
+        "return_pct": 85.1046,
+        "max_drawdown_pct": -17.88594601437777,
+        "sharpe": 1.3963,
+        "n_steps": 412,
+        "stopped_out": false,
+        "buy_and_hold_return_pct": 27.201,
+        "buy_and_hold_max_drawdown_pct": -39.605506838922736,
+        "random_beaten_pct": 100.0,
+        "random_mean_return_pct": 4.66576
+      },
+      "old_protocol_val_best_pct": 33.1465,
+      "test_full_return_pct_not_used": 67.0161
+    }
+  ]
+}

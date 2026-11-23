@@ -64,6 +64,16 @@ class RunningNorm:
         normed = (x - self.mean) / (np.sqrt(self.var) + self.epsilon)
         return np.clip(normed, -self.clip, self.clip).astype(np.float32)
 
+    def to_dict(self) -> dict:
+        """Frozen statistics, saved next to a registered model so that deployment uses
+        exactly the normalisation the model was trained with."""
+        return {"mean": self.mean.tolist(), "var": self.var.tolist(), "count": int(self.count)}
+
+    def load_dict(self, stats: dict):
+        self.mean = np.asarray(stats["mean"], dtype=np.float32)
+        self.var = np.asarray(stats["var"], dtype=np.float32)
+        self.count = int(stats["count"])
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Environment
@@ -94,6 +104,7 @@ class EnergyTradingEnv(gym.Env):
         df: pd.DataFrame,
         config: dict,
         mode: str = "train",
+        norm_stats: dict | None = None,
     ):
         super().__init__()
 
@@ -129,9 +140,17 @@ class EnergyTradingEnv(gym.Env):
         self.obs_dim = self.n_features + self.portfolio_state_dim
 
         # ── Online normaliser (pre-fit on training data) ───────────────────
+        # norm_stats (from RunningNorm.to_dict on the TRAINING split) freezes the normaliser, so an
+        # evaluation or paper-trading environment never sees statistics of its own future rows (DEF-08).
+        # Without it the environment fits on its own data, as all Chapter 5 evaluations did.
         self.norm = RunningNorm((self.n_features,))
         if self.normalise:
-            self._fit_normaliser()
+            if norm_stats is not None:
+                if len(norm_stats["mean"]) != self.n_features:
+                    raise ValueError(f"norm_stats has {len(norm_stats['mean'])} features, data has {self.n_features}")
+                self.norm.load_dict(norm_stats)
+            else:
+                self._fit_normaliser()
 
         # ── Spaces ─────────────────────────────────────────────────────────
         obs_low = np.full(self.obs_dim, -np.inf, dtype=np.float32)
