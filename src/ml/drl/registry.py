@@ -33,6 +33,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 LIVE_DIR = ROOT / "reports" / "live"
 REGISTRY_JSON = LIVE_DIR / "model_registry.json"
+MLRUNS = ROOT / "mlruns"
 
 
 def _now() -> str:
@@ -55,7 +56,7 @@ def client(cfg: dict):
 # ─────────────────────────────────────────────────────────────────────────────
 
 def run_dir(run_id: str, mlruns: Path | None = None) -> Path:
-    mlruns = mlruns or ROOT / "mlruns"
+    mlruns = mlruns or MLRUNS
     hits = [p for p in mlruns.glob(f"*/{run_id}") if p.is_dir()]
     if len(hits) != 1:
         raise FileNotFoundError(f"run {run_id} not found under {mlruns} ({len(hits)} matches)")

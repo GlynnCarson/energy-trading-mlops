@@ -39,3 +39,30 @@ def test_default_drl_config_matches_the_evaluated_daily_agents():
     assert tr["algorithm"] == "PPO" and tr["total_timesteps"] == 300_000 and tr["n_envs"] == 4
     assert bt["periods_per_year"] == 252 and bt["steps_per_day"] == 1
     assert bt["units"]["price"] == "$/MMBtu"
+
+
+def _task_ids_and_rules():
+    tree = ast.parse(DAG_FILE.read_text(encoding="utf-8"))
+    out = {}
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Call):
+            kw = {k.arg: k.value for k in node.keywords}
+            tid = kw.get("task_id")
+            if isinstance(tid, ast.Constant):
+                rule = kw.get("trigger_rule")
+                out[tid.value] = ast.unparse(rule) if rule is not None else None
+    return out
+
+
+def test_dag_has_the_closed_loop_and_its_join_does_not_hide_failures():
+    """Closed loop: paper_trade -> monitor -> branch -> retrain/gate/promote with three outcome alerts.
+    The join after the branches must let skipped branches through but not failed ones (DEF-12)."""
+    tasks = _task_ids_and_rules()
+    for t in ["paper_trade", "monitor", "branch_on_health", "skip_retrain", "alert_retrain_required",
+              "prepare_retrain", "evaluate_and_promote", "branch_on_outcome", "alert_champion_replaced",
+              "alert_retrain_failed_gate", "alert_champion_kept", "closed_loop_done"]:
+        assert t in tasks, t
+    assert tasks["closed_loop_done"] == "TriggerRule.NONE_FAILED_MIN_ONE_SUCCESS"
+    src = DAG_FILE.read_text(encoding="utf-8")
+    assert "closed_loop_done >> end" in src
+    assert 'f"train_challenger_s{s}"' in src          # one training task per seed in retraining.seeds

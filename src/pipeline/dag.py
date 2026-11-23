@@ -2,11 +2,17 @@
 pipeline/dag.py
 Apache Airflow DAG that orchestrates the full DataOps/MLOps pipeline:
   Ingest → Transform → Train DRL Agent → Backtest → Notify
+and the closed loop (paper trading is simulated, no real money):
+  Ingest → Paper trade (champion) → Monitor → retrain required?
+      yes → Retrain challengers (one task per seed) → Quality gate + promote → alert
+      no  → skip
+A retrain drill: airflow dags trigger energy_trading_mlops_pipeline -c '{"force_retrain": true}'
 """
 
 from datetime import datetime, timedelta
 from airflow import DAG
-from airflow.operators.python import PythonOperator
+from airflow.operators.python import BranchPythonOperator, PythonOperator
+from airflow.utils.trigger_rule import TriggerRule
 from airflow.operators.email import EmailOperator
 from airflow.operators.empty import EmptyOperator
 
@@ -117,6 +123,81 @@ with DAG(
         python_callable=task_backtest_drl,
     )
 
+    # ── Closed loop: paper trading (simulated) → monitor → retrain / gate / promote ──
+    import yaml
+    from pathlib import Path
+    import src as _project_src
+    from src.ml.drl import closed_loop_tasks as cl
+
+    _cfg_file = Path(_project_src.__file__).resolve().parents[1] / "config" / "drl.yaml"
+    RETRAIN_SEEDS = yaml.safe_load(_cfg_file.read_text())["retraining"]["seeds"]
+
+    paper_trade = PythonOperator(task_id="paper_trade", python_callable=cl.task_paper_trade)
+    monitor = PythonOperator(task_id="monitor", python_callable=cl.task_monitor)
+    branch_health = BranchPythonOperator(task_id="branch_on_health", python_callable=cl.branch_on_health)
+    skip_retrain = EmptyOperator(task_id="skip_retrain")
+
+    alert_retrain_required = EmailOperator(
+        task_id="alert_retrain_required",
+        to=["team@energytrading.io"],
+        subject=(
+            "[Energy MLOps] {{ 'Retrain drill started' if dag_run.conf.get('force_retrain') else 'Retrain required' }}"
+            " - champion v{{ ti.xcom_pull(task_ids='monitor', key='monitor')['champion_version'] }} - {{ ds }}"
+        ),
+        html_content="""
+            <h3>Retrain triggered (paper trading is simulated)</h3>
+            {% set m = ti.xcom_pull(task_ids='monitor', key='monitor') %}
+            <p><b>Champion:</b> version {{ m['champion_version'] }} | <b>Health:</b> {{ m['status_label'] }}
+               over {{ m['days'] }} trading days (data to {{ m['last_data_date'] }})</p>
+            <p><b>Reason:</b> {{ m['retrain']['reason'] }}</p>
+            <p><b>Breaches:</b> {{ m['breaches'] or 'none' }}</p>
+            <p><b>Metrics:</b> {{ m['metrics'] }}</p>
+        """,
+    )
+    prepare_retrain = PythonOperator(task_id="prepare_retrain", python_callable=cl.task_prepare_retrain)
+    train_challengers = [
+        PythonOperator(task_id=f"train_challenger_s{s}", python_callable=cl.make_train_challenger(s))
+        for s in RETRAIN_SEEDS
+    ]
+    evaluate_promote = PythonOperator(task_id="evaluate_and_promote",
+                                      python_callable=cl.make_evaluate_and_promote(RETRAIN_SEEDS))
+    branch_outcome = BranchPythonOperator(task_id="branch_on_outcome", python_callable=cl.branch_on_outcome)
+
+    _outcome_body = """
+        {% set o = ti.xcom_pull(task_ids='evaluate_and_promote', key='outcome') %}
+        <p><b>Retrain:</b> {{ o['retrain_id'] }}{{ ' (drill)' if o['drill'] }} |
+           <b>validation window:</b> {{ o['val_window'] }}</p>
+        <p><b>Decision:</b> {{ o['reason'] }}</p>
+        <p><b>Champion on the same window:</b> {{ o['champion_val_return_pct'] }} %</p>
+        <ul>{% for c in o['challengers'] %}<li>seed {{ c['seed'] }}: {{ 'PASS' if c['passed'] else 'FAIL' }},
+            validation {{ '%+.2f' % c['val_return_pct'] }} % - {{ c['reasons'] }}</li>{% endfor %}</ul>
+    """
+    alert_replaced = EmailOperator(
+        task_id="alert_champion_replaced",
+        to=["team@energytrading.io"],
+        subject=(
+            "[Energy MLOps] Champion replaced: "
+            "v{{ ti.xcom_pull(task_ids='evaluate_and_promote', key='outcome')['new_champion_version'] }} - {{ ds }}"
+        ),
+        html_content="<h3>New champion promoted</h3>" + _outcome_body,
+    )
+    alert_failed_gate = EmailOperator(
+        task_id="alert_retrain_failed_gate",
+        to=["team@energytrading.io"],
+        subject="[Energy MLOps] Retrain failed the quality gate - champion kept - {{ ds }}",
+        html_content="<h3>No challenger passed the quality gate</h3>" + _outcome_body,
+    )
+    alert_kept = EmailOperator(
+        task_id="alert_champion_kept",
+        to=["team@energytrading.io"],
+        subject="[Energy MLOps] Retrain did not beat the champion - champion kept - {{ ds }}",
+        html_content="<h3>Challengers passed the gate but did not beat the champion</h3>" + _outcome_body,
+    )
+    # Joins the branches. NONE_FAILED_MIN_ONE_SUCCESS lets a skipped branch through but still turns
+    # any failure into upstream_failed, so `end` (ALL_SUCCESS, DEF-12) still fails the run.
+    closed_loop_done = EmptyOperator(task_id="closed_loop_done",
+                                     trigger_rule=TriggerRule.NONE_FAILED_MIN_ONE_SUCCESS)
+
     notify_success = EmailOperator(
         task_id="notify_success",
         to=["team@energytrading.io"],
@@ -135,10 +216,25 @@ with DAG(
     #
     #  start
     #    └── ingest
-    #          └── transform ──────── dq_report
-    #                └── train_drl ── backtest_drl ── notify ── end
+    #          ├── transform ── dq_report ───────────────────────────────────────── end
+    #          │     └── train_drl ── backtest_drl ── notify ───────────────────── end
+    #          └── paper_trade ── monitor ── branch_on_health
+    #                                          ├── skip_retrain ─────────────────── closed_loop_done ── end
+    #                                          └── alert_retrain_required
+    #                                                └── prepare_retrain
+    #                                                      └── train_challenger_s<seed> (one per seed)
+    #                                                            └── evaluate_and_promote
+    #                                                                  └── branch_on_outcome
+    #                                                                        └── alert_* ── closed_loop_done
 
     start >> ingest >> transform
     transform >> dq_report
     transform >> train_drl >> backtest_drl >> notify_success >> end
     dq_report >> end
+
+    ingest >> paper_trade >> monitor >> branch_health
+    branch_health >> skip_retrain >> closed_loop_done
+    branch_health >> alert_retrain_required >> prepare_retrain >> train_challengers >> evaluate_promote
+    evaluate_promote >> branch_outcome >> [alert_replaced, alert_failed_gate, alert_kept]
+    [alert_replaced, alert_failed_gate, alert_kept] >> closed_loop_done
+    closed_loop_done >> end
