@@ -116,6 +116,104 @@
       "version": "5",
       "replaced": null,
       "reason": "highest validation return among the 5 runs that passed the gate (+85.10%; next best PPO-300k-fixed-s1 +82.91%); test results not used"
+    },
+    {
+      "time": "2026-11-23T17:14:55Z",
+      "type": "retrain_drill",
+      "version": "5",
+      "reason": "manual retrain drill (forced)",
+      "breaches": [],
+      "last_data_date": "2026-11-17"
+    },
+    {
+      "time": "2026-11-23T17:15:22Z",
+      "type": "retrain_started",
+      "retrain_id": "retrain-2026-11-17-20261123T171521",
+      "drill": true,
+      "data_last_date": "2026-11-17",
+      "train_start": "2010-08-26",
+      "train_end": "2025-11-28",
+      "val_start": "2025-12-01",
+      "val_end": "2026-11-17",
+      "train_rows": 3982,
+      "val_rows": 252
+    },
+    {
+      "time": "2026-11-23T18:11:39Z",
+      "type": "retrain_aborted",
+      "retrain_id": "retrain-2026-11-17-20261123T171521",
+      "drill": true,
+      "reason": "drill stopped manually after ~45 minutes: four PPO trainings ran in parallel and oversubscribed the CPU (DEF-15), so each would have exceeded the 2-hour task timeout; one challenger task also failed once on an experiment-creation race (DEF-14). Nothing was registered or promoted."
+    },
+    {
+      "time": "2026-11-23T18:15:36Z",
+      "type": "retrain_drill",
+      "version": "5",
+      "reason": "manual retrain drill (forced)",
+      "breaches": [],
+      "last_data_date": "2026-11-17"
+    },
+    {
+      "time": "2026-11-23T18:16:11Z",
+      "type": "retrain_started",
+      "retrain_id": "retrain-2026-11-17-20261123T181609",
+      "drill": true,
+      "smoke_test": true,
+      "data_last_date": "2026-11-17",
+      "train_start": "2010-08-26",
+      "train_end": "2025-11-28",
+      "val_start": "2025-12-01",
+      "val_end": "2026-11-17",
+      "train_rows": 3982,
+      "val_rows": 252
+    },
+    {
+      "time": "2026-11-23T18:24:03Z",
+      "type": "retrain",
+      "retrain_id": "retrain-2026-11-17-20261123T181609",
+      "drill": true,
+      "smoke_test": true,
+      "data_last_date": "2026-11-17",
+      "val_window": "2025-12-01 to 2026-11-17",
+      "model_file": "model",
+      "champion_version": "5",
+      "champion_val_return_pct": 52.6485,
+      "challengers": [
+        {
+          "seed": 1,
+          "run_id": "d6566bc46ee4479ba0614146dc0d4ac5",
+          "passed": false,
+          "reasons": "(a) validation return -16.94% > Buy & Hold -50.05%; (b) beats 22/30 Random Agents (73%, needs 80%); (c) max drawdown -49.44% below floor -40%",
+          "val_return_pct": -16.9378,
+          "max_drawdown_pct": -49.43659945464839,
+          "buy_and_hold_return_pct": -50.05,
+          "random_beaten_pct": 73.33333333333333
+        },
+        {
+          "seed": 2,
+          "run_id": "6eaf9b73dda54c978cdb388142aeebc5",
+          "passed": false,
+          "reasons": "(a) validation return -34.25% > Buy & Hold -50.05%; (b) beats 20/30 Random Agents (67%, needs 80%); (c) max drawdown -63.77% below floor -40%",
+          "val_return_pct": -34.254,
+          "max_drawdown_pct": -63.77217497800005,
+          "buy_and_hold_return_pct": -50.05,
+          "random_beaten_pct": 66.66666666666666
+        },
+        {
+          "seed": 42,
+          "run_id": "4b5de17aed444afe83b318e6ff86460a",
+          "passed": false,
+          "reasons": "(a) validation return -29.09% > Buy & Hold -50.05%; (b) beats 20/30 Random Agents (67%, needs 80%); (c) max drawdown -60.38% below floor -40%",
+          "val_return_pct": -29.0854,
+          "max_drawdown_pct": -60.38355800997584,
+          "buy_and_hold_return_pct": -50.05,
+          "random_beaten_pct": 66.66666666666666
+        }
+      ],
+      "promoted": false,
+      "new_champion_version": null,
+      "reason": "smoke test, promotion disabled (decision would have been: none of the 3 challengers passed the quality gate)",
+      "result": "failed_gate"
     }
   ],
   "model_name": "energy_trading_ppo",
@@ -263,6 +361,6 @@
     "min_random_beaten_pct": 80.0,
     "max_drawdown_floor_pct": -40.0
   },
-  "exported_at": "2026-11-23T15:52:03Z",
+  "exported_at": "2026-11-23T18:32:39Z",
   "note": "Registry: MLflow Model Registry (file store ./mlruns). Paper trading is simulated; no real money is involved."
 }

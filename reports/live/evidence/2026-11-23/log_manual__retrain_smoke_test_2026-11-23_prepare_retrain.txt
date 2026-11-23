@@ -1,0 +1,16 @@
+[2026-11-23T18:15:48.853+0000] {taskinstance.py:1956} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: energy_trading_mlops_pipeline.prepare_retrain manual__retrain_smoke_test_2026-11-23 [queued]>
+[2026-11-23T18:15:48.882+0000] {taskinstance.py:1956} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: energy_trading_mlops_pipeline.prepare_retrain manual__retrain_smoke_test_2026-11-23 [queued]>
+[2026-11-23T18:15:48.885+0000] {taskinstance.py:2170} INFO - Starting attempt 1 of 3
+[2026-11-23T18:15:48.926+0000] {taskinstance.py:2191} INFO - Executing <Task(PythonOperator): prepare_retrain> on 2026-11-23 18:13:27+00:00
+[2026-11-23T18:15:48.949+0000] {standard_task_runner.py:60} INFO - Started process 3818 to run task
+[2026-11-23T18:15:48.959+0000] {standard_task_runner.py:87} INFO - Running: ['***', 'tasks', 'run', 'energy_trading_mlops_pipeline', 'prepare_retrain', 'manual__retrain_smoke_test_2026-11-23', '--job-id', '95', '--raw', '--subdir', 'DAGS_FOLDER/dag.py', '--cfg-path', '/tmp/tmp7xmhpjvx']
+[2026-11-23T18:15:48.966+0000] {standard_task_runner.py:88} INFO - Job 95: Subtask prepare_retrain
+[2026-11-23T18:15:49.151+0000] {task_command.py:423} INFO - Running <TaskInstance: energy_trading_mlops_pipeline.prepare_retrain manual__retrain_smoke_test_2026-11-23 [running]> on host fe3434250055
+[2026-11-23T18:15:49.415+0000] {taskinstance.py:2480} INFO - Exporting env vars: AIRFLOW_CTX_DAG_EMAIL='mlops-alerts@energytrading.io' AIRFLOW_CTX_DAG_OWNER='mlops-team' AIRFLOW_CTX_DAG_ID='energy_trading_mlops_pipeline' AIRFLOW_CTX_TASK_ID='prepare_retrain' AIRFLOW_CTX_EXECUTION_DATE='2026-11-23T18:13:27+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__retrain_smoke_test_2026-11-23'
+[2026-11-23T18:16:01.034+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.11/site-packages/pydantic/_internal/_fields.py:151 UserWarning: Field "model_name" has conflict with protected namespace "model_".
+
+You may be able to resolve this warning by setting `model_config['protected_namespaces'] = ()`.
+[2026-11-23T18:16:11.329+0000] {python.py:201} INFO - Done. Returned value was: {'retrain_id': 'retrain-2026-11-17-20261123T181609', 'drill': True, 'smoke_test': True, 'data_last_date': '2026-11-17', 'train_start': '2010-08-26', 'train_end': '2025-11-28', 'val_start': '2025-12-01', 'val_end': '2026-11-17', 'train_rows': 3982, 'val_rows': 252}
+[2026-11-23T18:16:11.403+0000] {taskinstance.py:1138} INFO - Marking task as SUCCESS. dag_id=energy_trading_mlops_pipeline, task_id=prepare_retrain, execution_date=20261123T181327, start_date=20261123T181548, end_date=20261123T181611
+[2026-11-23T18:16:11.572+0000] {local_task_job_runner.py:234} INFO - Task exited with return code 0
+[2026-11-23T18:16:11.660+0000] {taskinstance.py:3280} INFO - 3 downstream tasks scheduled from follow-on schedule check

@@ -1,0 +1,73 @@
+[2026-11-23T17:15:26.228+0000] {taskinstance.py:1956} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: energy_trading_mlops_pipeline.train_challenger_s2 manual__retrain_drill_2026-11-23 [queued]>
+[2026-11-23T17:15:26.255+0000] {taskinstance.py:1956} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: energy_trading_mlops_pipeline.train_challenger_s2 manual__retrain_drill_2026-11-23 [queued]>
+[2026-11-23T17:15:26.256+0000] {taskinstance.py:2170} INFO - Starting attempt 1 of 3
+[2026-11-23T17:15:26.327+0000] {taskinstance.py:2191} INFO - Executing <Task(PythonOperator): train_challenger_s2> on 2026-11-23 16:33:37+00:00
+[2026-11-23T17:15:26.377+0000] {standard_task_runner.py:60} INFO - Started process 1885 to run task
+[2026-11-23T17:15:26.397+0000] {standard_task_runner.py:87} INFO - Running: ['***', 'tasks', 'run', 'energy_trading_mlops_pipeline', 'train_challenger_s2', 'manual__retrain_drill_2026-11-23', '--job-id', '83', '--raw', '--subdir', 'DAGS_FOLDER/dag.py', '--cfg-path', '/tmp/tmpnew7q4l_']
+[2026-11-23T17:15:26.414+0000] {standard_task_runner.py:88} INFO - Job 83: Subtask train_challenger_s2
+[2026-11-23T17:15:26.770+0000] {task_command.py:423} INFO - Running <TaskInstance: energy_trading_mlops_pipeline.train_challenger_s2 manual__retrain_drill_2026-11-23 [running]> on host fe3434250055
+[2026-11-23T17:15:27.396+0000] {taskinstance.py:2480} INFO - Exporting env vars: AIRFLOW_CTX_DAG_EMAIL='mlops-alerts@energytrading.io' AIRFLOW_CTX_DAG_OWNER='mlops-team' AIRFLOW_CTX_DAG_ID='energy_trading_mlops_pipeline' AIRFLOW_CTX_TASK_ID='train_challenger_s2' AIRFLOW_CTX_EXECUTION_DATE='2026-11-23T16:33:37+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__retrain_drill_2026-11-23'
+[2026-11-23T17:15:51.180+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.11/site-packages/pydantic/_internal/_fields.py:151 UserWarning: Field "model_name" has conflict with protected namespace "model_".
+
+You may be able to resolve this warning by setting `model_config['protected_namespaces'] = ()`.
+[2026-11-23T17:16:05.941+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.11/site-packages/gymnasium/utils/env_checker.py:367 UserWarning: WARN: `check_env(warn=...)` parameter is now ignored.
+[2026-11-23T17:16:05.947+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.11/site-packages/gymnasium/utils/env_checker.py:311 UserWarning: WARN: A Box observation space minimum value is -infinity. This is probably too low.
+[2026-11-23T17:16:05.950+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.11/site-packages/gymnasium/utils/env_checker.py:315 UserWarning: WARN: A Box observation space maximum value is infinity. This is probably too high.
+[2026-11-23T17:16:24.096+0000] {logging_mixin.py:188} INFO - Using cpu device
+[2026-11-23T17:16:35.260+0000] {logging_mixin.py:188} WARNING - 2026/11/23 17:16:35 INFO mlflow.tracking.fluent: Experiment with name 'energy-drl-eia-gas-retrain' does not exist. Creating a new experiment.
+The git executable must be specified in one of the following ways:
+    - be included in your $PATH
+    - be set via $GIT_PYTHON_GIT_EXECUTABLE
+    - explicitly set via git.refresh(<full-path-to-git-executable>)
+
+All git commands will error until this is rectified.
+
+This initial message can be silenced or aggravated in the future by setting the
+$GIT_PYTHON_REFRESH environment variable. Use one of the following values:
+    - quiet|q|silence|s|silent|none|n|0: for no message or exception
+    - warn|w|warning|log|l|1: for a warning message (logging level CRITICAL, displayed by default)
+    - error|e|exception|raise|r|2: for a raised exception
+
+Example:
+    export GIT_PYTHON_REFRESH=quiet
+[2026-11-23T17:16:26.275+0000] {taskinstance.py:2698} ERROR - Task failed with exception
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.11/site-packages/airflow/models/taskinstance.py", line 428, in _execute_task
+    result = execute_callable(context=context, **execute_callable_kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.11/site-packages/airflow/operators/python.py", line 199, in execute
+    return_value = self.execute_callable()
+                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.11/site-packages/airflow/operators/python.py", line 216, in execute_callable
+    return self.python_callable(*self.op_args, **self.op_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/airflow/project/src/ml/drl/closed_loop_tasks.py", line 61, in _train
+    run_id = train(rid, seed)
+             ^^^^^^^^^^^^^^^^
+  File "/opt/airflow/project/src/ml/drl/retrain.py", line 122, in train
+    run_id = run_drl_training(split["train"], split["val"], c)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/airflow/project/src/ml/drl/train_drl.py", line 379, in run_drl_training
+    mlflow.log_artifact(f.name, "config")
+  File "/home/airflow/.local/lib/python3.11/site-packages/mlflow/tracking/fluent.py", line 1646, in log_artifact
+    MlflowClient().log_artifact(run_id, local_path, artifact_path)
+  File "/home/airflow/.local/lib/python3.11/site-packages/mlflow/tracking/client.py", line 2774, in log_artifact
+    self._tracking_client.log_artifact(run_id, local_path, artifact_path)
+  File "/home/airflow/.local/lib/python3.11/site-packages/mlflow/tracking/_tracking_service/client.py", line 678, in log_artifact
+    artifact_repo.log_artifact(local_path, artifact_path)
+  File "/home/airflow/.local/lib/python3.11/site-packages/mlflow/store/artifact/local_artifact_repo.py", line 48, in log_artifact
+    mkdir(artifact_dir)
+  File "/home/airflow/.local/lib/python3.11/site-packages/mlflow/utils/file_utils.py", line 209, in mkdir
+    raise e
+  File "/home/airflow/.local/lib/python3.11/site-packages/mlflow/utils/file_utils.py", line 206, in mkdir
+    os.makedirs(target, exist_ok=True)
+  File "<frozen os>", line 215, in makedirs
+  File "<frozen os>", line 215, in makedirs
+  File "<frozen os>", line 215, in makedirs
+  [Previous line repeated 7 more times]
+  File "<frozen os>", line 225, in makedirs
+PermissionError: [Errno 13] Permission denied: '/C:'
+[2026-11-23T17:16:26.480+0000] {taskinstance.py:1138} INFO - Marking task as UP_FOR_RETRY. dag_id=energy_trading_mlops_pipeline, task_id=train_challenger_s2, execution_date=20261123T163337, start_date=20261123T171526, end_date=20261123T171626
+[2026-11-23T17:16:26.631+0000] {standard_task_runner.py:107} ERROR - Failed to execute job 83 for task train_challenger_s2 ([Errno 13] Permission denied: '/C:'; 1885)
+[2026-11-23T17:16:58.860+0000] {local_task_job_runner.py:234} INFO - Task exited with return code 1
+[2026-11-23T17:16:58.960+0000] {taskinstance.py:3280} INFO - 0 downstream tasks scheduled from follow-on schedule check

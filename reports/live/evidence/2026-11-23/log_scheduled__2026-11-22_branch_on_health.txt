@@ -1,0 +1,16 @@
+[2026-11-23T16:34:15.554+0000] {taskinstance.py:1956} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: energy_trading_mlops_pipeline.branch_on_health scheduled__2026-11-22T00:00:00+00:00 [queued]>
+[2026-11-23T16:34:15.580+0000] {taskinstance.py:1956} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: energy_trading_mlops_pipeline.branch_on_health scheduled__2026-11-22T00:00:00+00:00 [queued]>
+[2026-11-23T16:34:15.580+0000] {taskinstance.py:2170} INFO - Starting attempt 1 of 3
+[2026-11-23T16:34:15.619+0000] {taskinstance.py:2191} INFO - Executing <Task(BranchPythonOperator): branch_on_health> on 2026-11-22 00:00:00+00:00
+[2026-11-23T16:34:15.637+0000] {standard_task_runner.py:60} INFO - Started process 386 to run task
+[2026-11-23T16:34:15.644+0000] {standard_task_runner.py:87} INFO - Running: ['***', 'tasks', 'run', 'energy_trading_mlops_pipeline', 'branch_on_health', 'scheduled__2026-11-22T00:00:00+00:00', '--job-id', '71', '--raw', '--subdir', 'DAGS_FOLDER/dag.py', '--cfg-path', '/tmp/tmpdzsqqzc_']
+[2026-11-23T16:34:15.649+0000] {standard_task_runner.py:88} INFO - Job 71: Subtask branch_on_health
+[2026-11-23T16:34:15.837+0000] {task_command.py:423} INFO - Running <TaskInstance: energy_trading_mlops_pipeline.branch_on_health scheduled__2026-11-22T00:00:00+00:00 [running]> on host fe3434250055
+[2026-11-23T16:34:16.117+0000] {taskinstance.py:2480} INFO - Exporting env vars: AIRFLOW_CTX_DAG_EMAIL='mlops-alerts@energytrading.io' AIRFLOW_CTX_DAG_OWNER='mlops-team' AIRFLOW_CTX_DAG_ID='energy_trading_mlops_pipeline' AIRFLOW_CTX_TASK_ID='branch_on_health' AIRFLOW_CTX_EXECUTION_DATE='2026-11-22T00:00:00+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='scheduled__2026-11-22T00:00:00+00:00'
+[2026-11-23T16:34:16.152+0000] {python.py:201} INFO - Done. Returned value was: skip_retrain
+[2026-11-23T16:34:16.152+0000] {branch.py:35} INFO - Branch into skip_retrain
+[2026-11-23T16:34:16.153+0000] {skipmixin.py:178} INFO - Following branch skip_retrain
+[2026-11-23T16:34:16.201+0000] {skipmixin.py:244} INFO - Skipping tasks [('alert_retrain_required', -1)]
+[2026-11-23T16:34:16.354+0000] {taskinstance.py:1138} INFO - Marking task as SUCCESS. dag_id=energy_trading_mlops_pipeline, task_id=branch_on_health, execution_date=20261122T000000, start_date=20261123T163415, end_date=20261123T163416
+[2026-11-23T16:34:16.434+0000] {local_task_job_runner.py:234} INFO - Task exited with return code 0
+[2026-11-23T16:34:16.526+0000] {taskinstance.py:3280} INFO - 0 downstream tasks scheduled from follow-on schedule check

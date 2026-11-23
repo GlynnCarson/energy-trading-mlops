@@ -1,0 +1,8 @@
+artifact_location: file:///opt/airflow/project/mlruns/332523830942342631
+creation_time: 1795454195056
+experiment_id: '332523830942342631'
+last_update_time: 1795454195056
+lifecycle_stage: active
+name: energy-drl-eia-gas-retrain
+trace_location: null
+workspace: default

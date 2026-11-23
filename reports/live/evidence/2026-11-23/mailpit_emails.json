@@ -1,0 +1,37 @@
+[
+  {
+    "received": "2026-11-23T18:24:11.549Z",
+    "subject": "[Energy MLOps] Retrain failed the quality gate - champion kept - 2026-11-23",
+    "to": [
+      "team@energytrading.io"
+    ]
+  },
+  {
+    "received": "2026-11-23T18:17:18.111Z",
+    "subject": "[Energy MLOps] Pipeline Succeeded \u00e2\u20ac\u201d 2026-11-23",
+    "to": [
+      "team@energytrading.io"
+    ]
+  },
+  {
+    "received": "2026-11-23T18:15:46.238Z",
+    "subject": "[Energy MLOps] Retrain drill started - champion v5 - 2026-11-23",
+    "to": [
+      "team@energytrading.io"
+    ]
+  },
+  {
+    "received": "2026-11-23T17:15:07.975Z",
+    "subject": "[Energy MLOps] Retrain drill started - champion v5 - 2026-11-23",
+    "to": [
+      "team@energytrading.io"
+    ]
+  },
+  {
+    "received": "2026-11-23T17:13:42.725Z",
+    "subject": "[Energy MLOps] Pipeline Succeeded \u00e2\u20ac\u201d 2026-11-22",
+    "to": [
+      "team@energytrading.io"
+    ]
+  }
+]

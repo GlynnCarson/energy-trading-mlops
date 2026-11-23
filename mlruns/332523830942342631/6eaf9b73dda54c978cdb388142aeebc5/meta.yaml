@@ -1,0 +1,14 @@
+artifact_uri: file:///opt/airflow/project/mlruns/332523830942342631/6eaf9b73dda54c978cdb388142aeebc5/artifacts
+end_time: 1795458183067
+entry_point_name: ''
+experiment_id: '332523830942342631'
+lifecycle_stage: active
+run_id: 6eaf9b73dda54c978cdb388142aeebc5
+run_name: PPO_drl_20261123_1821
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1795458094988
+status: 3
+tags: []
+user_id: airflow

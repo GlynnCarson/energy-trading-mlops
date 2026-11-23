@@ -1,0 +1,4 @@
+dag_id                         run_id                                 state    execution_date             start_date                        end_date
+energy_trading_mlops_pipeline  manual__retrain_smoke_test_2026-11-23  success  2026-11-23T18:13:27+00:00  2026-11-23T18:13:28.765023+00:00  2026-11-23T18:24:13.824826+00:00
+energy_trading_mlops_pipeline  manual__retrain_drill_2026-11-23       failed   2026-11-23T16:33:37+00:00  2026-11-23T17:13:45.821432+00:00  2026-11-23T18:10:16.606593+00:00
+energy_trading_mlops_pipeline  scheduled__2026-11-22T00:00:00+00:00   success  2026-11-22T00:00:00+00:00  2026-11-23T16:33:11.585513+00:00  2026-11-23T17:13:44.811186+00:00

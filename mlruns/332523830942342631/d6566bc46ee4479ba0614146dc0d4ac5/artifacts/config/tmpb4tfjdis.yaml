@@ -1,0 +1,106 @@
+PPO:
+  batch_size: 64
+  clip_range: 0.2
+  clip_range_vf: null
+  ent_coef: 0.01
+  gae_lambda: 0.95
+  gamma: 0.99
+  learning_rate: 0.0003
+  max_grad_norm: 0.5
+  n_epochs: 10
+  n_steps: 2048
+  net_arch:
+  - 256
+  - 256
+  - 128
+  normalize_advantage: true
+  policy: MlpPolicy
+  vf_coef: 0.5
+SAC:
+  batch_size: 256
+  buffer_size: 1000000
+  ent_coef: auto
+  gamma: 0.99
+  gradient_steps: 1
+  learning_rate: 0.0003
+  learning_starts: 10000
+  net_arch:
+  - 256
+  - 256
+  - 128
+  policy: MlpPolicy
+  target_entropy: auto
+  tau: 0.005
+  train_freq: 1
+action:
+  discrete_trade_size_mwh: 10.0
+  type: continuous
+backtest:
+  benchmark: buy_and_hold
+  output_dir: ./reports/backtest
+  periods_per_year: 252
+  risk_free_rate: 0.05
+  steps_per_day: 1
+  units:
+    position: MMBtu
+    price: $/MMBtu
+    step: trading days
+environment:
+  episode_length: 252
+  holding_penalty: 0.0
+  include_portfolio_state: true
+  initial_cash: 100000.0
+  lookback_window: 1
+  max_position_mwh: 25000
+  min_trade_mwh: 1.0
+  normalise_obs: true
+  random_start: true
+  reward_scaling: 1e-4
+  stop_loss_pct: 0.5
+  transaction_cost_pct: 0.001
+  use_sharpe_reward: false
+mlflow:
+  experiment_name: energy-drl-eia-gas-retrain
+  tags:
+    model_type: drl
+    project: energy-trading-mlops
+  tracking_uri: file:///opt/airflow/project/mlruns
+monitoring:
+  max_drawdown_from_peak_pct: -30.0
+  max_gap_since_deploy_pp: -10.0
+  max_rolling_gap_pp: -10.0
+  min_days: 20
+  retrain_cooldown_days: 20
+  rolling_window_days: 60
+  watch_fraction: 0.5
+paper_trading:
+  output_dir: ./reports/live
+  start_date: '2026-07-07'
+quality_gate:
+  max_drawdown_floor_pct: -40.0
+  min_random_beaten_pct: 80.0
+  n_random_agents: 30
+registry:
+  champion_alias: champion
+  model_name: energy_trading_ppo
+  tracking_uri: ./mlruns
+retraining:
+  seeds:
+  - 42
+  - 1
+  - 2
+  total_timesteps: 300000
+  use_final_model: true
+  validation_days: 252
+training:
+  algorithm: PPO
+  best_model_path: /opt/airflow/project/checkpoints/retrain/retrain-2026-11-17-20261123T181609/seed1/best_model
+  checkpoint_dir: /opt/airflow/project/checkpoints/retrain/retrain-2026-11-17-20261123T181609/seed1
+  device: cpu
+  eval_freq: 10000
+  log_interval: 1
+  n_envs: 4
+  n_eval_episodes: 5
+  save_freq: 50000
+  seed: 1
+  total_timesteps: 4096

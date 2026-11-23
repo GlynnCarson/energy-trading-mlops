@@ -1,0 +1,16 @@
+[2026-11-23T16:33:53.198+0000] {taskinstance.py:1956} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: energy_trading_mlops_pipeline.monitor scheduled__2026-11-22T00:00:00+00:00 [queued]>
+[2026-11-23T16:33:53.222+0000] {taskinstance.py:1956} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: energy_trading_mlops_pipeline.monitor scheduled__2026-11-22T00:00:00+00:00 [queued]>
+[2026-11-23T16:33:53.223+0000] {taskinstance.py:2170} INFO - Starting attempt 1 of 3
+[2026-11-23T16:33:53.263+0000] {taskinstance.py:2191} INFO - Executing <Task(PythonOperator): monitor> on 2026-11-22 00:00:00+00:00
+[2026-11-23T16:33:53.280+0000] {standard_task_runner.py:60} INFO - Started process 325 to run task
+[2026-11-23T16:33:53.287+0000] {standard_task_runner.py:87} INFO - Running: ['***', 'tasks', 'run', 'energy_trading_mlops_pipeline', 'monitor', 'scheduled__2026-11-22T00:00:00+00:00', '--job-id', '70', '--raw', '--subdir', 'DAGS_FOLDER/dag.py', '--cfg-path', '/tmp/tmp1eunkrma']
+[2026-11-23T16:33:53.295+0000] {standard_task_runner.py:88} INFO - Job 70: Subtask monitor
+[2026-11-23T16:33:53.460+0000] {task_command.py:423} INFO - Running <TaskInstance: energy_trading_mlops_pipeline.monitor scheduled__2026-11-22T00:00:00+00:00 [running]> on host fe3434250055
+[2026-11-23T16:33:53.718+0000] {taskinstance.py:2480} INFO - Exporting env vars: AIRFLOW_CTX_DAG_EMAIL='mlops-alerts@energytrading.io' AIRFLOW_CTX_DAG_OWNER='mlops-team' AIRFLOW_CTX_DAG_ID='energy_trading_mlops_pipeline' AIRFLOW_CTX_TASK_ID='monitor' AIRFLOW_CTX_EXECUTION_DATE='2026-11-22T00:00:00+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='scheduled__2026-11-22T00:00:00+00:00'
+[2026-11-23T16:33:55.547+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.11/site-packages/pydantic/_internal/_fields.py:151 UserWarning: Field "model_name" has conflict with protected namespace "model_".
+
+You may be able to resolve this warning by setting `model_config['protected_namespaces'] = ()`.
+[2026-11-23T16:34:12.399+0000] {python.py:201} INFO - Done. Returned value was: {'status': 'healthy', 'status_label': 'Healthy', 'days': 96, 'metrics': {'return_since_deploy_pct': 2.1737, 'buy_hold_since_deploy_pct': -0.8282, 'gap_since_deploy_pp': 3.002, 'rolling_gap_pp': 1.8915, 'drawdown_from_peak_pct': -3.3631, 'max_drawdown_pct': -15.1532}, 'breaches': [], 'retrain': {'triggered': False, 'reason': 'champion status is healthy', 'forced': False}, 'champion_version': '5', 'last_data_date': '2026-11-17'}
+[2026-11-23T16:34:12.488+0000] {taskinstance.py:1138} INFO - Marking task as SUCCESS. dag_id=energy_trading_mlops_pipeline, task_id=monitor, execution_date=20261122T000000, start_date=20261123T163353, end_date=20261123T163412
+[2026-11-23T16:34:12.660+0000] {local_task_job_runner.py:234} INFO - Task exited with return code 0
+[2026-11-23T16:34:12.777+0000] {taskinstance.py:3280} INFO - 1 downstream tasks scheduled from follow-on schedule check
