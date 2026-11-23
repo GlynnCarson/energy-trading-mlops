@@ -5,7 +5,7 @@ cannot drift away from the report:
 
 - energy_trading_mlops_proposal_v17.docx: Table 5.6 (test cases),
   Table 5.7 (defects), Table 5.8 (results; only the fixed-reward agents and
-  Buy & Hold are shown), Table 5.10 (objectives)
+  Buy & Hold are shown), Table 5.12 (objectives; Table 5.10 before 23 Nov 2026)
 - reports/evaluation_reward_fix/seed_results.csv and *_full_test_trajectory.csv:
   the five fixed-reward PPO-300k runs and Buy & Hold
 - reports/live/: the closed loop - model_registry.json (registered versions,
@@ -59,9 +59,7 @@ def report_tables(doc: Document) -> dict[str, list[list[str]]]:
 
 
 def verdict(text: str) -> str:
-    """Final verdict of a test case: the last Pass/Fail word, or 'not run'."""
-    if text.lower().startswith("not completed"):
-        return "not_run"
+    """Final verdict of a test case: the last Pass/Fail word (a later retest wins), or 'not run'."""
     words = re.findall(r"\b(Pass|Fail)\b", text)
     return {"Pass": "pass", "Fail": "fail"}.get(words[-1] if words else "", "not_run")
 
@@ -197,7 +195,7 @@ def git_log(n: int = 12) -> list[dict]:
 # ── Build ────────────────────────────────────────────────────────────────────
 def build(out_dir: Path) -> Path:
     tables = report_tables(Document(str(REPORT)))
-    for needed in ("Table 5.6", "Table 5.7", "Table 5.8", "Table 5.10"):
+    for needed in ("Table 5.6", "Table 5.7", "Table 5.8", "Table 5.12"):
         if needed not in tables:
             sys.exit(f"{needed} not found in {REPORT.name}")
 
@@ -208,7 +206,7 @@ def build(out_dir: Path) -> Path:
     results = [dict(zip(("window", "strategy", "ret", "sharpe", "dd", "trades"), r))
                for r in tables["Table 5.8"][1:] if "cost-only" not in r[1]]
     objectives = [{"objective": r[0], "evidence": r[1], "outcome": r[2], "state": objective_state(r[2])}
-                  for r in tables["Table 5.10"][1:]]
+                  for r in tables["Table 5.12"][1:]]
 
     commits = git_log()
     data = {
