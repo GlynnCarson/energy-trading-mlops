@@ -27,8 +27,13 @@ TARGET = tr["target_column"]
 # Cleaning
 # ─────────────────────────────────────────────
 
-def clean_raw(df: pd.DataFrame) -> pd.DataFrame:
-    """Drop duplicates, remove extreme outliers, ensure UTC index."""
+def clean_raw(df: pd.DataFrame, outlier_stats: dict | None = None) -> pd.DataFrame:
+    """Drop duplicates, remove extreme outliers, ensure UTC index.
+
+    outlier_stats: optional {column: {"mean": m, "std": s}} fitted on the training period. When given,
+    the outlier rule uses these frozen statistics instead of the whole input's mean and std, so a row's
+    cleaning never depends on later rows (used by paper trading; DEF-08). None keeps the original behaviour.
+    """
     logger.info(f"[CLEAN] Input shape: {df.shape}")
 
     # Ensure DatetimeIndex with UTC
@@ -50,7 +55,10 @@ def clean_raw(df: pd.DataFrame) -> pd.DataFrame:
     threshold = tr["outlier_std_threshold"]
     numeric_cols = df.select_dtypes(include=np.number).columns
     for col in numeric_cols:
-        mean, std = df[col].mean(), df[col].std()
+        if outlier_stats is not None and col in outlier_stats:
+            mean, std = outlier_stats[col]["mean"], outlier_stats[col]["std"]
+        else:
+            mean, std = df[col].mean(), df[col].std()
         mask = (df[col] - mean).abs() <= threshold * std
         removed = (~mask).sum()
         if removed:

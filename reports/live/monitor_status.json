@@ -1,0 +1,47 @@
+{
+  "label": "paper trading (simulated)",
+  "champion_version": "5",
+  "champion_seed": "4",
+  "deployed_from": "2026-07-07",
+  "last_data_date": "2026-11-17",
+  "status": "healthy",
+  "status_label": "Healthy",
+  "days": 96,
+  "metrics": {
+    "return_since_deploy_pct": 2.1737,
+    "buy_hold_since_deploy_pct": -0.8282,
+    "gap_since_deploy_pp": 3.002,
+    "rolling_gap_pp": 1.8915,
+    "drawdown_from_peak_pct": -3.3631,
+    "max_drawdown_pct": -15.1532
+  },
+  "breaches": [],
+  "watch": [],
+  "thresholds": {
+    "min_days": 20,
+    "max_gap_since_deploy_pp": -10.0,
+    "rolling_window_days": 60,
+    "max_rolling_gap_pp": -10.0,
+    "max_drawdown_from_peak_pct": -30.0,
+    "watch_fraction": 0.5,
+    "retrain_cooldown_days": 20
+  },
+  "retrain": {
+    "triggered": false,
+    "reason": "champion status is healthy",
+    "forced": false
+  },
+  "updated_at": "2026-11-23T15:58:40Z",
+  "history": [
+    {
+      "last_data_date": "2026-11-17",
+      "champion_version": "5",
+      "status": "healthy",
+      "days": 96,
+      "gap_since_deploy_pp": 3.002,
+      "retrain_triggered": false,
+      "reason": "champion status is healthy",
+      "updated_at": "2026-11-23T15:58:40Z"
+    }
+  ]
+}
