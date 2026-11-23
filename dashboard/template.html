@@ -4,237 +4,253 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Energy Trading MLOps — Project Dashboard</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22%3E%3Crect width=%2216%22 height=%2216%22 rx=%224%22 fill=%22%232a78d6%22/%3E%3Cpath d=%22M3 11l3-3 2 2 5-5%22 stroke=%22white%22 stroke-width=%221.8%22 fill=%22none%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22%3E%3Crect width=%2216%22 height=%2216%22 rx=%223%22 fill=%22%230b0b0b%22/%3E%3Cpath d=%22M3 11l3-3 2 2 5-5%22 stroke=%22white%22 stroke-width=%221.8%22 fill=%22none%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/%3E%3C/svg%3E">
 <style>
 .viz-root {
   color-scheme: light;
-  --page: #f4f5f7;
+  --page: #f9f9f7;
   --surface-1: #ffffff;
-  --surface-2: #f7f8fa;
-  --border: #e4e6eb;
-  --grid: #eceef2;
-  --text-primary: #0f1419;
-  --text-secondary: #4a5260;
-  --text-muted: #79808c;
+  --surface-2: #f4f4f1;
+  --border: rgba(11, 11, 11, 0.10);
+  --grid: #e1e0d9;
+  --baseline: #c3c2b7;
+  --text-primary: #0b0b0b;
+  --text-secondary: #52514e;
+  --text-muted: #898781;
   --link: #1c5cab;
-  --shadow: 0 1px 2px rgb(16 24 40 / .05), 0 2px 8px rgb(16 24 40 / .06);
   --series-1: #2a78d6;
   --series-1-soft: #9ec5f4;
   --series-2: #eb6834;
-  --good: #0ca30c; --warning: #fab219; --serious: #ec835a; --critical: #d03b3b;
-  --good-bg: #e7f6e7; --warning-bg: #fff4dc; --serious-bg: #fdeee7; --critical-bg: #fbe9e9;
-  --good-text: #0a6b0a; --warning-text: #7a5300; --serious-text: #9a3c14; --critical-text: #a32323;
-  --hero-1: #0d1b2e; --hero-2: #123a6b;
+  --good: #0ca30c; --warning: #fab219; --serious: #ec835a; --critical: #d03b3b; --neutral: #898781;
+  --good-text: #006300; --warning-text: #7a5300; --serious-text: #9a3c14; --critical-text: #a32323;
 }
 * { box-sizing: border-box; }
 body { margin: 0; }
 .viz-root {
   background: var(--page); color: var(--text-primary); min-height: 100vh;
-  font: 15px/1.55 "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", sans-serif;
+  font: 14.5px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 a { color: var(--link); text-decoration: none; }
 a:hover { text-decoration: underline; }
-code { font: 12.5px ui-monospace, "Cascadia Code", Consolas, monospace; }
-.wrap { max-width: 1160px; margin: 0 auto; padding: 0 24px; }
+code, .mono { font: 12.5px ui-monospace, "Cascadia Code", Consolas, monospace; }
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
 
-/* Hero */
-.hero { background: linear-gradient(135deg, var(--hero-1), var(--hero-2)); color: #fff; padding: 44px 0 96px; }
-.eyebrow { display: inline-block; font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
-  color: #b9d4f5; background: rgb(255 255 255 / .08); border: 1px solid rgb(255 255 255 / .14); padding: 4px 10px; border-radius: 999px; }
-.hero h1 { font-size: 36px; line-height: 1.15; margin: 16px 0 10px; letter-spacing: -0.02em; font-weight: 700; }
-.hero p { margin: 0; max-width: 720px; color: #d3def0; font-size: 16.5px; }
-.btns { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; align-items: center; }
-.btn { display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; border-radius: 9px; font-weight: 600; font-size: 14px; }
-.btn:hover { text-decoration: none; filter: brightness(1.08); }
-.btn-primary { background: #fff; color: #0d1b2e; }
-.btn-ghost { color: #fff; border: 1px solid rgb(255 255 255 / .3); }
-.updated { color: #9fb3cf; font-size: 13px; margin-left: 6px; }
-.updated a { color: #cfe0f7; }
-
-/* KPI strip overlapping the hero */
-.kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: -64px; position: relative; }
-@media (max-width: 900px) { .kpis { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 520px) { .kpis { grid-template-columns: 1fr; } .hero h1 { font-size: 28px; } }
-.kpi { background: var(--surface-1); border-radius: 14px; padding: 18px 20px; box-shadow: var(--shadow); border: 1px solid var(--border); }
-.kpi .label { font-size: 13px; color: var(--text-secondary); font-weight: 500; }
-.kpi .value { font-size: 28px; font-weight: 700; letter-spacing: -0.02em; margin: 6px 0 4px; font-variant-numeric: tabular-nums; line-height: 1.15; }
-.kpi .value small { font-size: 15px; font-weight: 600; color: var(--text-muted); }
-.kpi .note { font-size: 13px; color: var(--text-muted); }
-.meter { display: flex; gap: 2px; height: 6px; margin-top: 10px; border-radius: 3px; overflow: hidden; }
-.meter i { display: block; height: 100%; }
+/* Header */
+header { background: var(--surface-1); border-bottom: 1px solid var(--border); padding: 28px 0 22px; }
+header .top { display: flex; justify-content: space-between; gap: 24px; flex-wrap: wrap; align-items: flex-end; }
+.eyebrow { font-size: 12px; color: var(--text-muted); letter-spacing: .04em; }
+h1 { font-size: 26px; line-height: 1.2; margin: 4px 0 6px; font-weight: 650; letter-spacing: -0.015em; }
+header p { margin: 0; max-width: 680px; color: var(--text-secondary); }
+.links { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 12px; font-size: 13.5px; }
+.meta { font-size: 12.5px; color: var(--text-muted); text-align: right; line-height: 1.7; }
+.meta b { color: var(--text-secondary); font-weight: 600; }
 
 /* Nav */
-nav { position: sticky; top: 0; z-index: 5; background: color-mix(in srgb, var(--page) 88%, transparent);
-  backdrop-filter: blur(8px); border-bottom: 1px solid var(--border); margin-top: 28px; }
-nav .wrap { display: flex; gap: 4px; overflow-x: auto; }
-nav a { color: var(--text-secondary); font-size: 14px; font-weight: 500; padding: 12px 12px; white-space: nowrap; border-bottom: 2px solid transparent; }
-nav a:hover { color: var(--text-primary); text-decoration: none; border-bottom-color: var(--series-1); }
+nav { position: sticky; top: 0; z-index: 5; background: color-mix(in srgb, var(--page) 92%, transparent);
+  backdrop-filter: blur(6px); border-bottom: 1px solid var(--border); }
+nav .wrap { display: flex; gap: 2px; overflow-x: auto; }
+nav a { color: var(--text-secondary); font-size: 13.5px; padding: 11px 10px; white-space: nowrap; border-bottom: 2px solid transparent; }
+nav a:hover { color: var(--text-primary); text-decoration: none; border-bottom-color: var(--text-primary); }
 
 /* Sections and cards */
-section { padding-top: 40px; scroll-margin-top: 56px; }
-.sec-head { display: flex; justify-content: space-between; align-items: end; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
-.sec-head h2 { font-size: 22px; margin: 0; letter-spacing: -0.015em; }
-.sec-head p { margin: 4px 0 0; color: var(--text-secondary); max-width: 760px; }
-.card { background: var(--surface-1); border: 1px solid var(--border); border-radius: 14px; padding: 22px; box-shadow: var(--shadow); }
-.card h3 { font-size: 15.5px; margin: 0 0 4px; }
-.card .hint { color: var(--text-muted); font-size: 13px; margin: 0; }
-.grid { display: grid; gap: 16px; }
+section { padding-top: 36px; scroll-margin-top: 48px; }
+.sec-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; margin-bottom: 14px; }
+.sec-head h2 { font-size: 18px; margin: 0; font-weight: 650; letter-spacing: -0.01em; }
+.sec-head p { margin: 3px 0 0; color: var(--text-secondary); max-width: 760px; font-size: 13.5px; }
+.tag { display: inline-block; font-size: 11.5px; font-weight: 600; color: var(--text-secondary); border: 1px solid var(--border);
+  border-radius: 4px; padding: 1px 7px; margin-left: 8px; vertical-align: 2px; letter-spacing: .02em; }
+.card { background: var(--surface-1); border: 1px solid var(--border); border-radius: 8px; padding: 18px 20px; }
+.card h3 { font-size: 14px; margin: 0 0 2px; font-weight: 650; }
+.hint { color: var(--text-muted); font-size: 12.5px; margin: 0; }
+.grid { display: grid; gap: 14px; }
+.grid > *, .stats > * { min-width: 0; }
 .g-2-1 { grid-template-columns: 2fr 1fr; }
+.g-1-1 { grid-template-columns: 1fr 1fr; }
 .g-3 { grid-template-columns: repeat(3, 1fr); }
-@media (max-width: 900px) { .g-2-1, .g-3 { grid-template-columns: 1fr; } }
+.mt { margin-top: 14px; }
+@media (max-width: 900px) { .g-2-1, .g-1-1, .g-3 { grid-template-columns: 1fr; } }
 
-/* Pills */
-.pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; padding: 3px 10px 3px 6px;
-  border-radius: 999px; white-space: nowrap; }
-.pill .ic { width: 16px; height: 16px; border-radius: 50%; display: inline-grid; place-items: center; font-size: 10px; font-weight: 800; color: #fff; }
-.s-good { background: var(--good-bg); color: var(--good-text); } .s-good .ic { background: var(--good); }
-.s-warning { background: var(--warning-bg); color: var(--warning-text); } .s-warning .ic { background: var(--warning); color: #3a2a00; }
-.s-serious { background: var(--serious-bg); color: var(--serious-text); } .s-serious .ic { background: var(--serious); color: #3a1608; }
-.s-critical { background: var(--critical-bg); color: var(--critical-text); } .s-critical .ic { background: var(--critical); }
-.legend { display: flex; flex-wrap: wrap; gap: 8px 14px; font-size: 13px; color: var(--text-secondary); }
+/* Stat tiles */
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+@media (max-width: 900px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 520px) { .stats { grid-template-columns: 1fr; } h1 { font-size: 22px; } }
+.stat { background: var(--surface-1); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; }
+.stat .label { font-size: 12.5px; color: var(--text-secondary); }
+.stat .value { font-size: 24px; font-weight: 650; letter-spacing: -0.015em; margin: 4px 0 2px; line-height: 1.2; }
+.stat .value small { font-size: 14px; font-weight: 500; color: var(--text-muted); }
+.stat .note { font-size: 12.5px; color: var(--text-muted); }
+.meter { display: flex; gap: 2px; height: 4px; margin-top: 10px; border-radius: 2px; overflow: hidden; }
+.meter i { display: block; height: 100%; }
+
+/* Status: icon + label, never colour alone */
+.st { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; white-space: nowrap; }
+.st .ic { width: 16px; height: 16px; border-radius: 50%; display: inline-grid; place-items: center; font-size: 10px; font-weight: 800; color: #fff; flex: none; }
+.s-good { color: var(--good-text); } .s-good .ic { background: var(--good); }
+.s-warning { color: var(--warning-text); } .s-warning .ic { background: var(--warning); color: #0b0b0b; }
+.s-serious { color: var(--serious-text); } .s-serious .ic { background: var(--serious); color: #0b0b0b; }
+.s-critical { color: var(--critical-text); } .s-critical .ic { background: var(--critical); }
+.s-neutral { color: var(--text-secondary); } .s-neutral .ic { background: var(--neutral); }
+.stat .value .st { font-size: 20px; gap: 9px; } .stat .value .st .ic { width: 22px; height: 22px; font-size: 13px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12.5px; color: var(--text-secondary); }
 .legend span { display: inline-flex; align-items: center; gap: 7px; }
-.swatch { width: 18px; height: 4px; border-radius: 2px; display: inline-block; }
+.swatch { width: 16px; height: 3px; border-radius: 2px; display: inline-block; }
 
-/* Capability table */
-.caps td { vertical-align: top; font-size: 13.5px; }
-.caps td.cap { font-weight: 650; white-space: nowrap; }
-.caps td.cloud { color: var(--text-secondary); white-space: nowrap; }
-.caps .na { color: var(--text-muted); font-style: italic; }
-@media (max-width: 900px) { .caps td.cap, .caps td.cloud { white-space: normal; } }
-
-/* Pipeline flow */
-.flow { display: grid; grid-template-columns: repeat(6, 1fr); gap: 0; margin-top: 14px; }
-@media (max-width: 900px) { .flow { grid-template-columns: repeat(2, 1fr); row-gap: 12px; } .flow .arrow { display: none; } }
-.step { position: relative; padding: 0 6px; }
-.step .box { background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px; padding: 14px 12px; height: 100%; }
-.step .num { font-size: 11.5px; font-weight: 700; color: var(--text-muted); letter-spacing: .06em; }
-.step .name { font-weight: 650; margin: 2px 0 6px; }
-.step .file { font-size: 11.5px; color: var(--text-muted); word-break: break-all; }
-.step .arrow { position: absolute; right: -7px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; color: var(--text-muted); z-index: 1; }
-.step .bar { height: 4px; border-radius: 2px; margin-bottom: 10px; }
-.tasks { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 12px 0; }
-.task { font: 12px ui-monospace, Consolas, monospace; padding: 4px 8px; border-radius: 6px; background: var(--good-bg); color: var(--good-text); border: 1px solid color-mix(in srgb, var(--good) 35%, transparent); }
-.tasks .sep { color: var(--text-muted); font-size: 12px; }
-ul.clean { margin: 0; padding-left: 18px; } ul.clean li { margin: 5px 0; }
+/* Key-value list */
+dl.kv { display: grid; grid-template-columns: max-content 1fr; gap: 7px 16px; margin: 12px 0 0; font-size: 13.5px; }
+dl.kv dt { color: var(--text-muted); }
+dl.kv dd { margin: 0; overflow-wrap: anywhere; }
+.checks { list-style: none; padding: 0; margin: 8px 0 0; font-size: 13px; }
+.checks li { display: flex; gap: 8px; align-items: flex-start; padding: 5px 0; border-top: 1px solid var(--grid); }
+.checks li:first-child { border-top: 0; }
+.sub { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .05em; margin: 16px 0 2px; }
 
 /* Charts */
 .chart { position: relative; }
 .chart svg { display: block; width: 100%; overflow: visible; }
-.chart text { fill: var(--text-muted); font-size: 12px; font-variant-numeric: tabular-nums; }
-.chart .axis-label { fill: var(--text-secondary); font-size: 12.5px; }
-.chart .val-label { fill: var(--text-primary); font-size: 12.5px; font-weight: 650; }
+.chart text { fill: var(--text-muted); font-size: 11.5px; font-variant-numeric: tabular-nums; }
+.chart .axis-label { fill: var(--text-secondary); font-size: 12px; }
+.chart .val-label { fill: var(--text-primary); font-size: 12px; font-weight: 600; }
 .tooltip { position: absolute; pointer-events: none; background: var(--surface-1); border: 1px solid var(--border);
-  border-radius: 10px; padding: 10px 12px; font-size: 12.5px; box-shadow: 0 8px 24px rgb(0 0 0 / .14);
-  min-width: 200px; opacity: 0; transition: opacity .1s; z-index: 3; }
-.tooltip .t-head { font-weight: 650; margin-bottom: 6px; }
-.tooltip .t-row { display: flex; align-items: center; gap: 10px; justify-content: space-between; margin-top: 2px; }
+  border-radius: 6px; padding: 9px 11px; font-size: 12.5px; box-shadow: 0 4px 16px rgb(0 0 0 / .08);
+  min-width: 190px; opacity: 0; transition: opacity .1s; z-index: 3; }
+.tooltip .t-head { font-weight: 600; margin-bottom: 5px; }
+.tooltip .t-row { display: flex; align-items: center; gap: 12px; justify-content: space-between; margin-top: 2px; }
 .tooltip .t-row span:first-child { display: inline-flex; align-items: center; gap: 7px; color: var(--text-secondary); }
 .tooltip .t-row span:last-child { font-variant-numeric: tabular-nums; font-weight: 600; }
 
-/* Comparison */
-.cmp { width: 100%; border-collapse: collapse; margin-top: 10px; }
-.cmp th, .cmp td { padding: 10px 4px; border-bottom: 1px solid var(--grid); font-size: 14px; }
-.cmp th { text-align: left; color: var(--text-muted); font-weight: 600; font-size: 12.5px; }
-.cmp td.v, .cmp th.v { text-align: right; font-variant-numeric: tabular-nums; }
-.cmp td.v { font-weight: 650; }
-.cmp tr:last-child td { border-bottom: 0; }
-.callout { background: var(--warning-bg); border: 1px solid color-mix(in srgb, var(--warning) 45%, transparent); }
-.callout h3 { color: var(--warning-text); }
-.callout ul { color: var(--text-primary); font-size: 14px; }
-
 /* Tables */
-.tbl { width: 100%; border-collapse: collapse; font-size: 14px; }
-.tbl th { text-align: left; font-weight: 600; color: var(--text-muted); font-size: 12.5px; padding: 8px 10px; border-bottom: 1px solid var(--border); }
-.tbl td { padding: 10px; border-bottom: 1px solid var(--grid); }
+.tbl { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.tbl th { text-align: left; font-weight: 600; color: var(--text-muted); font-size: 12px; padding: 8px 10px; border-bottom: 1px solid var(--baseline); }
+.tbl td { padding: 9px 10px; border-bottom: 1px solid var(--grid); vertical-align: top; }
+.tbl tr:last-child td { border-bottom: 0; }
 .tbl td.v, .tbl th.v { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.tbl tr.group td { background: var(--surface-2); font-weight: 650; font-size: 13px; color: var(--text-secondary); }
-.tbl tr.bh td { color: var(--text-secondary); }
+.tbl td.nw { white-space: nowrap; }
+.tbl tr.group td { background: var(--surface-2); font-weight: 600; font-size: 12.5px; color: var(--text-secondary); }
+.tbl tr.muted td { color: var(--text-secondary); }
+.tbl .detail { color: var(--text-secondary); font-size: 12.5px; }
 .scroll { overflow-x: auto; }
+.caps td.cap { font-weight: 600; white-space: nowrap; }
+.caps td.cloud { color: var(--text-secondary); white-space: nowrap; }
+.caps .na { color: var(--text-muted); }
+@media (max-width: 900px) { .caps td.cap, .caps td.cloud { white-space: normal; } }
 
-/* Tests and defects */
-.progress { display: flex; gap: 2px; height: 10px; border-radius: 5px; overflow: hidden; margin: 12px 0 6px; }
-.progress i { display: block; height: 100%; }
-.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 12px; }
-details.tile { background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); }
-details.tile[open] { border-color: color-mix(in srgb, var(--series-1) 45%, var(--border)); }
-details.tile summary { list-style: none; cursor: pointer; padding: 14px 16px; }
-details.tile summary::-webkit-details-marker { display: none; }
-.tile .row1 { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-.tile .id { font-weight: 700; font-size: 13.5px; }
-.tile .req { font-size: 12px; color: var(--text-muted); margin-left: 8px; font-weight: 500; }
-.tile .summary { font-size: 13.5px; color: var(--text-secondary); margin-top: 6px;
-  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.tile[open] .summary { -webkit-line-clamp: unset; }
-.tile .body { padding: 0 16px 14px; font-size: 13.5px; border-top: 1px solid var(--grid); }
-.tile .body b { display: block; font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .05em; margin: 12px 0 2px; }
-.sev { font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); margin-left: 8px; }
-.sev.Critical { color: var(--critical-text); } .sev.High { color: var(--serious-text); }
-.more { font-size: 12.5px; color: var(--link); margin-top: 6px; display: inline-block; }
-details[open] .more { display: none; }
+/* Pipeline flow */
+.flow { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-top: 12px; }
+@media (max-width: 900px) { .flow { grid-template-columns: repeat(2, 1fr); } }
+.step { border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; background: var(--surface-2); }
+.step .num { font-size: 11px; font-weight: 600; color: var(--text-muted); letter-spacing: .05em; }
+.step .name { font-weight: 600; font-size: 13.5px; margin: 2px 0 4px; }
+.step .file { font-size: 11.5px; color: var(--text-muted); word-break: break-all; }
+.tasks { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0; }
+.task { font: 12px ui-monospace, Consolas, monospace; padding: 3px 8px; border-radius: 4px; border: 1px solid var(--border); background: var(--surface-2); color: var(--text-secondary); }
+.task b { font-weight: 700; margin-right: 4px; }
+.task.ok b { color: var(--good-text); } .task.skip b { color: var(--text-muted); }
+ul.clean { margin: 0; padding-left: 18px; } ul.clean li { margin: 4px 0; }
+
+/* Expandable rows (tests, defects) */
+details.row { border-bottom: 1px solid var(--grid); }
+details.row:last-child { border-bottom: 0; }
+details.row summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: 80px 1fr auto; gap: 14px; padding: 10px 4px; align-items: baseline; }
+details.row summary::-webkit-details-marker { display: none; }
+details.row summary:hover { background: var(--surface-2); }
+details.row .id { font-weight: 600; font-size: 13px; }
+details.row .req { display: block; font-size: 11.5px; color: var(--text-muted); font-weight: 400; }
+details.row .text { font-size: 13.5px; color: var(--text-secondary); }
+details.row .body { padding: 0 4px 12px 98px; font-size: 13px; }
+details.row .body b { display: block; font-size: 11.5px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 2px; }
+@media (max-width: 640px) { details.row summary { grid-template-columns: 1fr auto; } details.row .text { grid-column: 1 / -1; } details.row .body { padding-left: 4px; } }
+.sev { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; display: block; }
 
 /* Objectives */
-.objs { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; }
-.obj { background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px; padding: 16px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 8px; }
-.obj .t { font-weight: 650; }
-.obj .e { font-size: 13.5px; color: var(--text-secondary); }
+.objs { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+.obj { background: var(--surface-1); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; }
+.obj .t { font-weight: 600; font-size: 13.5px; }
+.obj .e { font-size: 13px; color: var(--text-secondary); }
 
 /* Activity */
 .timeline { list-style: none; margin: 0; padding: 0; }
-.timeline li { display: grid; grid-template-columns: 110px 1fr; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--grid); }
+.timeline li { display: grid; grid-template-columns: 100px 1fr; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--grid); font-size: 13.5px; }
 .timeline li:last-child { border-bottom: 0; }
-.timeline .d { color: var(--text-muted); font-size: 13px; font-variant-numeric: tabular-nums; }
-.timeline .s { font-weight: 500; }
-.timeline code { color: var(--text-muted); margin-left: 8px; font-size: 12px; }
+.timeline .d { color: var(--text-muted); font-size: 12.5px; font-variant-numeric: tabular-nums; }
+.timeline code { color: var(--text-muted); margin-left: 8px; font-size: 11.5px; }
 
-footer { color: var(--text-muted); font-size: 13px; padding: 40px 0 48px; }
+.note-box { border-left: 2px solid var(--baseline); padding: 2px 0 2px 12px; color: var(--text-secondary); font-size: 13px; margin-top: 12px; }
+footer { color: var(--text-muted); font-size: 12.5px; padding: 36px 0 44px; }
 </style>
 </head>
 <body>
 <div class="viz-root">
-  <div class="hero">
-    <div class="wrap">
-      <span class="eyebrow">U-CS 101 · Final-year project</span>
-      <h1>Energy Trading MLOps</h1>
-      <p>An end-to-end DataOps/MLOps pipeline that ingests daily EIA energy prices, trains a Deep Reinforcement Learning (PPO) agent to trade Henry Hub natural gas, and tracks, tests and backtests every run.</p>
-      <div class="btns" id="btns"></div>
+  <header>
+    <div class="wrap top">
+      <div>
+        <div class="eyebrow">U-CS 101 · Final-year project</div>
+        <h1>Energy Trading MLOps</h1>
+        <p>A DataOps/MLOps pipeline that ingests daily EIA energy prices, trains a reinforcement-learning (PPO) agent to trade Henry Hub natural gas, gates and registers the models, and paper trades the approved model on new data.</p>
+        <div class="links" id="links"></div>
+      </div>
+      <div class="meta" id="meta"></div>
     </div>
-  </div>
-
-  <div class="wrap"><div class="kpis" id="kpis"></div></div>
+  </header>
 
   <nav><div class="wrap">
-    <a href="#results">Results</a><a href="#pipeline">Pipeline</a><a href="#objectives">Objectives</a>
+    <a href="#live">Live model</a><a href="#results">Backtest</a><a href="#pipeline">Pipeline</a><a href="#objectives">Objectives</a>
     <a href="#testing">Testing</a><a href="#defects">Defects</a><a href="#activity">Activity</a>
   </div></nav>
 
   <main class="wrap">
+    <section id="live">
+      <div class="sec-head"><div><h2>Live model<span class="tag">PAPER TRADING · SIMULATED</span></h2>
+        <p id="live-sub"></p></div></div>
+      <div class="stats" id="live-stats"></div>
+      <div class="grid g-2-1 mt">
+        <div class="card">
+          <div class="sec-head" style="margin-bottom:6px">
+            <div><h3>Paper trading since deployment</h3><p class="hint" id="paper-hint"></p></div>
+            <div class="legend" id="paper-legend"></div>
+          </div>
+          <div class="chart" id="paper"></div>
+        </div>
+        <div class="card" id="champion"></div>
+      </div>
+      <div class="grid g-1-1 mt">
+        <div class="card" id="health"></div>
+        <div class="card" id="gate"></div>
+      </div>
+      <div class="card mt">
+        <h3>Gate, promotion and retraining history</h3>
+        <p class="hint">Every decision is also logged as tags and metrics on the model's MLflow run.</p>
+        <div class="scroll"><table class="tbl" id="history" style="margin-top:8px"></table></div>
+      </div>
+    </section>
+
     <section id="results">
-      <div class="sec-head"><div><h2>Trading results on unseen data</h2><p id="results-sub"></p></div></div>
-      <div class="card">
+      <div class="sec-head"><div><h2>Backtest on held-out data</h2><p id="results-sub"></p></div></div>
+      <div class="stats" id="kpis"></div>
+      <div class="card mt">
         <div class="sec-head" style="margin-bottom:6px">
           <div><h3>Portfolio value over the test period</h3><p class="hint">Starting capital $100,000 · hover for daily values</p></div>
           <div class="legend" id="eq-legend"></div>
         </div>
         <div class="chart" id="equity"></div>
       </div>
-      <div class="grid g-3" style="margin-top:16px">
+      <div class="grid g-3 mt">
         <div class="card">
           <h3>Return of each training seed</h3>
-          <p class="hint">Full test period · dashed line is Buy &amp; Hold</p>
+          <p class="hint">Full test period · orange line is Buy &amp; Hold</p>
           <div class="chart" id="seeds" style="margin-top:12px"></div>
         </div>
         <div class="card">
           <h3>Agent vs Buy &amp; Hold</h3>
           <p class="hint">Full test period · agent = mean of 5 seeds</p>
-          <table class="cmp" id="cmp"></table>
+          <table class="tbl" id="cmp" style="margin-top:8px"></table>
         </div>
-        <div class="card callout">
+        <div class="card">
           <h3>Read these results with care</h3>
-          <ul class="clean" id="limits"></ul>
+          <ul class="clean" id="limits" style="font-size:13px;color:var(--text-secondary);margin-top:8px"></ul>
         </div>
       </div>
-      <div class="card" style="margin-top:16px">
+      <div class="card mt">
         <h3>Detailed results (Table 5.8)</h3>
         <div class="scroll"><table class="tbl" id="results-table" style="margin-top:8px"></table></div>
       </div>
@@ -242,15 +258,15 @@ footer { color: var(--text-muted); font-size: 13px; padding: 40px 0 48px; }
 
     <section id="pipeline">
       <div class="sec-head">
-        <div><h2>MLOps &amp; DataOps pipeline</h2><p>The system was designed for AWS. Every capability below was run locally with an equivalent service (Docker Compose with LocalStack, Airflow, MLflow and Mailpit), unless it is marked as partly done.</p></div>
+        <div><h2>MLOps &amp; DataOps pipeline</h2><p>Designed for AWS. Each capability below ran locally with an equivalent service (Docker Compose with LocalStack, Airflow, MLflow and Mailpit), unless it is marked as partly done.</p></div>
       </div>
       <div class="card">
         <h3>Data-to-backtest pipeline</h3>
         <p class="hint">The steps that produced every reported result</p>
         <div class="flow" id="flow"></div>
       </div>
-      <div class="card" style="margin-top:16px" id="dag"></div>
-      <div class="card" style="margin-top:16px">
+      <div class="card mt" id="dag"></div>
+      <div class="card mt">
         <div class="sec-head" style="margin-bottom:4px">
           <div><h3>Capability coverage</h3><p class="hint" id="cap-sub"></p></div>
           <div class="legend" id="cap-legend"></div>
@@ -260,20 +276,18 @@ footer { color: var(--text-muted); font-size: 13px; padding: 40px 0 48px; }
     </section>
 
     <section id="objectives">
-      <div class="sec-head"><div><h2>Objectives</h2><p>Evaluation of the specific objectives (Table 5.10).</p></div></div>
+      <div class="sec-head"><div><h2>Objectives</h2><p>Evaluation of the specific objectives (Table 5.10 of the report).</p></div></div>
       <div class="objs" id="objs"></div>
     </section>
 
     <section id="testing">
       <div class="sec-head"><div><h2>Testing</h2><p id="tests-sub"></p></div><div class="legend" id="tests-legend"></div></div>
-      <div class="progress" id="tests-bar"></div>
-      <div class="tiles" id="tests" style="margin-top:14px"></div>
+      <div class="card"><div id="tests"></div></div>
     </section>
 
     <section id="defects">
       <div class="sec-head"><div><h2>Defect log</h2><p id="defects-sub"></p></div><div class="legend" id="defects-legend"></div></div>
-      <div class="progress" id="defects-bar"></div>
-      <div class="tiles" id="defects-list" style="margin-top:14px"></div>
+      <div class="card"><div id="defects-list"></div></div>
     </section>
 
     <section id="activity">
@@ -292,67 +306,39 @@ const D = JSON.parse(document.getElementById('data').textContent);
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const pct = (v, d = 1) => (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(d) + ' %';
+const pp = (v, d = 1) => (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(d) + ' pp';
 const usd = v => '$' + Math.round(v).toLocaleString('en-US');
 const NS = 'http://www.w3.org/2000/svg';
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-const fmtDate = s => { const [y,m,d] = s.split('-'); return `${+d} ${MONTHS[+m-1]} ${y}`; };
+const fmtDate = s => { const [y,m,d] = s.slice(0, 10).split('-'); return `${+d} ${MONTHS[+m-1]} ${y}`; };
 const count = (arr, key, val) => arr.filter(x => x[key] === val).length;
-const firstSentence = s => { const m = s.match(/^(.+?[.;:])(\s|$)/); return m ? m[1] : s; };
 
-// Status: colour + icon + label, never colour alone
 const STATUS = {
   pass: ['s-good','✓','Pass'], fail: ['s-critical','✕','Fail'], not_run: ['s-warning','!','Not completed'],
   fixed: ['s-good','✓','Fixed'], mitigated: ['s-warning','~','Mitigated'], open: ['s-serious','!','Open'],
   achieved: ['s-good','✓','Achieved'], partial: ['s-warning','~','Partially achieved'], not_achieved: ['s-critical','✕','Not achieved'],
   local: ['s-good','✓','Ran locally'], partly: ['s-warning','~','Partly'],
+  healthy: ['s-good','✓','Healthy'], watch: ['s-warning','!','Watch'], retrain_required: ['s-critical','✕','Retrain required'],
+  warming_up: ['s-neutral','…','Warming up'],
+  promoted: ['s-good','★','Promoted'], kept: ['s-neutral','=','Champion kept'], retrain: ['s-serious','↻','Retrain required'],
+  drill: ['s-neutral','↻','Drill'], aborted: ['s-serious','!','Aborted'],
 };
-const COLOR = { 's-good': '--good', 's-warning': '--warning', 's-serious': '--serious', 's-critical': '--critical' };
+const COLOR = { 's-good': '--good', 's-warning': '--warning', 's-serious': '--serious', 's-critical': '--critical', 's-neutral': '--neutral' };
 const pill = (key, label) => { const [cls, icon, text] = STATUS[key];
-  return `<span class="pill ${cls}"><span class="ic" aria-hidden="true">${icon}</span>${esc(label || text)}</span>`; };
+  return `<span class="st ${cls}"><span class="ic" aria-hidden="true">${icon}</span>${esc(label || text)}</span>`; };
 const meter = parts => parts.filter(p => p[1] > 0).map(([k, n]) => `<i style="flex:${n};background:var(${COLOR[STATUS[k][0]]})" title="${STATUS[k][2]}: ${n}"></i>`).join('');
+const legendPills = parts => parts.map(([k, c]) => pill(k, `${STATUS[k][2]} · ${c}`)).join('');
 
-// ── Hero & KPIs ──────────────────────────────────────────────────────────────
-const lc = D.last_commit;
-const gh = '<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>';
-$('btns').innerHTML = [
-  `<a class="btn btn-primary" href="${D.repo}">${gh}Source code</a>`,
-  `<a class="btn btn-ghost" href="${D.report_url}">Download report</a>`,
-  `<a class="btn btn-ghost" href="${D.repo}/tree/main/mlruns">Trained models &amp; MLflow runs</a>`,
-  lc ? `<span class="updated">Updated ${fmtDate(lc.date)} · <a href="${D.repo}/commit/${lc.hash}">${esc(lc.hash)}</a></span>` : ''
+// ── Header ───────────────────────────────────────────────────────────────────
+const lc = D.last_commit, L = D.live;
+$('links').innerHTML = [
+  `<a href="${D.repo}">Source code</a>`, `<a href="${D.report_url}">Report (.docx)</a>`,
+  `<a href="${D.repo}/tree/main/mlruns">MLflow runs and registry</a>`, `<a href="${D.repo}/tree/main/reports/live">Live data files</a>`,
 ].join('');
-
-const S = D.seeds, T = D.traj, n = T.dates.length;
-const full = S.map(s => s.test_full), bh = S[0].bh_full;
-const sorted = [...S].sort((a, b) => a.test_full - b.test_full);
-const median = sorted[Math.floor(sorted.length / 2)];
-const tPass = count(D.tests, 'verdict', 'pass'), tFail = count(D.tests, 'verdict', 'fail'), tNot = count(D.tests, 'verdict', 'not_run');
-const dFixed = count(D.defects, 'state', 'fixed'), dMit = count(D.defects, 'state', 'mitigated'), dOpen = count(D.defects, 'state', 'open');
-const oAch = count(D.objectives, 'state', 'achieved'), oPart = count(D.objectives, 'state', 'partial');
-const beat = S.filter(s => s.test_full > s.bh_full).length;
-$('kpis').innerHTML = [
-  `<div class="kpi"><div class="label">Agent return on unseen data</div><div class="value">${pct(median.test_full)}</div>
-    <div class="note">Median of ${S.length} seeds (range ${pct(Math.min(...full))} to ${pct(Math.max(...full))}) · Buy &amp; Hold ${pct(bh)}</div></div>`,
-  `<div class="kpi"><div class="label">Seeds beating Buy &amp; Hold</div><div class="value">${beat} <small>of ${S.length}</small></div>
-    <div class="note">Over ${n} held-out trading days</div></div>`,
-  `<div class="kpi"><div class="label">Test cases passing</div><div class="value">${tPass} <small>of ${D.tests.length}</small></div>
-    <div class="meter">${meter([['pass', tPass], ['not_run', tNot], ['fail', tFail]])}</div></div>`,
-  `<div class="kpi"><div class="label">Defects fixed</div><div class="value">${dFixed} <small>of ${D.defects.length}</small></div>
-    <div class="meter">${meter([['fixed', dFixed], ['mitigated', dMit], ['open', dOpen]])}</div></div>`,
-].join('');
-
-// ── Results text, comparison, limitations ────────────────────────────────────
-$('results-sub').textContent = `PPO agents trained with five different random seeds on earlier prices (2010 onwards), then tested on ${fmtDate(T.dates[0])} to ${fmtDate(T.dates[n-1])} (${n} trading days they never saw), against a Buy & Hold baseline.`;
-const R = D.results, row = (w, k) => R.find(r => r.window === w && r.strategy.includes(k));
-const mean = row('Full test period', 'mean of 5'), bhr = row('Full test period', 'Buy & Hold');
-$('cmp').innerHTML = `<tr><th></th><th class="v">Agent</th><th class="v">Buy &amp; Hold</th></tr>` +
-  [['Total return', mean.ret, bhr.ret], ['Sharpe ratio', mean.sharpe, bhr.sharpe], ['Max drawdown', mean.dd, bhr.dd], ['Trades', mean.trades, bhr.trades]]
-  .map(([k, a, b]) => `<tr><td>${k}</td><td class="v">${esc(a)}</td><td class="v">${esc(b)}</td></tr>`).join('');
-$('limits').innerHTML = D.status.limitations.map(l => `<li>${esc(l)}</li>`).join('');
-
-let prevWin = null;
-$('results-table').innerHTML = `<thead><tr><th>Strategy</th><th class="v">Total return</th><th class="v">Sharpe</th><th class="v">Max drawdown</th><th class="v">Trades</th></tr></thead><tbody>` +
-  R.map(r => { let g = ''; if (r.window !== prevWin) { prevWin = r.window; g = `<tr class="group"><td colspan="5">${esc(r.window)}</td></tr>`; }
-    return g + `<tr${r.strategy === 'Buy & Hold' ? ' class="bh"' : ''}><td>${esc(r.strategy)}</td><td class="v">${esc(r.ret)}</td><td class="v">${esc(r.sharpe)}</td><td class="v">${esc(r.dd)}</td><td class="v">${esc(r.trades)}</td></tr>`; }).join('') + '</tbody>';
+$('meta').innerHTML = [
+  L ? `Last market data <b>${fmtDate(L.monitor.last_data_date)}</b>` : '',
+  lc ? `Page updated <b>${fmtDate(lc.date)}</b> · <a href="${D.repo}/commit/${lc.hash}">${esc(lc.hash)}</a>` : '',
+].filter(Boolean).join('<br>');
 
 // ── SVG helpers ──────────────────────────────────────────────────────────────
 function el(tag, attrs = {}, parent) {
@@ -366,87 +352,221 @@ function niceTicks(lo, hi, count) {
   const step = [1, 2, 2.5, 5, 10].map(f => f * mag).find(s => s >= raw);
   const ticks = [];
   for (let v = Math.ceil(lo / step) * step; v <= hi + 1e-9; v += step) ticks.push(+v.toFixed(6));
-  return { ticks, step };
+  return ticks;
 }
 const cv = name => `var(${name})`;
+const kfmt = v => '$' + (Math.abs(v) >= 1e5 || v % 1000 === 0 ? (v / 1000).toFixed(0) : (v / 1000).toFixed(1)) + 'k';
 
-// ── Equity chart ─────────────────────────────────────────────────────────────
-const EQ = [
-  ...['1','2','3','4'].map(s => ({ name: `Seed ${s}`, color: '--series-1-soft', width: 1.5, values: T.seeds[s] })),
-  { name: 'Buy & Hold', color: '--series-2', width: 2, values: T.buy_hold },
-  { name: 'Seed 42 (median)', color: '--series-1', width: 2.5, values: T.seeds['42'] },
-];
-$('eq-legend').innerHTML = [['--series-1', 'Agent, seed 42 (median)'], ['--series-1-soft', 'Agent, other seeds'], ['--series-2', 'Buy & Hold']]
-  .map(([c, l]) => `<span><i class="swatch" style="background:${cv(c)}"></i>${esc(l)}</span>`).join('');
-
-function drawEquity() {
-  const host = $('equity'); host.innerHTML = '';
+// Line chart with crosshair tooltip. series: [{name, color, width, values}]
+function lineChart(host, { dates, series, height, aria, tooltip, endLabels = false, markers = [], tickEvery = 1 }) {
+  host.innerHTML = '';
   if (host.clientWidth <= 0) return;
-  const W = host.clientWidth, H = W < 600 ? 280 : 380, m = { t: 14, r: 12, b: 30, l: 56 };
+  const n = dates.length, W = host.clientWidth, H = W < 600 ? Math.min(height, 260) : height;
+  const m = { t: 12, r: endLabels ? 96 : 12, b: 28, l: 52 };
   const iw = W - m.l - m.r, ih = H - m.t - m.b;
-  const all = EQ.flatMap(s => s.values);
-  const lo = Math.min(...all), hi = Math.max(...all);
-  const pad = (hi - lo) * 0.04, y0 = lo - pad, y1 = hi + pad;
-  const x = i => m.l + (i / (n - 1)) * iw;
+  const all = series.flatMap(s => s.values).concat([100000]);
+  const lo = Math.min(...all), hi = Math.max(...all), pad = (hi - lo) * 0.06;
+  const y0 = lo - pad, y1 = hi + pad;
+  const x = i => m.l + (n > 1 ? (i / (n - 1)) * iw : iw / 2);
   const y = v => m.t + ih - ((v - y0) / (y1 - y0)) * ih;
-  const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, height: H, role: 'img',
-    'aria-label': 'Line chart of portfolio value over the test period for five agent seeds and Buy & Hold' }, host);
-  const yt = niceTicks(y0, y1, 5).ticks;
-  yt.forEach(v => {
-    el('line', { x1: m.l, x2: W - m.r, y1: y(v), y2: y(v), stroke: cv('--grid') }, svg);
-    el('text', { x: m.l - 10, y: y(v) + 4, 'text-anchor': 'end' }, svg).textContent = '$' + (v / 1000).toFixed(0) + 'k';
+  const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, height: H, role: 'img', 'aria-label': aria }, host);
+  niceTicks(y0, y1, 6).forEach(v => {
+    el('line', { x1: m.l, x2: m.l + iw, y1: y(v), y2: y(v), stroke: cv('--grid') }, svg);
+    el('text', { x: m.l - 8, y: y(v) + 4, 'text-anchor': 'end' }, svg).textContent = kfmt(v);
   });
-  el('line', { x1: m.l, x2: W - m.r, y1: y(100000), y2: y(100000), stroke: cv('--text-muted'), 'stroke-dasharray': '3 4' }, svg);
-  T.dates.forEach((d, i) => {
+  el('line', { x1: m.l, x2: m.l + iw, y1: y(100000), y2: y(100000), stroke: cv('--baseline') }, svg);
+  dates.forEach((d, i) => {
     const [yy, mm] = d.split('-');
-    if (i && mm !== T.dates[i-1].split('-')[1] && (+mm - 1) % 3 === 0)
+    if (i && mm !== dates[i-1].split('-')[1] && (+mm - 1) % tickEvery === 0)
       el('text', { x: x(i), y: H - 8, 'text-anchor': 'middle' }, svg).textContent = `${MONTHS[+mm-1]} ${yy}`;
   });
-  EQ.forEach(s => {
+  markers.forEach(({ i, label }) => {
+    el('line', { x1: x(i), x2: x(i), y1: m.t, y2: m.t + ih, stroke: cv('--baseline') }, svg);
+    el('text', { x: x(i) + 4, y: m.t + 10, class: 'axis-label' }, svg).textContent = label;
+  });
+  series.forEach(s => {
     const d = s.values.map((v, i) => (i ? 'L' : 'M') + x(i).toFixed(1) + ',' + y(v).toFixed(1)).join('');
     el('path', { d, fill: 'none', stroke: cv(s.color), 'stroke-width': s.width, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }, svg);
   });
+  if (endLabels) {   // direct labels at the line ends, nudged apart if they collide
+    const ends = series.filter(s => s.label).map(s => ({ s, yy: y(s.values[n - 1]) })).sort((a, b) => a.yy - b.yy);
+    for (let k = 1; k < ends.length; k++) if (ends[k].yy - ends[k-1].yy < 28) ends[k].yy = ends[k-1].yy + 28;
+    ends.forEach(({ s, yy }) => {
+      el('circle', { cx: x(n - 1), cy: y(s.values[n - 1]), r: 3.5, fill: cv(s.color), stroke: cv('--surface-1'), 'stroke-width': 2 }, svg);
+      el('text', { x: x(n - 1) + 9, y: yy - 2, class: 'val-label' }, svg).textContent = s.label;
+      el('text', { x: x(n - 1) + 9, y: yy + 12 }, svg).textContent = usd(s.values[n - 1]);
+    });
+  }
   const tip = document.createElement('div'); tip.className = 'tooltip'; host.appendChild(tip);
   const cross = el('line', { y1: m.t, y2: m.t + ih, stroke: cv('--text-muted'), opacity: 0 }, svg);
-  const dots = [EQ[5], EQ[4]].map(s => ({ s, c: el('circle', { r: 4.5, fill: cv(s.color), stroke: cv('--surface-1'), 'stroke-width': 2, opacity: 0 }, svg) }));
+  const dots = series.filter(s => s.dot).map(s => ({ s, c: el('circle', { r: 4.5, fill: cv(s.color), stroke: cv('--surface-1'), 'stroke-width': 2, opacity: 0 }, svg) }));
   const hit = el('rect', { x: m.l, y: m.t, width: iw, height: ih, fill: 'transparent' }, svg);
-  hit.addEventListener('pointermove', ev => {
+  const show = i => {
     const r = svg.getBoundingClientRect();
-    const px = (ev.clientX - r.left) * (W / r.width);
-    const i = Math.max(0, Math.min(n - 1, Math.round(((px - m.l) / iw) * (n - 1))));
     cross.setAttribute('x1', x(i)); cross.setAttribute('x2', x(i)); cross.setAttribute('opacity', 1);
     dots.forEach(({ s, c }) => { c.setAttribute('cx', x(i)); c.setAttribute('cy', y(s.values[i])); c.setAttribute('opacity', 1); });
-    const others = ['1','2','3','4'].map(k => T.seeds[k][i]);
-    const rw = (c, l, v) => `<div class="t-row"><span><i class="swatch" style="background:${cv(c)}"></i>${l}</span><span>${v}</span></div>`;
-    tip.innerHTML = `<div class="t-head">${fmtDate(T.dates[i])} · gas $${T.price[i].toFixed(2)}/MMBtu</div>` +
-      rw('--series-1', 'Seed 42', usd(T.seeds['42'][i])) +
-      rw('--series-1-soft', 'Other seeds', `${usd(Math.min(...others))} – ${usd(Math.max(...others))}`) +
-      rw('--series-2', 'Buy &amp; Hold', usd(T.buy_hold[i]));
+    tip.innerHTML = tooltip(i);
     tip.style.opacity = 1;
     const sx = (x(i) / W) * r.width, tw = tip.offsetWidth;
-    tip.style.left = (sx + 16 + tw > r.width ? sx - 16 - tw : sx + 16) + 'px';
-    tip.style.top = '6px';
+    tip.style.left = (sx + 14 + tw > r.width ? sx - 14 - tw : sx + 14) + 'px';
+    tip.style.top = '4px';
+  };
+  hit.addEventListener('pointermove', ev => {
+    const r = svg.getBoundingClientRect(), px = (ev.clientX - r.left) * (W / r.width);
+    show(Math.max(0, Math.min(n - 1, Math.round(((px - m.l) / iw) * (n - 1)))));
   });
   hit.addEventListener('pointerleave', () => { tip.style.opacity = 0; cross.setAttribute('opacity', 0); dots.forEach(d => d.c.setAttribute('opacity', 0)); });
 }
+const trow = (c, l, v) => `<div class="t-row"><span>${c ? `<i class="swatch" style="background:${cv(c)}"></i>` : ''}${l}</span><span>${v}</span></div>`;
 
-// ── Seed bar chart ───────────────────────────────────────────────────────────
+// ── Live model ───────────────────────────────────────────────────────────────
+function renderLive() {
+  if (!L) { $('live').style.display = 'none'; return; }
+  const M = L.monitor, P = L.paper, C = L.registry.champion, mx = M.metrics, th = M.thresholds;
+  const n = P.dates.length;
+  $('live-sub').textContent = `The approved (champion) model trades a simulated $100,000 account day by day on EIA prices published after its training data ended. Each decision uses only data up to that day. No real money is involved.`;
+  const healthKey = M.status;
+  $('live-stats').innerHTML = [
+    `<div class="stat"><div class="label">Champion</div><div class="value">v${esc(C.version)} <small>seed ${esc(C.seed)}</small></div>
+      <div class="note">${esc(L.registry.model_name)} @ ${esc(L.registry.champion_alias)}</div></div>`,
+    `<div class="stat"><div class="label">Health</div><div class="value">${pill(healthKey, M.status_label)}</div>
+      <div class="note">${M.days} trading days monitored</div></div>`,
+    `<div class="stat"><div class="label">Champion return since ${fmtDate(M.deployed_from)}</div><div class="value">${pct(mx.return_since_deploy_pct, 2)}</div>
+      <div class="note">${usd(P.value[n-1])} on ${fmtDate(P.dates[n-1])}</div></div>`,
+    `<div class="stat"><div class="label">Buy &amp; Hold, same days</div><div class="value">${pct(mx.buy_hold_since_deploy_pct, 2)}</div>
+      <div class="note">Gap ${pp(mx.gap_since_deploy_pp, 2)} in the champion's favour</div></div>`,
+  ].join('');
+  if (mx.gap_since_deploy_pp < 0) $('live-stats').lastElementChild.querySelector('.note').textContent = `Gap ${pp(mx.gap_since_deploy_pp, 2)} (champion behind)`;
+
+  // chart
+  $('paper-hint').textContent = `${fmtDate(P.dates[0])} to ${fmtDate(P.dates[n-1])} · ${n} trading days · hover for daily values`;
+  $('paper-legend').innerHTML = [['--series-1', 'Champion (paper)'], ['--series-2', 'Buy & Hold']]
+    .map(([c, l]) => `<span><i class="swatch" style="background:${cv(c)}"></i>${esc(l)}</span>`).join('');
+  const markers = [];
+  P.version.forEach((v, i) => { if (i && v !== P.version[i-1]) markers.push({ i, label: `v${v} active` }); });
+  const drawPaper = () => lineChart($('paper'), {
+    dates: P.dates, height: window.innerWidth > 900 ? Math.max(320, $('champion').offsetHeight - 96) : 320, endLabels: true, markers,
+    aria: 'Line chart of the champion paper-trading account and Buy & Hold since deployment',
+    series: [
+      { name: 'Buy & Hold', label: 'Buy & Hold', color: '--series-2', width: 2, values: P.buy_hold, dot: true },
+      { name: 'Champion', label: 'Champion', color: '--series-1', width: 2, values: P.value, dot: true },
+    ],
+    tooltip: i => `<div class="t-head">${fmtDate(P.dates[i])} · gas $${P.price[i].toFixed(2)}/MMBtu</div>` +
+      trow('--series-1', `Champion v${esc(P.version[i])}`, `${usd(P.value[i])} <span style="color:var(--text-muted);font-weight:500">${pct((P.value[i] / P.value[0] - 1) * 100)}</span>`) +
+      trow('--series-2', 'Buy &amp; Hold', `${usd(P.buy_hold[i])} <span style="color:var(--text-muted);font-weight:500">${pct((P.buy_hold[i] / P.buy_hold[0] - 1) * 100)}</span>`) +
+      trow(null, 'Position after trade', `${Math.round(P.position[i]).toLocaleString('en-US')} MMBtu`),
+  });
+
+  // champion card
+  const gi = L.gate_initial.find(g => g.run_id === C.run_id);
+  const checks = (C.gate_reasons || '').split('; ').map(r => `<li>${pill('pass', '')}<span>${esc(r)}</span></li>`).join('');
+  $('champion').innerHTML = `<h3>Approved model</h3><p class="hint">MLflow Model Registry, alias <span class="mono">${esc(L.registry.champion_alias)}</span></p>
+    <dl class="kv">
+      <dt>Model</dt><dd>${esc(L.registry.model_name)} v${esc(C.version)}</dd>
+      <dt>Seed</dt><dd>${esc(C.seed)} (PPO, ${(+C.total_timesteps).toLocaleString('en-US')} steps)</dd>
+      <dt>MLflow run</dt><dd class="mono" title="${esc(C.run_id)}">${esc(C.run_id)}</dd>
+      <dt>Promoted</dt><dd>${fmtDate(C.promoted_at)}</dd>
+      <dt>Trained on</dt><dd>${esc(C.train_window.replace(' to ', ' – '))}</dd>
+      <dt>Validated on</dt><dd>${esc(C.val_window.replace(' to ', ' – '))}</dd>
+      <dt>Trading from</dt><dd>${fmtDate(M.deployed_from)}</dd>
+    </dl>
+    <div class="sub">Why it passed the quality gate</div><ul class="checks">${checks}</ul>
+    <div class="sub">Why it is the champion</div><p style="margin:4px 0 0;font-size:13px;color:var(--text-secondary)">${esc(C.promotion_reason)}.</p>`;
+
+  // health card
+  const metricRows = [
+    ['Return gap vs Buy & Hold since deployment', mx.gap_since_deploy_pp, th.max_gap_since_deploy_pp, pp],
+    [`Return gap over the last ${th.rolling_window_days} trading days`, mx.rolling_gap_pp, th.max_rolling_gap_pp, pp],
+    ['Drawdown from peak (now)', mx.drawdown_from_peak_pct, th.max_drawdown_from_peak_pct, pct],
+  ].map(([l, v, t, f]) => {
+    const state = v === null ? null : v < t ? 'retrain_required' : v < t * th.watch_fraction ? 'watch' : 'healthy';
+    return `<tr><td>${esc(l)}</td><td class="v">${v === null ? '—' : f(v, 2)}</td><td class="v">${f(t, 0)}</td>
+      <td class="nw">${state ? pill(state, state === 'healthy' ? 'OK' : null) : pill('warming_up', 'Too few days')}</td></tr>`;
+  }).join('');
+  $('health').innerHTML = `<h3>Champion health</h3><p class="hint">Checked after every paper-trading update · retrain when a metric falls below its threshold</p>
+    <div class="scroll"><table class="tbl" style="margin-top:8px"><thead><tr><th>Metric</th><th class="v">Now</th><th class="v">Threshold</th><th>State</th></tr></thead>
+    <tbody>${metricRows}</tbody></table></div>
+    <div class="note-box">Retrain trigger: <b>${M.retrain.triggered ? 'triggered' : 'not triggered'}</b> — ${esc(M.retrain.reason)}.
+      No alarm before ${th.min_days} trading days; a retrain that fails is not repeated for ${th.retrain_cooldown_days} trading days.</div>`;
+
+  // gate card (retroactive gate on the five July runs)
+  const g = L.registry.gate_thresholds;
+  $('gate').innerHTML = `<h3>Quality gate on the five trained seeds</h3>
+    <p class="hint">Validation ${esc(L.gate_initial[0].window.replace(' to ', ' – '))} only; the test split is never used. Pass = beats Buy &amp; Hold, beats ≥ ${g.min_random_beaten_pct} % of ${g.n_random_agents} Random Agents, drawdown ≥ ${g.max_drawdown_floor_pct} %.</p>
+    <div class="scroll"><table class="tbl" style="margin-top:8px"><thead><tr><th>Seed</th><th class="v">Return</th><th class="v">Buy &amp; Hold</th><th class="v">Random beaten</th><th class="v">Max drawdown</th><th>Gate</th></tr></thead><tbody>` +
+    [...L.gate_initial].sort((a, b) => b.val - a.val).map(r => `<tr><td class="nw">${r.seed}${r.run_id === C.run_id ? ' <span class="tag" style="margin-left:4px">CHAMPION</span>' : ''}</td>
+      <td class="v">${pct(r.val, 1)}</td><td class="v">${pct(r.bh, 1)}</td><td class="v">${r.beaten.toFixed(0)} %</td><td class="v">${pct(r.dd, 1)}</td>
+      <td class="nw">${pill(r.passed ? 'pass' : 'fail')}</td></tr>`).join('') + `</tbody></table></div>`;
+
+  // history
+  $('history').innerHTML = `<thead><tr><th>Date</th><th>Event</th><th>Outcome</th><th>Details</th></tr></thead><tbody>` +
+    [...L.history].reverse().map(h => `<tr><td class="nw">${fmtDate(h.date)}</td><td class="nw">${esc(h.kind)}</td>
+      <td class="nw">${pill(h.state)}</td><td><div>${esc(h.title)}</div><div class="detail">${esc(h.detail)}</div></td></tr>`).join('') + '</tbody>';
+  return drawPaper;
+}
+const drawPaper = renderLive();
+
+// ── Backtest results ─────────────────────────────────────────────────────────
+const S = D.seeds, T = D.traj, n = T.dates.length;
+const full = S.map(s => s.test_full), bh = S[0].bh_full;
+const sorted = [...S].sort((a, b) => a.test_full - b.test_full);
+const median = sorted[Math.floor(sorted.length / 2)];
+const tPass = count(D.tests, 'verdict', 'pass'), tFail = count(D.tests, 'verdict', 'fail'), tNot = count(D.tests, 'verdict', 'not_run');
+const dFixed = count(D.defects, 'state', 'fixed'), dMit = count(D.defects, 'state', 'mitigated'), dOpen = count(D.defects, 'state', 'open');
+const beat = S.filter(s => s.test_full > s.bh_full).length;
+$('kpis').innerHTML = [
+  `<div class="stat"><div class="label">Agent return on the test period</div><div class="value">${pct(median.test_full)}</div>
+    <div class="note">Median of ${S.length} seeds (${pct(Math.min(...full))} to ${pct(Math.max(...full))}) · Buy &amp; Hold ${pct(bh)}</div></div>`,
+  `<div class="stat"><div class="label">Seeds beating Buy &amp; Hold</div><div class="value">${beat} <small>of ${S.length}</small></div>
+    <div class="note">Over ${n} held-out trading days</div></div>`,
+  `<div class="stat"><div class="label">Test cases passing</div><div class="value">${tPass} <small>of ${D.tests.length}</small></div>
+    <div class="meter">${meter([['pass', tPass], ['not_run', tNot], ['fail', tFail]])}</div></div>`,
+  `<div class="stat"><div class="label">Defects fixed</div><div class="value">${dFixed} <small>of ${D.defects.length}</small></div>
+    <div class="meter">${meter([['fixed', dFixed], ['mitigated', dMit], ['open', dOpen]])}</div></div>`,
+].join('');
+$('results-sub').textContent = `PPO agents trained with five random seeds on 2010–2023 prices, then backtested on ${fmtDate(T.dates[0])} to ${fmtDate(T.dates[n-1])} (${n} trading days they never saw) against Buy & Hold.`;
+const R = D.results, row = (w, k) => R.find(r => r.window === w && r.strategy.includes(k));
+const mean = row('Full test period', 'mean of 5'), bhr = row('Full test period', 'Buy & Hold');
+$('cmp').innerHTML = `<thead><tr><th></th><th class="v">Agent</th><th class="v">Buy &amp; Hold</th></tr></thead><tbody>` +
+  [['Total return', mean.ret, bhr.ret], ['Sharpe ratio', mean.sharpe, bhr.sharpe], ['Max drawdown', mean.dd, bhr.dd], ['Trades', mean.trades, bhr.trades]]
+  .map(([k, a, b]) => `<tr><td>${k}</td><td class="v">${esc(a)}</td><td class="v">${esc(b)}</td></tr>`).join('') + '</tbody>';
+$('limits').innerHTML = D.status.limitations.map(l => `<li>${esc(l)}</li>`).join('');
+let prevWin = null;
+$('results-table').innerHTML = `<thead><tr><th>Strategy</th><th class="v">Total return</th><th class="v">Sharpe</th><th class="v">Max drawdown</th><th class="v">Trades</th></tr></thead><tbody>` +
+  R.map(r => { let g = ''; if (r.window !== prevWin) { prevWin = r.window; g = `<tr class="group"><td colspan="5">${esc(r.window)}</td></tr>`; }
+    return g + `<tr${r.strategy === 'Buy & Hold' ? ' class="muted"' : ''}><td>${esc(r.strategy)}</td><td class="v">${esc(r.ret)}</td><td class="v">${esc(r.sharpe)}</td><td class="v">${esc(r.dd)}</td><td class="v">${esc(r.trades)}</td></tr>`; }).join('') + '</tbody>';
+
+$('eq-legend').innerHTML = [['--series-1', 'Agent, seed 42 (median)'], ['--series-1-soft', 'Agent, other seeds'], ['--series-2', 'Buy & Hold']]
+  .map(([c, l]) => `<span><i class="swatch" style="background:${cv(c)}"></i>${esc(l)}</span>`).join('');
+const drawEquity = () => lineChart($('equity'), {
+  dates: T.dates, height: 340, tickEvery: 3,
+  aria: 'Line chart of portfolio value over the test period for five agent seeds and Buy & Hold',
+  series: [
+    ...['1','2','3','4'].map(s => ({ name: `Seed ${s}`, color: '--series-1-soft', width: 1.5, values: T.seeds[s] })),
+    { name: 'Buy & Hold', color: '--series-2', width: 2, values: T.buy_hold, dot: true },
+    { name: 'Seed 42', color: '--series-1', width: 2, values: T.seeds['42'], dot: true },
+  ],
+  tooltip: i => { const o = ['1','2','3','4'].map(k => T.seeds[k][i]);
+    return `<div class="t-head">${fmtDate(T.dates[i])} · gas $${T.price[i].toFixed(2)}/MMBtu</div>` +
+      trow('--series-1', 'Seed 42', usd(T.seeds['42'][i])) +
+      trow('--series-1-soft', 'Other seeds', `${usd(Math.min(...o))} – ${usd(Math.max(...o))}`) +
+      trow('--series-2', 'Buy &amp; Hold', usd(T.buy_hold[i])); },
+});
+
 function drawSeeds() {
   const host = $('seeds'); host.innerHTML = '';
   if (host.clientWidth <= 0) return;
   const rows = [...S].sort((a, b) => b.test_full - a.test_full);
-  const W = host.clientWidth, rowH = 42, m = { t: 22, r: 58, b: 4, l: 64 };
+  const W = host.clientWidth, rowH = 38, m = { t: 22, r: 52, b: 4, l: 60 };
   const H = m.t + rows.length * rowH + m.b, iw = W - m.l - m.r;
-  const xmax = Math.max(...rows.map(r => r.test_full));
-  const x = v => m.l + (v / xmax) * iw;
-  const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, height: H, role: 'img',
-    'aria-label': 'Bar chart of full-test return for each training seed compared with Buy & Hold' }, host);
+  const xmax = Math.max(...rows.map(r => r.test_full)), x = v => m.l + (v / xmax) * iw;
+  const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, height: H, role: 'img', 'aria-label': 'Bar chart of full-test return for each training seed compared with Buy & Hold' }, host);
   const tip = document.createElement('div'); tip.className = 'tooltip'; host.appendChild(tip);
   rows.forEach((r, k) => {
-    const yc = m.t + k * rowH + rowH / 2, bhh = 16, x0 = x(0), x1 = x(r.test_full), rr = Math.min(4, x1 - x0);
+    const yc = m.t + k * rowH + rowH / 2, bh2 = 14, x0 = x(0), x1 = x(r.test_full), rr = Math.min(4, x1 - x0);
     const isMed = r.seed === median.seed;
     el('text', { x: m.l - 10, y: yc + 4, 'text-anchor': 'end', class: 'axis-label' }, svg).textContent = `Seed ${r.seed}`;
-    const p = el('path', { d: `M${x0},${yc - bhh/2} H${x1 - rr} Q${x1},${yc - bhh/2} ${x1},${yc - bhh/2 + rr} V${yc + bhh/2 - rr} Q${x1},${yc + bhh/2} ${x1 - rr},${yc + bhh/2} H${x0} Z`,
+    const p = el('path', { d: `M${x0},${yc - bh2/2} H${x1 - rr} Q${x1},${yc - bh2/2} ${x1},${yc - bh2/2 + rr} V${yc + bh2/2 - rr} Q${x1},${yc + bh2/2} ${x1 - rr},${yc + bh2/2} H${x0} Z`,
       fill: cv(isMed ? '--series-1' : '--series-1-soft') }, svg);
     el('text', { x: x1 + 6, y: yc + 4, class: 'val-label' }, svg).textContent = pct(r.test_full, 0);
     const hit = el('rect', { x: 0, y: yc - rowH / 2, width: W, height: rowH, fill: 'transparent' }, svg);
@@ -454,73 +574,58 @@ function drawSeeds() {
       const b = svg.getBoundingClientRect();
       tip.innerHTML = `<div class="t-head">Seed ${r.seed}${isMed ? ' (median)' : ''}</div>` +
         [['Validation', pct(r.val, 2)], ['Test, first 252 days', pct(r.test252, 2)], ['Test, full period', pct(r.test_full, 2)],
-         ['Sharpe ratio', r.sharpe.toFixed(2)], ['Max drawdown', pct(r.max_dd, 2)]]
-        .map(([a, v]) => `<div class="t-row"><span>${a}</span><span>${v}</span></div>`).join('');
+         ['Sharpe ratio', r.sharpe.toFixed(2)], ['Max drawdown', pct(r.max_dd, 2)]].map(([a, v]) => trow(null, a, v)).join('');
       tip.style.opacity = 1;
-      const tw = tip.offsetWidth;
-      tip.style.left = Math.max(0, Math.min(ev.clientX - b.left + 14, b.width - tw)) + 'px';
-      tip.style.top = (yc / H) * b.height + 16 + 'px';
+      tip.style.left = Math.max(0, Math.min(ev.clientX - b.left + 14, b.width - tip.offsetWidth)) + 'px';
+      tip.style.top = (yc / H) * b.height + 14 + 'px';
       p.setAttribute('opacity', 0.8);
     });
     hit.addEventListener('pointerleave', () => { tip.style.opacity = 0; p.setAttribute('opacity', 1); });
   });
-  el('line', { x1: x(bh), x2: x(bh), y1: m.t - 4, y2: H - m.b, stroke: cv('--series-2'), 'stroke-width': 2, 'stroke-dasharray': '4 3' }, svg);
-  el('text', { x: x(bh) - 2, y: m.t - 9, class: 'axis-label', 'text-anchor': 'start' }, svg).textContent = `Buy & Hold ${pct(bh)}`;
+  el('line', { x1: x(bh), x2: x(bh), y1: m.t - 4, y2: H - m.b, stroke: cv('--series-2'), 'stroke-width': 2 }, svg);
+  el('text', { x: x(bh) + 4, y: m.t - 9, class: 'axis-label' }, svg).textContent = `Buy & Hold ${pct(bh)}`;
 }
 
 // ── Pipeline ─────────────────────────────────────────────────────────────────
-const FLOW = D.status.components;
-const CAPS = D.status.capabilities;
+const FLOW = D.status.components, CAPS = D.status.capabilities;
 const cLocal = count(CAPS, 'status', 'local'), cPart = count(CAPS, 'status', 'partly');
 $('cap-sub').textContent = `${cLocal} of ${CAPS.length} capabilities ran in full locally; ${cPart} partly.`;
-$('cap-legend').innerHTML = [['local', cLocal], ['partly', cPart]].map(([k, c]) => pill(k, `${STATUS[k][2]} · ${c}`)).join('');
+$('cap-legend').innerHTML = legendPills([['local', cLocal], ['partly', cPart]]);
 $('caps').innerHTML = `<thead><tr><th>Capability</th><th>Cloud design (AWS)</th><th>What ran</th><th>Status</th></tr></thead><tbody>` +
   CAPS.map(c => `<tr><td class="cap">${esc(c.capability)}</td><td class="cloud">${c.cloud ? esc(c.cloud) : '<span class="na">Built into the pipeline</span>'}</td>
-    <td>${esc(c.local)}</td><td>${pill(c.status)}</td></tr>`).join('') + '</tbody>';
-const arrow = '<svg class="arrow" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 2l6 5-6 5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-$('flow').innerHTML = FLOW.map((c, i) => `<div class="step"><div class="box">
-    <div class="bar" style="background:var(--good)"></div>
-    <div class="num">STEP ${i + 1}</div><div class="name">${esc(c.name)}</div>
-    <div class="file" title="${esc(c.file)}">${esc(c.file.split('/').pop())}</div></div>${i < FLOW.length - 1 ? arrow : ''}</div>`).join('');
+    <td>${esc(c.local)}</td><td class="nw">${pill(c.status)}</td></tr>`).join('') + '</tbody>';
+$('flow').innerHTML = FLOW.map((c, i) => `<div class="step"><div class="num">STEP ${i + 1}</div><div class="name">${esc(c.name)}</div>
+  <div class="file" title="${esc(c.file)}">${esc(c.file.split('/').pop())}</div></div>`).join('');
 const dag = D.status.latest_dag_run;
-const TASKS = ['start', 'ingest', 'transform', 'data_quality_report', 'train_drl', 'backtest_drl', 'notify_success', 'end'];
 $('dag').innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
     <h3 style="margin:0">Latest Airflow run</h3>${pill('pass', dag.result)}</div>
-  <p class="hint" style="margin-top:4px">${fmtDate(dag.date)} · ${esc(dag.where)}</p>
-  <div class="tasks">${TASKS.map(t => `<span class="task">✓ ${t}</span>`).join('')}</div>
-  <ul class="clean" style="font-size:13.5px;color:var(--text-secondary)">${dag.details.map(d => `<li>${esc(d)}</li>`).join('')}</ul>
+  <p class="hint" style="margin-top:2px">${fmtDate(dag.date)} · ${esc(dag.where)} · <span class="mono">${esc(dag.run_id)}</span></p>
+  <div class="tasks">${dag.tasks.map(t => `<span class="task ${t.state === 'skipped' ? 'skip' : 'ok'}" title="${esc(t.state)}"><b>${t.state === 'skipped' ? '–' : '✓'}</b>${esc(t.id)}</span>`).join('')}</div>
+  <ul class="clean" style="font-size:13px;color:var(--text-secondary)">${dag.details.map(d => `<li>${esc(d)}</li>`).join('')}</ul>
   <p class="hint" style="margin-top:10px">${esc(dag.note)}</p>`;
 
-// ── Objectives ───────────────────────────────────────────────────────────────
+// ── Objectives, tests, defects ───────────────────────────────────────────────
 $('objs').innerHTML = D.objectives.map(o => `<div class="obj"><div>${pill(o.state, o.outcome)}</div>
   <div class="t">${esc(o.objective)}</div><div class="e">${esc(o.evidence)}</div></div>`).join('');
-
-// ── Tests ────────────────────────────────────────────────────────────────────
-$('tests-sub').textContent = `${tPass} of ${D.tests.length} test cases pass. Each case groups one or more automated or manual tests (67 automated tests in total). Click a card for the result.`;
-$('tests-legend').innerHTML = [['pass', tPass], ['not_run', tNot], ['fail', tFail]].map(([k, c]) => pill(k, `${STATUS[k][2]} · ${c}`)).join('');
-$('tests-bar').innerHTML = meter([['pass', tPass], ['not_run', tNot], ['fail', tFail]]);
-$('tests').innerHTML = D.tests.map(t => `<details class="tile"><summary>
-    <div class="row1"><span><span class="id">${esc(t.id)}</span><span class="req">${esc(t.req)}</span></span>${pill(t.verdict)}</div>
-    <div class="summary">${esc(t.scenario)}</div><span class="more">Show result</span></summary>
+$('tests-sub').textContent = `${tPass} of ${D.tests.length} test cases pass (Table 5.6). Each case groups automated or manual tests; ${D.status.automated_tests} automated tests in total. Click a row for the result.`;
+$('tests-legend').innerHTML = legendPills([['pass', tPass], ['not_run', tNot], ['fail', tFail]].filter(p => p[1] > 0));
+$('tests').innerHTML = D.tests.map(t => `<details class="row"><summary>
+    <span class="id">${esc(t.id)}<span class="req">${esc(t.req)}</span></span><span class="text">${esc(t.scenario)}</span>${pill(t.verdict)}</summary>
   <div class="body"><b>Result</b>${esc(t.result)}</div></details>`).join('');
-
-// ── Defects ──────────────────────────────────────────────────────────────────
-$('defects-sub').textContent = `${D.defects.length} defects were found during testing. Click a card for the details and the fix.`;
-$('defects-legend').innerHTML = [['fixed', dFixed], ['mitigated', dMit], ['open', dOpen]].map(([k, c]) => pill(k, `${STATUS[k][2]} · ${c}`)).join('');
-$('defects-bar').innerHTML = meter([['fixed', dFixed], ['mitigated', dMit], ['open', dOpen]]);
-$('defects-list').innerHTML = D.defects.map(d => `<details class="tile"><summary>
-    <div class="row1"><span><span class="id">${esc(d.id)}</span><span class="sev ${esc(d.severity)}">${esc(d.severity)}</span></span>${pill(d.state)}</div>
-    <div class="summary">${esc(d.text)}</div><span class="more">Show details</span></summary>
+$('defects-sub').textContent = `${D.defects.length} defects were found during testing (Table 5.7). Click a row for the status and the fix.`;
+$('defects-legend').innerHTML = legendPills([['fixed', dFixed], ['mitigated', dMit], ['open', dOpen]].filter(p => p[1] > 0));
+$('defects-list').innerHTML = D.defects.map(d => `<details class="row"><summary>
+    <span class="id">${esc(d.id)}<span class="sev">${esc(d.severity)}</span></span><span class="text">${esc(d.text)}</span>${pill(d.state)}</summary>
   <div class="body"><b>Status</b>${esc(d.status)}</div></details>`).join('');
 
 // ── Activity & footer ────────────────────────────────────────────────────────
 $('commits').innerHTML = D.commits.map(c => `<li><span class="d">${fmtDate(c.date)}</span>
-  <span class="s"><a href="${D.repo}/commit/${esc(c.hash)}" style="color:inherit">${esc(c.subject)}</a><code>${esc(c.hash)}</code></span></li>`).join('');
-$('footer').innerHTML = `This page is rebuilt automatically on every push from the report's tables, the evaluation results in
-  <code>reports/evaluation_reward_fix/</code>, <code>dashboard/status.json</code> (updated ${esc(D.status.updated)}) and the git history.
-  All results come from simulated trading on historical data, not real trading.`;
+  <span><a href="${D.repo}/commit/${esc(c.hash)}" style="color:inherit">${esc(c.subject)}</a><code>${esc(c.hash)}</code></span></li>`).join('');
+$('footer').innerHTML = `Rebuilt automatically on every push from the report's tables, <code>reports/evaluation_reward_fix/</code>,
+  <code>reports/live/</code>, <code>dashboard/status.json</code> (updated ${esc(D.status.updated)}) and the git history.
+  All results come from simulated trading on historical or newly published prices (paper trading); no real money is involved.`;
 
-const draw = () => { drawEquity(); drawSeeds(); };
+const draw = () => { if (drawPaper) drawPaper(); drawEquity(); drawSeeds(); };
 draw();
 let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(draw, 120); });
 })();

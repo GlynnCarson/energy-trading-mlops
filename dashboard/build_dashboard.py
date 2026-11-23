@@ -8,6 +8,10 @@ cannot drift away from the report:
   Buy & Hold are shown), Table 5.10 (objectives)
 - reports/evaluation_reward_fix/seed_results.csv and *_full_test_trajectory.csv:
   the five fixed-reward PPO-300k runs and Buy & Hold
+- reports/live/: the closed loop - model_registry.json (registered versions,
+  quality-gate results, champion, promotion and retrain history),
+  monitor_status.json (champion health) and paper_trading.csv (paper
+  trading, simulated, since 2026-07-07)
 - dashboard/status.json: component status, latest DAG run, limitations
   (hand-maintained, mirrors Figure 4.5 and Chapter 5)
 - git log: recent activity
@@ -31,6 +35,7 @@ from docx.table import Table
 ROOT = Path(__file__).resolve().parent.parent
 REPORT = ROOT / "energy_trading_mlops_proposal_v17.docx"
 FIX_DIR = ROOT / "reports" / "evaluation_reward_fix"
+LIVE_DIR = ROOT / "reports" / "live"
 TEMPLATE = Path(__file__).with_name("template.html")
 STATUS = Path(__file__).with_name("status.json")
 REPO_URL = "https://github.com/GlynnCarson/energy-trading-mlops"
@@ -114,6 +119,70 @@ def seed_results() -> list[dict]:
     return rows
 
 
+def live() -> dict | None:
+    """Closed loop: champion, gate/retrain history, monitor status and the paper-trading ledger."""
+    if not (LIVE_DIR / "model_registry.json").exists():
+        return None
+    reg = json.loads((LIVE_DIR / "model_registry.json").read_text(encoding="utf-8"))
+    mon = json.loads((LIVE_DIR / "monitor_status.json").read_text(encoding="utf-8"))
+    rows = read_csv(LIVE_DIR / "paper_trading.csv")
+    gate_initial = json.loads((LIVE_DIR / "gate_initial.json").read_text(encoding="utf-8"))
+    paper = {
+        "dates": [r["date"] for r in rows],
+        "price": [float(r["price"]) for r in rows],
+        "value": [float(r["portfolio_value"]) for r in rows],
+        "buy_hold": [float(r["buy_hold_value"]) for r in rows],
+        "position": [float(r["position_mmbtu"]) for r in rows],
+        "version": [r["model_version"] for r in rows],
+    }
+    history = []
+    events = reg.get("events", [])
+    retro = [e for e in events if e["type"] == "gate" and e.get("context") == "retroactive"]
+    if retro:   # one row for the retroactive gate on the July runs (details are in the gate table)
+        n_pass = sum(e["passed"] for e in retro)
+        history.append({"date": retro[0]["time"][:10], "kind": "Quality gate", "state": "pass" if n_pass else "fail",
+                        "title": f"Retroactive gate on the {len(retro)} fixed-reward July runs: {n_pass} of {len(retro)} passed",
+                        "detail": f"Validation {retro[0]['window']}; " + "; ".join(
+                            f"seed {e['seed']} {e['val_return_pct']:+.2f} %" for e in retro)
+                                  + ". Passing runs registered as versions of the model."})
+    for e in events:
+        t, date = e["type"], e["time"][:10]
+        if t == "gate":
+            if e.get("context") != "retroactive":
+                history.append({"date": date, "kind": "Quality gate", "state": "pass" if e["passed"] else "fail",
+                                "title": e.get("name", ""), "detail": e["reasons"]})
+        elif t == "promotion":
+            prev = f"replaced v{e['replaced']}" if e.get("replaced") else "first champion"
+            history.append({"date": date, "kind": "Promotion", "state": "promoted",
+                            "title": f"v{e['version']} became champion ({prev})", "detail": e["reason"]})
+        elif t in ("retrain_required", "retrain_drill"):
+            history.append({"date": date, "kind": "Monitor", "state": "drill" if t == "retrain_drill" else "retrain",
+                            "title": "Retrain drill started" if t == "retrain_drill" else "Retrain required",
+                            "detail": e["reason"] + (f" ({'; '.join(e['breaches'])})" if e.get("breaches") else "")})
+        elif t == "retrain_aborted":
+            history.append({"date": date, "kind": "Retrain (drill)", "state": "aborted",
+                            "title": "Drill aborted, nothing registered or promoted", "detail": e["reason"]})
+        elif t == "retrain":
+            ch = "; ".join(f"seed {c['seed']} {'PASS' if c['passed'] else 'FAIL'} {c['val_return_pct']:+.2f} %"
+                           for c in e["challengers"])
+            champ = e.get("champion_val_return_pct")
+            history.append({"date": date, "kind": "Retrain" + (" (smoke test)" if e.get("smoke_test")
+                                                              else " (drill)" if e.get("drill") else ""),
+                            "state": {"champion_replaced": "promoted", "failed_gate": "fail",
+                                      "champion_kept": "kept"}[e["result"]],
+                            "title": e["reason"],
+                            "detail": f"Validation {e['val_window']}: {ch}"
+                                      + (f"; champion v{e['champion_version']} {champ:+.2f} %" if champ is not None else "")})
+    return {"registry": {k: reg.get(k) for k in ("model_name", "champion_alias", "champion", "versions",
+                                                 "gate_thresholds", "exported_at")},
+            "gate_initial": [{"seed": r["seed"], "run_id": r["run_id"], "passed": r["passed"],
+                              "val": r["metrics"]["return_pct"], "bh": r["metrics"]["buy_and_hold_return_pct"],
+                              "beaten": r["metrics"]["random_beaten_pct"], "dd": r["metrics"]["max_drawdown_pct"],
+                              "window": f"{r['metrics']['window_start']} to {r['metrics']['window_end']}"}
+                             for r in gate_initial["results"]],
+            "monitor": mon, "paper": paper, "history": history}
+
+
 def git_log(n: int = 12) -> list[dict]:
     try:
         out = subprocess.run(
@@ -154,6 +223,7 @@ def build(out_dir: Path) -> Path:
         "seeds": seed_results(),
         "traj": trajectories(),
         "commits": commits,
+        "live": live(),
     }
     payload = json.dumps(data, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
     html = TEMPLATE.read_text(encoding="utf-8").replace("__DASHBOARD_DATA__", payload)
