@@ -478,14 +478,15 @@ def conceptual_framework():
     fig, ax, H = canvas("Conceptual Framework", subtitle="Five layers of the MLOps lifecycle, orchestrated daily "
                                                         "by Apache Airflow", w=14, h=7.4)
     layers = [
-        ("Layer 1", "ACTORS AND USERS", ["Data Engineer", "ML Engineer", "Airflow Scheduler"]),
-        ("Layer 2", "DATA COLLECTION", ["EIA API v2", "Synthetic generator", "Raw Parquet in S3", "Glue crawler (hourly)"]),
-        ("Layer 3", "PROCESSING AND AI", ["Cleaning, outliers", "50+ features", "PPO in trading env",
+        ("Layer 1", "ACTORS AND USERS", ["Data Engineer", "ML Engineer", "Energy Analyst", "Airflow Scheduler"]),
+        ("Layer 2", "DATA COLLECTION", ["EIA API v2 (daily)", "Synthetic generator", "Raw Parquet in S3",
+                                        "LocalStack (local S3)"]),
+        ("Layer 3", "PROCESSING AND AI", ["Cleaning, outliers", "38 features", "PPO in trading env",
                                           "MLflow tracking", "Quality gate"]),
-        ("Layer 4", "STORAGE AND INFRA", ["S3 data lake", "MLflow Model Registry", "Glue Data Catalog",
-                                          "Terraform, ECR"]),
-        ("Layer 5", "OUTPUTS AND FEEDBACK", ["24-hour price forecast", "SNS email alert", "CloudWatch logs",
-                                             "Daily retraining"]),
+        ("Layer 4", "STORAGE AND INFRA", ["S3 data lake", "MLflow Model Registry", "Docker Compose stack",
+                                          "Terraform (not applied)"]),
+        ("Layer 5", "OUTPUTS AND FEEDBACK", ["Backtest report", "Paper trading", "Health monitor",
+                                             "Email alerts", "Retraining"]),
     ]
     bw, gap, x0 = 17.4, 2.4, 1.8
     top, bh = H - 13.0, 26.0
@@ -515,15 +516,15 @@ def conceptual_framework():
     yl = top + 2.4
     l2c, l5c = xs[1] + bw / 2, xs[4] + bw / 2
     poly_arrow(ax, [(l5c, top), (l5c, yl), (l2c, yl), (l2c, top)], color=MID, lw=1.4)
-    ax.text((l2c + l5c) / 2, yl + 1.3, "feedback loop: new data each day triggers retraining", ha="center",
+    ax.text((l2c + l5c) / 2, yl + 1.3, "feedback loop: a degraded champion triggers retraining on the newest data", ha="center",
             va="center", fontsize=9, color=DARK, style="italic")
 
     # orchestration and platform bars
     yb = top - bh - 3.0
-    box(ax, x0, yb - 4.6, 5 * bw + 4 * gap, 4.6, "APACHE AIRFLOW DAG  -  runs every stage daily:  ingest -> transform -> "
-        "train -> quality gate -> forecast -> notify", fill=BLACK, text_color="white", fs=9.6, lw=1.2)
-    box(ax, x0, yb - 10.0, 5 * bw + 4 * gap, 4.2, "PLATFORM  -  AWS cloud  |  Terraform IaC  |  GitHub Actions "
-        "CI/CD  |  Docker and ECR", fill=LIGHT, fs=9.6, lw=1.2)
+    box(ax, x0, yb - 4.6, 5 * bw + 4 * gap, 4.6, "APACHE AIRFLOW DAG  -  runs daily:  ingest -> transform -> train -> backtest -> "
+        "notify  |  paper trade -> monitor -> retrain, gate and promote if needed", fill=BLACK, text_color="white", fs=9.6, lw=1.2)
+    box(ax, x0, yb - 10.0, 5 * bw + 4 * gap, 4.2, "PLATFORM  -  Docker Compose locally (Airflow, PostgreSQL, MLflow, LocalStack, "
+        "Mailpit)  |  GitHub Actions CI/CD  |  Terraform IaC for AWS", fill=LIGHT, fs=9.6, lw=1.2)
     save(fig, OUT / "fig2_1_conceptual.png")
 
 
