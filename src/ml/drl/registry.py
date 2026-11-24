@@ -47,6 +47,7 @@ def tracking_uri(cfg: dict) -> str:
 
 def client(cfg: dict):
     from mlflow import MlflowClient
+
     uri = tracking_uri(cfg)
     return MlflowClient(tracking_uri=uri, registry_uri=uri)
 
@@ -54,6 +55,7 @@ def client(cfg: dict):
 # ─────────────────────────────────────────────────────────────────────────────
 # Run artefacts
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 def run_dir(run_id: str, mlruns: Path | None = None) -> Path:
     mlruns = mlruns or MLRUNS
@@ -71,6 +73,7 @@ def model_path(run_id: str, which: str = "best_model") -> Path:
 
 def load_agent(run_id: str, which: str = "best_model"):
     from stable_baselines3 import PPO
+
     return PPO.load(str(model_path(run_id, which)), device="cpu")
 
 
@@ -87,6 +90,7 @@ def load_preprocessing(run_id: str) -> dict:
 # ─────────────────────────────────────────────────────────────────────────────
 # Decision rules (pure functions, unit-tested)
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 def choose_champion(candidates: list[dict]) -> dict | None:
     """candidates: dicts with 'passed', 'val_return_pct', 'max_drawdown_pct'.
@@ -105,33 +109,43 @@ def challenger_beats_champion(challenger: dict, champion_return_pct: float | Non
     if champion_return_pct is None:
         return True, "no current champion"
     if challenger["val_return_pct"] > champion_return_pct:
-        return True, (f"challenger {challenger['val_return_pct']:+.2f}% > champion "
-                      f"{champion_return_pct:+.2f}% on the same validation window")
-    return False, (f"challenger {challenger['val_return_pct']:+.2f}% <= champion "
-                   f"{champion_return_pct:+.2f}% on the same validation window")
+        return True, (
+            f"challenger {challenger['val_return_pct']:+.2f}% > champion "
+            f"{champion_return_pct:+.2f}% on the same validation window"
+        )
+    return False, (
+        f"challenger {challenger['val_return_pct']:+.2f}% <= champion "
+        f"{champion_return_pct:+.2f}% on the same validation window"
+    )
 
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Registry operations
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 def register(cfg: dict, run_id: str, which: str, tags: dict) -> str:
     """Create a new version of the registered model from a run's model files."""
     from mlflow.exceptions import MlflowException
+
     c, name = client(cfg), cfg["registry"]["model_name"]
     try:
         c.create_registered_model(
-            name, description="PPO agent trading daily Henry Hub natural gas (EIA RNGWHHD). "
-                              "Versions are registered only after passing the quality gate.")
+            name,
+            description="PPO agent trading daily Henry Hub natural gas (EIA RNGWHHD). "
+            "Versions are registered only after passing the quality gate.",
+        )
     except MlflowException:
         pass  # already exists
-    mv = c.create_model_version(name, source=f"runs:/{run_id}/{which}", run_id=run_id,
-                                tags={k: str(v) for k, v in tags.items()})
+    mv = c.create_model_version(
+        name, source=f"runs:/{run_id}/{which}", run_id=run_id, tags={k: str(v) for k, v in tags.items()}
+    )
     return str(mv.version)
 
 
 def current_champion(cfg: dict) -> dict | None:
     from mlflow.exceptions import MlflowException
+
     c, reg = client(cfg), cfg["registry"]
     try:
         mv = c.get_model_version_by_alias(reg["model_name"], reg["champion_alias"])
@@ -152,13 +166,15 @@ def promote(cfg: dict, version: str, reason: str) -> None:
     c.set_registered_model_alias(name, alias, version)
     c.set_model_version_tag(name, version, "promoted_at", now)
     c.set_model_version_tag(name, version, "promotion_reason", reason)
-    record_event({"type": "promotion", "version": version, "replaced": old["version"] if old else None,
-                  "reason": reason})
+    record_event(
+        {"type": "promotion", "version": version, "replaced": old["version"] if old else None, "reason": reason}
+    )
 
 
 # ─────────────────────────────────────────────────────────────────────────────
 # History and export for the dashboard
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 def _load_json() -> dict:
     if REGISTRY_JSON.exists():
@@ -181,23 +197,30 @@ def export_registry(cfg: dict) -> dict:
     versions = []
     for mv in sorted(c.search_model_versions(f"name='{reg['model_name']}'"), key=lambda m: int(m.version)):
         t = dict(mv.tags)
-        versions.append({
-            "version": str(mv.version), "run_id": mv.run_id, "source": mv.source,
-            "registered_at": datetime.fromtimestamp(mv.creation_timestamp / 1000, timezone.utc)
-            .strftime("%Y-%m-%dT%H:%M:%SZ"),
-            "is_champion": bool(champ and champ["version"] == str(mv.version)),
-            **{k: t[k] for k in sorted(t)},
-        })
-    data.update({
-        "model_name": reg["model_name"],
-        "champion_alias": reg["champion_alias"],
-        "champion": next((v for v in versions if v["is_champion"]), None),
-        "versions": versions,
-        "gate_thresholds": cfg["quality_gate"],
-        "exported_at": _now(),
-        "note": "Registry: MLflow Model Registry (file store ./mlruns). Paper trading is simulated; "
-                "no real money is involved.",
-    })
+        versions.append(
+            {
+                "version": str(mv.version),
+                "run_id": mv.run_id,
+                "source": mv.source,
+                "registered_at": datetime.fromtimestamp(mv.creation_timestamp / 1000, timezone.utc).strftime(
+                    "%Y-%m-%dT%H:%M:%SZ"
+                ),
+                "is_champion": bool(champ and champ["version"] == str(mv.version)),
+                **{k: t[k] for k in sorted(t)},
+            }
+        )
+    data.update(
+        {
+            "model_name": reg["model_name"],
+            "champion_alias": reg["champion_alias"],
+            "champion": next((v for v in versions if v["is_champion"]), None),
+            "versions": versions,
+            "gate_thresholds": cfg["quality_gate"],
+            "exported_at": _now(),
+            "note": "Registry: MLflow Model Registry (file store ./mlruns). Paper trading is simulated; "
+            "no real money is involved.",
+        }
+    )
     LIVE_DIR.mkdir(parents=True, exist_ok=True)
     REGISTRY_JSON.write_text(json.dumps(data, indent=2, default=str), encoding="utf-8")
     return data

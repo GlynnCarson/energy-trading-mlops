@@ -39,8 +39,7 @@ from src.ml.drl.paper_trade import LABEL, LEDGER
 from src.ml.drl.train_drl import load_drl_config
 
 STATUS_FILE = registry.LIVE_DIR / "monitor_status.json"
-LABELS = {"warming_up": "Warming up", "healthy": "Healthy", "watch": "Watch",
-          "retrain_required": "Retrain required"}
+LABELS = {"warming_up": "Warming up", "healthy": "Healthy", "watch": "Watch", "retrain_required": "Retrain required"}
 
 
 def assess(ledger: pd.DataFrame, th: dict) -> dict:
@@ -62,13 +61,15 @@ def assess(ledger: pd.DataFrame, th: dict) -> dict:
         "drawdown_from_peak_pct": (v[-1] / v.max() - 1) * 100,
         "max_drawdown_pct": float(((v / pd.Series(v).cummax().to_numpy()) - 1).min() * 100),
     }
-    if n > w:   # w daily changes need w + 1 rows
+    if n > w:  # w daily changes need w + 1 rows
         m["rolling_gap_pp"] = ((v[-1] / v[-w - 1]) - (bh[-1] / bh[-w - 1])) * 100
     out["metrics"] = m
 
-    checks = [("gap_since_deploy_pp", th["max_gap_since_deploy_pp"]),
-              ("rolling_gap_pp", th["max_rolling_gap_pp"]),
-              ("drawdown_from_peak_pct", th["max_drawdown_from_peak_pct"])]
+    checks = [
+        ("gap_since_deploy_pp", th["max_gap_since_deploy_pp"]),
+        ("rolling_gap_pp", th["max_rolling_gap_pp"]),
+        ("drawdown_from_peak_pct", th["max_drawdown_from_peak_pct"]),
+    ]
     frac = float(th["watch_fraction"])
     for name, limit in checks:
         val = m[name]
@@ -89,16 +90,19 @@ def assess(ledger: pd.DataFrame, th: dict) -> dict:
     return out
 
 
-def retrain_decision(status: str, days_since_failed_retrain: int | None, cooldown: int,
-                     force: bool = False) -> tuple[bool, str]:
+def retrain_decision(
+    status: str, days_since_failed_retrain: int | None, cooldown: int, force: bool = False
+) -> tuple[bool, str]:
     """Whether to start a retrain now (unit-tested)."""
     if force:
         return True, "manual retrain drill (forced)"
     if status != "retrain_required":
         return False, f"champion status is {LABELS.get(status, status).lower()}"
     if days_since_failed_retrain is not None and days_since_failed_retrain < cooldown:
-        return False, (f"cool-down: last retrain failed to replace the champion "
-                       f"{days_since_failed_retrain} trading days ago (< {cooldown})")
+        return False, (
+            f"cool-down: last retrain failed to replace the champion "
+            f"{days_since_failed_retrain} trading days ago (< {cooldown})"
+        )
     return True, "champion breached a monitoring threshold"
 
 
@@ -139,23 +143,39 @@ def run_monitor(cfg: dict | None = None, force: bool = False) -> dict:
         "updated_at": now,
     }
     prev = json.loads(STATUS_FILE.read_text()) if STATUS_FILE.exists() else {}
-    hist = [h for h in prev.get("history", []) if h["last_data_date"] != status["last_data_date"]
-            or h["champion_version"] != status["champion_version"]]
-    hist.append({k: status[k] for k in ("last_data_date", "champion_version", "status", "days")}
-                | {"gap_since_deploy_pp": status["metrics"].get("gap_since_deploy_pp"),
-                   "retrain_triggered": trigger, "reason": reason, "updated_at": now})
+    hist = [
+        h
+        for h in prev.get("history", [])
+        if h["last_data_date"] != status["last_data_date"] or h["champion_version"] != status["champion_version"]
+    ]
+    hist.append(
+        {k: status[k] for k in ("last_data_date", "champion_version", "status", "days")}
+        | {
+            "gap_since_deploy_pp": status["metrics"].get("gap_since_deploy_pp"),
+            "retrain_triggered": trigger,
+            "reason": reason,
+            "updated_at": now,
+        }
+    )
     status["history"] = hist
     registry.LIVE_DIR.mkdir(parents=True, exist_ok=True)
     STATUS_FILE.write_text(json.dumps(status, indent=2, default=str), encoding="utf-8")
     if trigger:
-        registry.record_event({"type": "retrain_required" if not force else "retrain_drill",
-                               "version": champ["version"], "reason": reason,
-                               "breaches": res["breaches"], "last_data_date": status["last_data_date"]})
+        registry.record_event(
+            {
+                "type": "retrain_required" if not force else "retrain_drill",
+                "version": champ["version"],
+                "reason": reason,
+                "breaches": res["breaches"],
+                "last_data_date": status["last_data_date"],
+            }
+        )
     return status
 
 
 if __name__ == "__main__":
     import argparse
+
     ap = argparse.ArgumentParser()
     ap.add_argument("--force", action="store_true", help="retrain drill")
     s = run_monitor(force=ap.parse_args().force)

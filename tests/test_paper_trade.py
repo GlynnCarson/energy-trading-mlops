@@ -35,12 +35,16 @@ def prep(raw, cfg):
     num = train_raw.select_dtypes("number")
     train = engineer_features(clean_raw(train_raw.copy()))
     env = EnergyTradingEnv(train, cfg, mode="test")
-    return {"outlier_stats": {c: {"mean": float(num[c].mean()), "std": float(num[c].std())} for c in num},
-            "feature_cols": env.feature_cols, "norm_stats": env.norm.to_dict()}
+    return {
+        "outlier_stats": {c: {"mean": float(num[c].mean()), "std": float(num[c].std())} for c in num},
+        "feature_cols": env.feature_cols,
+        "norm_stats": env.norm.to_dict(),
+    }
 
 
 class ObsPolicy:
     """Deterministic stand-in agent whose action depends on the observation (features and portfolio)."""
+
     def __call__(self, obs):
         return np.array([np.tanh(obs[0] - obs[-2])], dtype=np.float32)
 
@@ -70,7 +74,10 @@ def test_features_for_day_t_use_no_later_rows(raw, prep):
 def test_decisions_up_to_day_t_do_not_change_when_the_future_changes(raw, cfg, prep):
     days = list(raw.index[300:360])
     t = days[-1]
-    model = lambda d: ("1", "0", prep, ObsPolicy())
+
+    def model(d):
+        return ("1", "0", prep, ObsPolicy())
+
     rows_a, state_a = run_days(raw, days, cfg, {}, model)
     rows_b, state_b = run_days(with_altered_future(raw, t), days, cfg, {}, model)
     assert rows_a == rows_b and state_a == state_b
@@ -80,7 +87,10 @@ def test_decisions_up_to_day_t_do_not_change_when_the_future_changes(raw, cfg, p
 def test_ledger_is_append_only_continuation(raw, cfg, prep):
     """Running 60 days in one go equals running 30 days and then the next 30 from the saved state."""
     days = list(raw.index[300:360])
-    model = lambda d: ("1", "0", prep, ObsPolicy())
+
+    def model(d):
+        return ("1", "0", prep, ObsPolicy())
+
     whole, _ = run_days(raw, days, cfg, {}, model)
     first, state = run_days(raw, days[:30], cfg, {}, model)
     second, _ = run_days(raw, days[30:], cfg, state, model)

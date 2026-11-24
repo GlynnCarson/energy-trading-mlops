@@ -3,27 +3,25 @@ tests/test_drl.py
 Unit tests for the DRL environment, training loop, and backtest.
 """
 
-import pytest
-import numpy as np
-import pandas as pd
 import gymnasium as gym
+import numpy as np
+import pytest
 from gymnasium.utils.env_checker import check_env
 
 from src.ingestion.ingest import SyntheticEnergyGenerator
-from src.transformation.transform import clean_raw, engineer_features, temporal_split
-from src.ml.drl.env import EnergyTradingEnv, RunningNorm
-from src.ml.drl.train_drl import load_drl_config, build_agent, evaluate_agent
 from src.ml.drl.backtest import (
-    run_backtest,
+    _compute_metrics,
     run_buy_and_hold,
     run_random_agent,
-    _compute_metrics,
 )
-
+from src.ml.drl.env import EnergyTradingEnv, RunningNorm
+from src.ml.drl.train_drl import build_agent, evaluate_agent, load_drl_config
+from src.transformation.transform import clean_raw, engineer_features, temporal_split
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Fixtures
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 @pytest.fixture(scope="module")
 def featured_df():
@@ -41,7 +39,7 @@ def splits(featured_df):
 @pytest.fixture(scope="module")
 def drl_cfg(tmp_path_factory):
     cfg = load_drl_config()
-    cfg["training"]["total_timesteps"] = 1_000   # tiny for tests
+    cfg["training"]["total_timesteps"] = 1_000  # tiny for tests
     cfg["training"]["n_envs"] = 1
     cfg["training"]["eval_freq"] = 500
     cfg["training"]["save_freq"] = 500
@@ -70,6 +68,7 @@ def disc_env(featured_df, drl_cfg):
 # RunningNorm tests
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 class TestRunningNorm:
     def test_init(self):
         n = RunningNorm((10,))
@@ -93,6 +92,7 @@ class TestRunningNorm:
 # ─────────────────────────────────────────────────────────────────────────────
 # Environment tests
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 class TestEnergyTradingEnvContinuous:
 
@@ -173,11 +173,18 @@ class TestRewardIncludesPriceMoves:
     def _env_with_prices(featured_df, drl_cfg, start, end):
         df = featured_df.iloc[:60].copy()
         df["price_usd"] = np.linspace(start, end, len(df))
-        cfg = {**drl_cfg,
-               "action": {"type": "continuous", "discrete_trade_size_mwh": 10.0},
-               "environment": {**drl_cfg["environment"], "transaction_cost_pct": 0.0,
-                               "episode_length": 50, "stop_loss_pct": 0.99,
-                               "holding_penalty": 0.0, "use_sharpe_reward": False}}
+        cfg = {
+            **drl_cfg,
+            "action": {"type": "continuous", "discrete_trade_size_mwh": 10.0},
+            "environment": {
+                **drl_cfg["environment"],
+                "transaction_cost_pct": 0.0,
+                "episode_length": 50,
+                "stop_loss_pct": 0.99,
+                "holding_penalty": 0.0,
+                "use_sharpe_reward": False,
+            },
+        }
         return EnergyTradingEnv(df, cfg, mode="test")
 
     def _hold_full_position(self, env):
@@ -236,15 +243,18 @@ class TestEnergyTradingEnvDiscrete:
 # Training smoke tests
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 class TestDRLTraining:
 
     def test_build_ppo_agent(self, cont_env, drl_cfg):
         from stable_baselines3 import PPO
+
         agent = build_agent("PPO", cont_env, drl_cfg, seed=0)
         assert isinstance(agent, PPO)
 
     def test_build_a2c_agent(self, cont_env, drl_cfg):
         from stable_baselines3 import A2C
+
         agent = build_agent("A2C", cont_env, drl_cfg, seed=0)
         assert isinstance(agent, A2C)
 
@@ -254,6 +264,7 @@ class TestDRLTraining:
 
     def test_agent_can_learn(self, featured_df, splits, drl_cfg):
         import mlflow
+
         mlflow.set_tracking_uri(drl_cfg["mlflow"]["tracking_uri"])
         train, val, _ = splits
         cfg = {**drl_cfg}
@@ -263,6 +274,7 @@ class TestDRLTraining:
         cfg["environment"]["episode_length"] = 50
 
         from src.ml.drl.train_drl import run_drl_training
+
         run_id = run_drl_training(train, val, cfg)
         assert run_id is not None
 
@@ -281,13 +293,22 @@ class TestDRLTraining:
 # Backtest tests
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 class TestBacktest:
 
     def test_compute_metrics_keys(self):
         pv = np.linspace(100_000, 110_000, 200)
         prices = np.random.uniform(40, 60, 200)
         metrics = _compute_metrics(pv, prices, 100_000.0)
-        for key in ["total_return_pct", "sharpe", "max_drawdown_pct", "calmar_ratio", "win_rate_pct", "var_95_pct", "profit_factor"]:
+        for key in [
+            "total_return_pct",
+            "sharpe",
+            "max_drawdown_pct",
+            "calmar_ratio",
+            "win_rate_pct",
+            "var_95_pct",
+            "profit_factor",
+        ]:
             assert key in metrics, f"Missing metric: {key}"
 
     def test_positive_return_gives_positive_total(self):

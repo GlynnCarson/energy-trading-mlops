@@ -37,7 +37,7 @@ jobs:
           key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
 
       - name: Install lint tools
-        run: pip install flake8 black isort
+        run: pip install flake8==7.5.0 black==26.10.1 isort==9.0.2   # versions the code was formatted with
 
       - name: Check formatting (black)
         run: black --check src/ tests/

@@ -1,0 +1,9 @@
+# Formatter settings used by the CI lint job (.github/workflows/ci.yml).
+# Line length 120 matches the flake8 limit in the same job.
+[tool.black]
+line-length = 120
+target-version = ["py311"]
+
+[tool.isort]
+profile = "black"
+line_length = 120

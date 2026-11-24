@@ -1,21 +1,16 @@
 """
 tests/test_ingestion.py
-Unit tests for the data ingestion module using moto (mock AWS).
+Unit tests for the seeded synthetic data generator in the ingestion module.
 """
 
-import pytest
-import boto3
 import pandas as pd
-import numpy as np
-from moto import mock_aws
-from unittest.mock import patch, MagicMock
 
 from src.ingestion.ingest import SyntheticEnergyGenerator
-
 
 # ─────────────────────────────────────────────
 # Synthetic Generator Tests
 # ─────────────────────────────────────────────
+
 
 class TestSyntheticEnergyGenerator:
 

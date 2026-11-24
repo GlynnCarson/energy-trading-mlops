@@ -4,18 +4,18 @@ Fetches raw energy market data from the EIA API (or generates synthetic data)
 and persists it to S3 as Parquet.
 """
 
-import os
 import time
-import requests
+from datetime import datetime, timedelta
+
 import numpy as np
 import pandas as pd
-from datetime import datetime, timedelta
+import requests
 from loguru import logger
 
 from src.utils.helpers import (
+    get_env,
     load_pipeline_config,
     upload_df_to_s3,
-    get_env,
 )
 
 cfg = load_pipeline_config()
@@ -26,6 +26,7 @@ aws = cfg["aws"]
 # ─────────────────────────────────────────────
 # EIA API Ingestion
 # ─────────────────────────────────────────────
+
 
 class EIAIngester:
     """
@@ -38,8 +39,8 @@ class EIAIngester:
     # Daily-price series available on EIA's free API v2. Each entry is
     # (route, series_id) verified against the live API.
     SERIES = {
-        "gas": ("natural-gas/pri/fut/data", "RNGWHHD"),   # Henry Hub spot, $/MMBtu
-        "oil": ("petroleum/pri/spt/data", "RWTC"),        # WTI crude spot, $/bbl
+        "gas": ("natural-gas/pri/fut/data", "RNGWHHD"),  # Henry Hub spot, $/MMBtu
+        "oil": ("petroleum/pri/spt/data", "RWTC"),  # WTI crude spot, $/bbl
     }
 
     def __init__(self, api_key: str = None):
@@ -59,7 +60,7 @@ class EIAIngester:
                 return resp.json()
             except requests.RequestException as e:
                 logger.warning(f"Attempt {attempt + 1} failed: {e}")
-                time.sleep(2 ** attempt)
+                time.sleep(2**attempt)
         raise RuntimeError(f"All {ing['retry_attempts']} attempts failed for {route}")
 
     def _fetch_series(self, route: str, series: str, start: str, colname: str) -> pd.DataFrame:
@@ -85,10 +86,7 @@ class EIAIngester:
         df[colname] = pd.to_numeric(df["value"], errors="coerce")
         df = df[["timestamp", colname]].dropna().set_index("timestamp")
         df = df[~df.index.duplicated(keep="last")].sort_index()
-        logger.info(
-            f"Fetched {len(df)} '{colname}' records "
-            f"({df.index.min().date()} → {df.index.max().date()})."
-        )
+        logger.info(f"Fetched {len(df)} '{colname}' records " f"({df.index.min().date()} → {df.index.max().date()}).")
         return df
 
     def build_dataset(self, start: str = "2010-01-01", commodity: str = "gas") -> pd.DataFrame:
@@ -109,8 +107,7 @@ class EIAIngester:
         df = price.join(exog, how="left").ffill().dropna()
         df["data_source"] = "eia_api"
         logger.success(
-            f"[EIA] Built dataset: {len(df)} rows | target=price_usd ({commodity}) | "
-            f"cols={list(df.columns)}"
+            f"[EIA] Built dataset: {len(df)} rows | target=price_usd ({commodity}) | " f"cols={list(df.columns)}"
         )
         return df
 
@@ -118,6 +115,7 @@ class EIAIngester:
 # ─────────────────────────────────────────────
 # Synthetic Data Generator (dev / fallback)
 # ─────────────────────────────────────────────
+
 
 class SyntheticEnergyGenerator:
     """
@@ -167,13 +165,15 @@ class SyntheticEnergyGenerator:
         renewable_base = 0.25
         renewable_hour = 0.15 * np.clip(np.sin(np.pi * (hours - 6) / 12), 0, 1)
         renewable_seasonal = 0.10 * np.sin(2 * np.pi * (month - 4) / 12)
-        renewable_pct = np.clip(renewable_base + renewable_hour + renewable_seasonal + np.random.normal(0, 0.02, n_hours), 0, 1)
+        renewable_pct = np.clip(
+            renewable_base + renewable_hour + renewable_seasonal + np.random.normal(0, 0.02, n_hours), 0, 1
+        )
 
         # --- Gas price (random walk with mean reversion) ---
         gas_price = np.zeros(n_hours)
         gas_price[0] = 3.5
         for i in range(1, n_hours):
-            gas_price[i] = gas_price[i-1] + 0.01 * (3.5 - gas_price[i-1]) + np.random.normal(0, 0.05)
+            gas_price[i] = gas_price[i - 1] + 0.01 * (3.5 - gas_price[i - 1]) + np.random.normal(0, 0.05)
         gas_price = np.clip(gas_price, 1.5, 10.0)
 
         # --- Electricity price (correlated with demand + gas + renewables) ---
@@ -218,6 +218,7 @@ class SyntheticEnergyGenerator:
 # Main ingest runner
 # ─────────────────────────────────────────────
 
+
 def run_ingestion(execution_date: str = None) -> str:
     """
     Main entrypoint called by the Airflow DAG.
@@ -228,9 +229,7 @@ def run_ingestion(execution_date: str = None) -> str:
     prefix = ing["raw_s3_prefix"]
 
     end_date = execution_date or datetime.utcnow().strftime("%Y-%m-%d")
-    start_date = (
-        datetime.strptime(end_date, "%Y-%m-%d") - timedelta(days=ing["lookback_days"])
-    ).strftime("%Y-%m-%d")
+    start_date = (datetime.strptime(end_date, "%Y-%m-%d") - timedelta(days=ing["lookback_days"])).strftime("%Y-%m-%d")
 
     logger.info(f"[INGESTION] source={source} | {start_date} → {end_date}")
 

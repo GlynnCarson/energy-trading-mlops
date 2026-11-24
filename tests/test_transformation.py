@@ -3,17 +3,17 @@ tests/test_transformation.py
 Unit tests for the transformation and feature engineering pipeline.
 """
 
-import pytest
 import numpy as np
 import pandas as pd
+import pytest
 
 from src.ingestion.ingest import SyntheticEnergyGenerator
 from src.transformation.transform import (
-    clean_raw,
-    add_time_features,
     add_lag_features,
     add_rolling_features,
     add_technical_indicators,
+    add_time_features,
+    clean_raw,
     engineer_features,
     temporal_split,
     validate_dataframe,
@@ -40,6 +40,7 @@ def featured_df(cleaned_df):
 # ─────────────────────────────────────────────
 # Cleaning Tests
 # ─────────────────────────────────────────────
+
 
 class TestCleanRaw:
 
@@ -73,12 +74,24 @@ class TestCleanRaw:
 # Feature Engineering Tests
 # ─────────────────────────────────────────────
 
+
 class TestTimeFeatures:
 
     def test_all_time_features_present(self, cleaned_df):
         df = add_time_features(cleaned_df.copy())
-        for col in ["hour_of_day", "day_of_week", "month", "quarter", "is_weekend",
-                    "hour_sin", "hour_cos", "dow_sin", "dow_cos", "month_sin", "month_cos"]:
+        for col in [
+            "hour_of_day",
+            "day_of_week",
+            "month",
+            "quarter",
+            "is_weekend",
+            "hour_sin",
+            "hour_cos",
+            "dow_sin",
+            "dow_cos",
+            "month_sin",
+            "month_cos",
+        ]:
             assert col in df.columns, f"Missing: {col}"
 
     def test_hour_range(self, cleaned_df):
@@ -141,6 +154,7 @@ class TestTechnicalIndicators:
 # Full pipeline Tests
 # ─────────────────────────────────────────────
 
+
 class TestEngineerFeatures:
 
     def test_returns_more_columns_than_input(self, cleaned_df, featured_df):
@@ -156,6 +170,7 @@ class TestEngineerFeatures:
 # ─────────────────────────────────────────────
 # Split Tests
 # ─────────────────────────────────────────────
+
 
 class TestTemporalSplit:
 
@@ -177,6 +192,7 @@ class TestTemporalSplit:
 # ─────────────────────────────────────────────
 # Validation Tests
 # ─────────────────────────────────────────────
+
 
 class TestValidateDataframe:
 

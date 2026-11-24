@@ -29,12 +29,12 @@ EPISODE:
 from __future__ import annotations
 
 import warnings
+
+import gymnasium as gym
 import numpy as np
 import pandas as pd
-import gymnasium as gym
 from gymnasium import spaces
 from loguru import logger
-from typing import Any
 
 warnings.filterwarnings("ignore", category=FutureWarning)
 
@@ -42,6 +42,7 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 # ─────────────────────────────────────────────────────────────────────────────
 # Helper: running statistics for online normalisation
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 class RunningNorm:
     """Welford's online mean/variance for observation normalisation."""
@@ -78,6 +79,7 @@ class RunningNorm:
 # ─────────────────────────────────────────────────────────────────────────────
 # Environment
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 class EnergyTradingEnv(gym.Env):
     """
@@ -129,10 +131,7 @@ class EnergyTradingEnv(gym.Env):
 
         # ── Feature columns (everything except price target) ───────────────
         self.price_col = "price_usd"
-        self.feature_cols = [
-            c for c in df.select_dtypes(include=np.number).columns
-            if c != self.price_col
-        ]
+        self.feature_cols = [c for c in df.select_dtypes(include=np.number).columns if c != self.price_col]
         self.n_features = len(self.feature_cols)
 
         # Observation dimension: features + optional portfolio state (3)
@@ -198,8 +197,8 @@ class EnergyTradingEnv(gym.Env):
 
     def _reset_portfolio(self):
         self.cash = self.initial_cash
-        self.position_mwh = 0.0          # MWh currently held
-        self.avg_entry_price = 0.0       # Average cost basis
+        self.position_mwh = 0.0  # MWh currently held
+        self.avg_entry_price = 0.0  # Average cost basis
         self.portfolio_value = self.initial_cash
         self.prev_portfolio_value = self.initial_cash
         self.total_trades = 0
@@ -251,18 +250,15 @@ class EnergyTradingEnv(gym.Env):
 
         if delta_mwh > 0:
             # Buying energy
-            self.cash -= (delta_mwh * price + tx_cost)
+            self.cash -= delta_mwh * price + tx_cost
             # Update average entry price (weighted average)
             total_mwh = self.position_mwh + delta_mwh
             if total_mwh > 0:
-                self.avg_entry_price = (
-                    (self.position_mwh * self.avg_entry_price + delta_mwh * price)
-                    / total_mwh
-                )
+                self.avg_entry_price = (self.position_mwh * self.avg_entry_price + delta_mwh * price) / total_mwh
             self.position_mwh += delta_mwh
         else:
             # Selling energy
-            self.cash += (-delta_mwh * price - tx_cost)
+            self.cash += -delta_mwh * price - tx_cost
             self.position_mwh += delta_mwh  # delta is negative
             if self.position_mwh <= 0:
                 self.position_mwh = 0.0
@@ -272,14 +268,16 @@ class EnergyTradingEnv(gym.Env):
         self.position_mwh = max(self.position_mwh, 0.0)
         self.total_trades += 1
 
-        self.trade_log.append({
-            "step": self.current_step,
-            "action": "BUY" if delta_mwh > 0 else "SELL",
-            "delta_mwh": delta_mwh,
-            "price": price,
-            "tx_cost": tx_cost,
-            "portfolio_value": self.total_portfolio_value,
-        })
+        self.trade_log.append(
+            {
+                "step": self.current_step,
+                "action": "BUY" if delta_mwh > 0 else "SELL",
+                "delta_mwh": delta_mwh,
+                "price": price,
+                "tx_cost": tx_cost,
+                "portfolio_value": self.total_portfolio_value,
+            }
+        )
 
         return tx_cost
 
@@ -353,12 +351,14 @@ class EnergyTradingEnv(gym.Env):
             feat_vec = self.norm.normalise(feat_vec)
 
         if self.include_portfolio:
-            total = self.total_portfolio_value
-            portfolio_vec = np.array([
-                self.cash / (self.initial_cash + 1e-8),           # cash ratio
-                self.position_mwh / (self.max_position + 1e-8),   # position ratio
-                self.unrealised_pnl / (self.initial_cash + 1e-8), # normalised PnL
-            ], dtype=np.float32)
+            portfolio_vec = np.array(
+                [
+                    self.cash / (self.initial_cash + 1e-8),  # cash ratio
+                    self.position_mwh / (self.max_position + 1e-8),  # position ratio
+                    self.unrealised_pnl / (self.initial_cash + 1e-8),  # normalised PnL
+                ],
+                dtype=np.float32,
+            )
             obs = np.concatenate([feat_vec, portfolio_vec])
         else:
             obs = feat_vec
@@ -456,11 +456,14 @@ class EnergyTradingEnv(gym.Env):
         if self.normalise:
             feat_vec = self.norm.normalise(feat_vec)
         if self.include_portfolio:
-            portfolio_vec = np.array([
-                self.cash / (self.initial_cash + 1e-8),
-                self.position_mwh / (self.max_position + 1e-8),
-                self.unrealised_pnl / (self.initial_cash + 1e-8),
-            ], dtype=np.float32)
+            portfolio_vec = np.array(
+                [
+                    self.cash / (self.initial_cash + 1e-8),
+                    self.position_mwh / (self.max_position + 1e-8),
+                    self.unrealised_pnl / (self.initial_cash + 1e-8),
+                ],
+                dtype=np.float32,
+            )
             return np.concatenate([feat_vec, portfolio_vec]).astype(np.float32)
         return feat_vec.astype(np.float32)
 
@@ -482,7 +485,6 @@ class EnergyTradingEnv(gym.Env):
     # ─────────────────────────────────────────────────────────────────────
 
     def get_episode_summary(self) -> dict:
-        returns = [t["portfolio_value"] for t in self.trade_log]
         return {
             "final_portfolio_value": self.total_portfolio_value,
             "total_return_pct": (self.total_portfolio_value / self.initial_cash - 1) * 100,

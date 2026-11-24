@@ -4,16 +4,16 @@ Cleans raw energy data, engineers features, validates with Great Expectations,
 and writes train/val/test splits to S3.
 """
 
+from datetime import datetime
+
 import numpy as np
 import pandas as pd
-from datetime import datetime
 from loguru import logger
 
 from src.utils.helpers import (
+    download_df_from_s3,
     load_pipeline_config,
     upload_df_to_s3,
-    download_df_from_s3,
-    list_s3_keys,
 )
 
 cfg = load_pipeline_config()
@@ -26,6 +26,7 @@ TARGET = tr["target_column"]
 # ─────────────────────────────────────────────
 # Cleaning
 # ─────────────────────────────────────────────
+
 
 def clean_raw(df: pd.DataFrame, outlier_stats: dict | None = None) -> pd.DataFrame:
     """Drop duplicates, remove extreme outliers, ensure UTC index.
@@ -89,6 +90,7 @@ def clean_raw(df: pd.DataFrame, outlier_stats: dict | None = None) -> pd.DataFra
 # ─────────────────────────────────────────────
 # Feature Engineering
 # ─────────────────────────────────────────────
+
 
 def add_time_features(df: pd.DataFrame) -> pd.DataFrame:
     """Calendar-based features."""
@@ -187,6 +189,7 @@ def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
 # Train / Val / Test Split
 # ─────────────────────────────────────────────
 
+
 def temporal_split(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """
     Chronological split preserving time order.
@@ -210,6 +213,7 @@ def temporal_split(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame, pd.Dat
 # ─────────────────────────────────────────────
 # Data Validation (Great Expectations-style rules)
 # ─────────────────────────────────────────────
+
 
 def validate_dataframe(df: pd.DataFrame) -> dict:
     """
@@ -252,6 +256,7 @@ def validate_dataframe(df: pd.DataFrame) -> dict:
 # Main transform runner
 # ─────────────────────────────────────────────
 
+
 def run_transformation(raw_s3_path: str) -> dict:
     """
     Main entrypoint called by the Airflow DAG.
@@ -284,6 +289,7 @@ def run_transformation(raw_s3_path: str) -> dict:
 if __name__ == "__main__":
     # Quick local smoke test using synthetic data
     from src.ingestion.ingest import SyntheticEnergyGenerator
+
     gen = SyntheticEnergyGenerator()
     raw_df = gen.generate(days=90)
     cleaned = clean_raw(raw_df)

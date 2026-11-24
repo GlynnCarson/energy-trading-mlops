@@ -44,6 +44,7 @@ def raw():
 
 def _run(cfg, seed):
     import mlflow
+
     mlflow.set_tracking_uri(cfg["registry"]["tracking_uri"])
     mlflow.set_experiment("t")
     with mlflow.start_run() as r:

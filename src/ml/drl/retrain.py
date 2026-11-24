@@ -30,7 +30,6 @@ from __future__ import annotations
 
 import json
 from datetime import datetime, timezone
-from pathlib import Path
 
 import pandas as pd
 from loguru import logger
@@ -49,10 +48,11 @@ WORK = registry.ROOT / "checkpoints" / "retrain"
 # 1. Data
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 def walk_forward(raw: pd.DataFrame, cfg: dict) -> dict:
     """Split and frozen preprocessing for a retrain (no statistic sees the validation window)."""
     n_val = int(cfg["retraining"]["validation_days"])
-    rough = engineer_features(clean_raw(raw.copy()))         # only to locate the split date
+    rough = engineer_features(clean_raw(raw.copy()))  # only to locate the split date
     val_start = rough.index[-n_val]
     num = raw[raw.index < val_start].select_dtypes("number")
     outlier_stats = {c: {"mean": float(num[c].mean()), "std": float(num[c].std())} for c in num.columns}
@@ -60,23 +60,30 @@ def walk_forward(raw: pd.DataFrame, cfg: dict) -> dict:
     train, val = feats[feats.index < val_start], feats[feats.index >= val_start]
     env = EnergyTradingEnv(train, cfg, mode="test")
     prep = {
-        "feature_cols": env.feature_cols, "norm_stats": env.norm.to_dict(), "outlier_stats": outlier_stats,
+        "feature_cols": env.feature_cols,
+        "norm_stats": env.norm.to_dict(),
+        "outlier_stats": outlier_stats,
         "raw_columns": list(raw.columns),
-        "train_start": str(train.index[0].date()), "train_end": str(train.index[-1].date()),
-        "val_start": str(val.index[0].date()), "val_end": str(val.index[-1].date()),
-        "data_last_date": str(raw.index[-1].date()), "fitted_on": "training split only",
+        "train_start": str(train.index[0].date()),
+        "train_end": str(train.index[-1].date()),
+        "val_start": str(val.index[0].date()),
+        "val_end": str(val.index[-1].date()),
+        "data_last_date": str(raw.index[-1].date()),
+        "fitted_on": "training split only",
         "split": f"walk-forward: last {n_val} trading days = validation",
     }
     return {"train": train, "val": val, "prep": prep}
 
 
-def prepare(cfg: dict | None = None, raw: pd.DataFrame | None = None, drill: bool = False,
-            smoke_test: bool = False) -> dict:
+def prepare(
+    cfg: dict | None = None, raw: pd.DataFrame | None = None, drill: bool = False, smoke_test: bool = False
+) -> dict:
     """smoke_test: a wiring check of the retrain branch with a tiny training budget. The gate still runs
     and is logged, but nothing is registered or promoted, so it can never change the champion."""
     cfg = cfg or load_drl_config()
     if raw is None:
         from src.ingestion.ingest import EIAIngester
+
         raw = EIAIngester().build_dataset(start="2010-01-01", commodity="gas")
     last = str(raw.index[-1].date())
     rid = f"retrain-{last}-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S')}"
@@ -89,9 +96,15 @@ def prepare(cfg: dict | None = None, raw: pd.DataFrame | None = None, drill: boo
     if cl.get_experiment_by_name(EXPERIMENT) is None:
         cl.create_experiment(EXPERIMENT)
     split = walk_forward(raw, cfg)
-    meta = {"retrain_id": rid, "drill": drill or smoke_test, "smoke_test": smoke_test, "data_last_date": last, **{k: split["prep"][k] for k in
-            ("train_start", "train_end", "val_start", "val_end")},
-            "train_rows": len(split["train"]), "val_rows": len(split["val"])}
+    meta = {
+        "retrain_id": rid,
+        "drill": drill or smoke_test,
+        "smoke_test": smoke_test,
+        "data_last_date": last,
+        **{k: split["prep"][k] for k in ("train_start", "train_end", "val_start", "val_end")},
+        "train_rows": len(split["train"]),
+        "val_rows": len(split["val"]),
+    }
     (d / "meta.json").write_text(json.dumps(meta, indent=2))
     registry.record_event({"type": "retrain_started", **meta})
     logger.info(f"[RETRAIN] prepared {meta}")
@@ -108,6 +121,7 @@ def _load(rid: str, cfg: dict) -> tuple[pd.DataFrame, dict, dict]:
 # 2. Training one challenger
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 def challenger_cfg(cfg: dict, rid: str, seed: int, timesteps: int | None = None) -> dict:
     c = json.loads(json.dumps(cfg))
     c["training"]["seed"] = int(seed)
@@ -122,16 +136,23 @@ def challenger_cfg(cfg: dict, rid: str, seed: int, timesteps: int | None = None)
 
 def train(rid: str, seed: int, cfg: dict | None = None, timesteps: int | None = None) -> str:
     import mlflow
+
     from src.ml.drl.train_drl import run_drl_training
+
     cfg = cfg or load_drl_config()
     raw, split, meta = _load(rid, cfg)
     c = challenger_cfg(cfg, rid, seed, timesteps)
     mlflow.set_tracking_uri(c["mlflow"]["tracking_uri"])
     run_id = run_drl_training(split["train"], split["val"], c)
     cl = registry.client(cfg)
-    for k, v in {"retrain_id": rid, "role": "challenger", "drill": str(meta["drill"]).lower(),
-                 "smoke_test": str(meta.get("smoke_test", False)).lower(),
-                 "data_last_date": meta["data_last_date"], "split": split["prep"]["split"]}.items():
+    for k, v in {
+        "retrain_id": rid,
+        "role": "challenger",
+        "drill": str(meta["drill"]).lower(),
+        "smoke_test": str(meta.get("smoke_test", False)).lower(),
+        "data_last_date": meta["data_last_date"],
+        "split": split["prep"]["split"],
+    }.items():
         cl.set_tag(run_id, k, v)
     registry.save_preprocessing(cfg, run_id, split["prep"])
     cl.log_text(run_id, raw.to_csv(), "data/raw_snapshot.csv")
@@ -142,6 +163,7 @@ def train(rid: str, seed: int, cfg: dict | None = None, timesteps: int | None = 
 # ─────────────────────────────────────────────────────────────────────────────
 # 3. Gate, champion/challenger comparison, promotion
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 def select_challenger(challengers: list[dict], champion_return_pct: float | None) -> tuple[dict | None, bool, str]:
     """Best passing challenger (highest validation return) and whether it replaces the champion."""
@@ -167,10 +189,18 @@ def evaluate_and_promote(rid: str, run_ids: dict, cfg: dict | None = None) -> di
         m = evaluate_on_window(agent, val, cfg, split["prep"]["norm_stats"], gate_cfg["n_random_agents"])
         res = decide(m, gate_cfg)
         log_gate_to_mlflow(run_id, res, gate_cfg, uri, context=f"challenger ({rid})")
-        challengers.append({"seed": int(seed), "run_id": run_id, "passed": res.passed, "reasons": res.reasons,
-                            "val_return_pct": m["return_pct"], "max_drawdown_pct": m["max_drawdown_pct"],
-                            "buy_and_hold_return_pct": m["buy_and_hold_return_pct"],
-                            "random_beaten_pct": res.metrics["random_beaten_pct"]})
+        challengers.append(
+            {
+                "seed": int(seed),
+                "run_id": run_id,
+                "passed": res.passed,
+                "reasons": res.reasons,
+                "val_return_pct": m["return_pct"],
+                "max_drawdown_pct": m["max_drawdown_pct"],
+                "buy_and_hold_return_pct": m["buy_and_hold_return_pct"],
+                "random_beaten_pct": res.metrics["random_beaten_pct"],
+            }
+        )
         logger.info(f"[RETRAIN] seed {seed}: {'PASS' if res.passed else 'FAIL'} {res.reasons}")
 
     # the current champion on the SAME window, with its own frozen preprocessing
@@ -187,39 +217,59 @@ def evaluate_and_promote(rid: str, run_ids: dict, cfg: dict | None = None) -> di
 
     best, promote, why = select_challenger(challengers, champ_ret)
     smoke = bool(meta.get("smoke_test", False))
-    if smoke:   # wiring check: the decision is reported, but nothing is registered or promoted
+    if smoke:  # wiring check: the decision is reported, but nothing is registered or promoted
         promote, why = False, f"smoke test, promotion disabled (decision would have been: {why})"
     versions = {}
     for c in challengers:
         if not c["passed"] or smoke:
             continue
         p = split["prep"]
-        versions[c["seed"]] = registry.register(cfg, c["run_id"], which, {
-            "seed": c["seed"], "run_name": f"challenger-s{c['seed']}", "model_file": which,
-            "experiment": EXPERIMENT, "retrain_id": rid, "drill": str(meta["drill"]).lower(),
-            "total_timesteps": cfg["retraining"]["total_timesteps"],
-            "train_window": f"{p['train_start']} to {p['train_end']}",
-            "val_window": f"{p['val_start']} to {p['val_end']}", "data_last_date": meta["data_last_date"],
-            "gate_passed": "true", "gate_reasons": c["reasons"], "val_return_pct": round(c["val_return_pct"], 4),
-            "val_buy_and_hold_pct": round(c["buy_and_hold_return_pct"], 4),
-            "val_random_beaten_pct": round(c["random_beaten_pct"], 2),
-            "val_max_drawdown_pct": round(c["max_drawdown_pct"], 4),
-            "champion_val_return_pct_same_window": round(champ_ret, 4) if champ_ret is not None else "",
-            "origin": "retrain (drill)" if meta["drill"] else "retrain (monitor trigger)"})
+        versions[c["seed"]] = registry.register(
+            cfg,
+            c["run_id"],
+            which,
+            {
+                "seed": c["seed"],
+                "run_name": f"challenger-s{c['seed']}",
+                "model_file": which,
+                "experiment": EXPERIMENT,
+                "retrain_id": rid,
+                "drill": str(meta["drill"]).lower(),
+                "total_timesteps": cfg["retraining"]["total_timesteps"],
+                "train_window": f"{p['train_start']} to {p['train_end']}",
+                "val_window": f"{p['val_start']} to {p['val_end']}",
+                "data_last_date": meta["data_last_date"],
+                "gate_passed": "true",
+                "gate_reasons": c["reasons"],
+                "val_return_pct": round(c["val_return_pct"], 4),
+                "val_buy_and_hold_pct": round(c["buy_and_hold_return_pct"], 4),
+                "val_random_beaten_pct": round(c["random_beaten_pct"], 2),
+                "val_max_drawdown_pct": round(c["max_drawdown_pct"], 4),
+                "champion_val_return_pct_same_window": round(champ_ret, 4) if champ_ret is not None else "",
+                "origin": "retrain (drill)" if meta["drill"] else "retrain (monitor trigger)",
+            },
+        )
         c["version"] = versions[c["seed"]]
 
     new_version = None
     if promote:
         new_version = versions[best["seed"]]
         registry.promote(cfg, new_version, why)
-    outcome = {"retrain_id": rid, "drill": meta["drill"], "smoke_test": smoke,
-               "data_last_date": meta["data_last_date"],
-               "val_window": f"{meta['val_start']} to {meta['val_end']}", "model_file": which,
-               "champion_version": champ["version"] if champ else None,
-               "champion_val_return_pct": champ_ret, "challengers": challengers,
-               "promoted": promote, "new_champion_version": new_version, "reason": why,
-               "result": "champion_replaced" if promote else
-                         ("failed_gate" if best is None else "champion_kept")}
+    outcome = {
+        "retrain_id": rid,
+        "drill": meta["drill"],
+        "smoke_test": smoke,
+        "data_last_date": meta["data_last_date"],
+        "val_window": f"{meta['val_start']} to {meta['val_end']}",
+        "model_file": which,
+        "champion_version": champ["version"] if champ else None,
+        "champion_val_return_pct": champ_ret,
+        "challengers": challengers,
+        "promoted": promote,
+        "new_champion_version": new_version,
+        "reason": why,
+        "result": "champion_replaced" if promote else ("failed_gate" if best is None else "champion_kept"),
+    }
     registry.record_event({"type": "retrain", **outcome})
     registry.export_registry(cfg)
     logger.info(f"[RETRAIN] outcome: {outcome['result']} - {why}")
@@ -228,6 +278,7 @@ def evaluate_and_promote(rid: str, run_ids: dict, cfg: dict | None = None) -> di
 
 if __name__ == "__main__":
     import argparse
+
     ap = argparse.ArgumentParser()
     ap.add_argument("--drill", action="store_true")
     ap.add_argument("--timesteps", type=int)

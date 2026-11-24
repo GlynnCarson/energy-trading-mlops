@@ -48,13 +48,23 @@ from src.transformation.transform import clean_raw, engineer_features
 LEDGER = registry.LIVE_DIR / "paper_trading.csv"
 STATE = registry.LIVE_DIR / "paper_state.json"
 LABEL = "paper trading (simulated)"
-COLUMNS = ["date", "price", "action", "position_mmbtu", "portfolio_value", "buy_hold_value",
-           "model_version", "seed", "status"]
+COLUMNS = [
+    "date",
+    "price",
+    "action",
+    "position_mmbtu",
+    "portfolio_value",
+    "buy_hold_value",
+    "model_version",
+    "seed",
+    "status",
+]
 
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Causal features
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 def features_as_of(raw: pd.DataFrame, t: pd.Timestamp, prep: dict) -> pd.Series | None:
     """Feature row for day t computed from raw rows dated <= t only. None if t has no row."""
@@ -71,6 +81,7 @@ def features_as_of(raw: pd.DataFrame, t: pd.Timestamp, prep: dict) -> pd.Series 
 # Account (reuses the environment's own trading and observation code)
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 class Account:
     """A simulated account driven through EnergyTradingEnv's _get_obs / _interpret_action /
     _execute_trade, so costs, clamps and the observation match the backtest exactly."""
@@ -81,8 +92,7 @@ class Account:
         self.cfg = cfg
         e = cfg["environment"]
         self.initial = float(e["initial_cash"])
-        self.state = state or {"cash": self.initial, "position_mwh": 0.0, "avg_entry_price": 0.0,
-                               "total_trades": 0}
+        self.state = state or {"cash": self.initial, "position_mwh": 0.0, "avg_entry_price": 0.0, "total_trades": 0}
 
     def _env(self, row: pd.Series, feature_cols: list[str], norm_stats: dict | None) -> EnergyTradingEnv:
         df = pd.DataFrame([row[["price_usd", *feature_cols]].astype(float)])
@@ -100,8 +110,7 @@ class Account:
         env = self._env(row, feature_cols, norm_stats)
         action = np.asarray(policy(env._get_obs()), dtype=np.float32).reshape(-1)
         env._execute_trade(env._interpret_action(action))
-        self.state = {k: (int(getattr(env, k)) if k == "total_trades" else float(getattr(env, k)))
-                      for k in self.FIELDS}
+        self.state = {k: (int(getattr(env, k)) if k == "total_trades" else float(getattr(env, k))) for k in self.FIELDS}
         return float(action[0])
 
     def liquidate(self, row, feature_cols):
@@ -111,6 +120,7 @@ class Account:
 # ─────────────────────────────────────────────────────────────────────────────
 # Champion schedule
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 def champion_periods(cfg: dict) -> list[dict]:
     """Ordered champion periods from the promotion history. A model is active from the first
@@ -125,9 +135,16 @@ def champion_periods(cfg: dict) -> list[dict]:
         mv = c.get_model_version(name, ev["version"])
         t = dict(mv.tags)
         active = max(start, pd.Timestamp(t["data_last_date"], tz="UTC") + pd.Timedelta(days=1))
-        periods.append({"version": str(mv.version), "run_id": mv.run_id, "seed": t.get("seed"),
-                        "model_file": t.get("model_file", "best_model"), "active_from": active,
-                        "promoted_at": ev["time"]})
+        periods.append(
+            {
+                "version": str(mv.version),
+                "run_id": mv.run_id,
+                "seed": t.get("seed"),
+                "model_file": t.get("model_file", "best_model"),
+                "active_from": active,
+                "promoted_at": ev["time"],
+            }
+        )
     return periods
 
 
@@ -140,6 +157,7 @@ def active_period(periods: list[dict], t: pd.Timestamp) -> dict | None:
 # ─────────────────────────────────────────────────────────────────────────────
 # Ledger update
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 def run_days(raw: pd.DataFrame, days, cfg: dict, state: dict, model_for_day) -> tuple[list[dict], dict]:
     """Process trading days in order. model_for_day(t) -> (version, seed, prep, policy) or None.
@@ -162,18 +180,30 @@ def run_days(raw: pd.DataFrame, days, cfg: dict, state: dict, model_for_day) -> 
         status = "stopped out" if stopped else "trading"
         action = float("nan")
         if not stopped and value <= agent_acc.initial * (1 - stop):
-            agent_acc.liquidate(row, prep["feature_cols"])     # same 50 % stop-loss as the backtest
+            agent_acc.liquidate(row, prep["feature_cols"])  # same 50 % stop-loss as the backtest
             stopped, status = True, "stop-loss hit: position closed"
         elif not stopped:
             action = agent_acc.act(row, prep["feature_cols"], prep["norm_stats"], policy)
-        bh_acc.act(row, prep["feature_cols"], None, lambda obs: np.array([1.0]))   # Buy & Hold
-        rows.append({"date": t.strftime("%Y-%m-%d"), "price": round(price, 4),
-                     "action": round(action, 4) if action == action else "",
-                     "position_mmbtu": round(agent_acc.state["position_mwh"], 2),
-                     "portfolio_value": round(value, 2), "buy_hold_value": round(bh_value, 2),
-                     "model_version": version, "seed": seed, "status": status})
-    new_state = {"agent": agent_acc.state, "buy_hold": bh_acc.state, "stopped": stopped,
-                 "last_date": rows[-1]["date"] if rows else state.get("last_date")}
+        bh_acc.act(row, prep["feature_cols"], None, lambda obs: np.array([1.0]))  # Buy & Hold
+        rows.append(
+            {
+                "date": t.strftime("%Y-%m-%d"),
+                "price": round(price, 4),
+                "action": round(action, 4) if action == action else "",
+                "position_mmbtu": round(agent_acc.state["position_mwh"], 2),
+                "portfolio_value": round(value, 2),
+                "buy_hold_value": round(bh_value, 2),
+                "model_version": version,
+                "seed": seed,
+                "status": status,
+            }
+        )
+    new_state = {
+        "agent": agent_acc.state,
+        "buy_hold": bh_acc.state,
+        "stopped": stopped,
+        "last_date": rows[-1]["date"] if rows else state.get("last_date"),
+    }
     return rows, new_state
 
 
@@ -182,6 +212,7 @@ def update(cfg: dict | None = None, raw: pd.DataFrame | None = None) -> dict:
     cfg = cfg or load_drl_config()
     if raw is None:
         from src.ingestion.ingest import EIAIngester
+
         raw = EIAIngester().build_dataset(start="2010-01-01", commodity="gas")
     raw = raw.copy()
     if raw.index.tz is None:
@@ -205,8 +236,12 @@ def update(cfg: dict | None = None, raw: pd.DataFrame | None = None) -> dict:
         if p["version"] not in cache:
             agent = registry.load_agent(p["run_id"], p["model_file"])
             prep = registry.load_preprocessing(p["run_id"])
-            cache[p["version"]] = (p["version"], p["seed"], prep,
-                                   lambda obs, a=agent: a.predict(obs, deterministic=True)[0])
+            cache[p["version"]] = (
+                p["version"],
+                p["seed"],
+                prep,
+                lambda obs, a=agent: a.predict(obs, deterministic=True)[0],
+            )
         return cache[p["version"]]
 
     logger.disable("src.transformation.transform")
@@ -221,11 +256,20 @@ def update(cfg: dict | None = None, raw: pd.DataFrame | None = None) -> dict:
         if LEDGER.exists():
             new = pd.concat([pd.read_csv(LEDGER, dtype={"model_version": str, "seed": str}), new])
         new.to_csv(LEDGER, index=False)
-    new_state.update({"label": LABEL, "data_last_date": str(raw.index[-1].date()),
-                      "updated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")})
+    new_state.update(
+        {
+            "label": LABEL,
+            "data_last_date": str(raw.index[-1].date()),
+            "updated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        }
+    )
     STATE.write_text(json.dumps(new_state, indent=2), encoding="utf-8")
-    summary = {"label": LABEL, "new_days": len(rows), "last_date": new_state["last_date"],
-               "data_last_date": new_state["data_last_date"]}
+    summary = {
+        "label": LABEL,
+        "new_days": len(rows),
+        "last_date": new_state["last_date"],
+        "data_last_date": new_state["data_last_date"],
+    }
     logger.info(f"[PAPER] {summary}")
     return summary
 

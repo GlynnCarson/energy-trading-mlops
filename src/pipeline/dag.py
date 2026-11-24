@@ -10,11 +10,12 @@ A retrain drill: airflow dags trigger energy_trading_mlops_pipeline -c '{"force_
 """
 
 from datetime import datetime, timedelta
+
 from airflow import DAG
-from airflow.operators.python import BranchPythonOperator, PythonOperator
-from airflow.utils.trigger_rule import TriggerRule
 from airflow.operators.email import EmailOperator
 from airflow.operators.empty import EmptyOperator
+from airflow.operators.python import BranchPythonOperator, PythonOperator
+from airflow.utils.trigger_rule import TriggerRule
 
 # ── Default DAG args ──────────────────────────────────────────────────────────
 default_args = {
@@ -47,6 +48,7 @@ with DAG(
     def task_ingest(**context):
         """Pull raw energy data and land on S3."""
         from src.ingestion.ingest import run_ingestion
+
         execution_date = context["ds"]
         s3_path = run_ingestion(execution_date=execution_date)
         context["ti"].xcom_push(key="raw_s3_path", value=s3_path)
@@ -55,6 +57,7 @@ with DAG(
     def task_transform(**context):
         """Clean, validate, and feature-engineer the raw data."""
         from src.transformation.transform import run_transformation
+
         raw_path = context["ti"].xcom_pull(task_ids="ingest", key="raw_s3_path")
         split_paths = run_transformation(raw_path)
         context["ti"].xcom_push(key="split_paths", value=split_paths)
@@ -62,14 +65,18 @@ with DAG(
 
     def task_data_quality_report(**context):
         """Generate and log a data quality summary for the processed dataset."""
-        from src.utils.helpers import load_pipeline_config, download_df_from_s3
+        from src.utils.helpers import download_df_from_s3, load_pipeline_config
+
         split_paths = context["ti"].xcom_pull(task_ids="transform", key="split_paths")
         cfg = load_pipeline_config()
         bucket = cfg["aws"]["s3_bucket"]
 
         _, _, bk = split_paths["train"].partition("s3://")
         b, _, k = bk.partition("/")
-        import boto3, json
+        import json
+
+        import boto3
+
         df = download_df_from_s3(b, k)
 
         report = {
@@ -111,7 +118,7 @@ with DAG(
         python_callable=task_data_quality_report,
     )
 
-    from src.ml.drl.drl_tasks import task_train_drl, task_backtest_drl
+    from src.ml.drl.drl_tasks import task_backtest_drl, task_train_drl
 
     # Every PPO training task uses the 1-slot "training" pool (created by airflow-init), so trainings run one
     # at a time: four in parallel on one machine oversubscribed the CPU and each ran ~20x slower.
@@ -127,8 +134,10 @@ with DAG(
     )
 
     # ── Closed loop: paper trading (simulated) → monitor → retrain / gate / promote ──
-    import yaml
     from pathlib import Path
+
+    import yaml
+
     import src as _project_src
     from src.ml.drl import closed_loop_tasks as cl
 
@@ -159,12 +168,12 @@ with DAG(
     )
     prepare_retrain = PythonOperator(task_id="prepare_retrain", python_callable=cl.task_prepare_retrain)
     train_challengers = [
-        PythonOperator(task_id=f"train_challenger_s{s}", python_callable=cl.make_train_challenger(s),
-                       pool="training")
+        PythonOperator(task_id=f"train_challenger_s{s}", python_callable=cl.make_train_challenger(s), pool="training")
         for s in RETRAIN_SEEDS
     ]
-    evaluate_promote = PythonOperator(task_id="evaluate_and_promote",
-                                      python_callable=cl.make_evaluate_and_promote(RETRAIN_SEEDS))
+    evaluate_promote = PythonOperator(
+        task_id="evaluate_and_promote", python_callable=cl.make_evaluate_and_promote(RETRAIN_SEEDS)
+    )
     branch_outcome = BranchPythonOperator(task_id="branch_on_outcome", python_callable=cl.branch_on_outcome)
 
     _outcome_body = """
@@ -200,8 +209,7 @@ with DAG(
     )
     # Joins the branches. NONE_FAILED_MIN_ONE_SUCCESS lets a skipped branch through but still turns
     # any failure into upstream_failed, so `end` (ALL_SUCCESS, DEF-12) still fails the run.
-    closed_loop_done = EmptyOperator(task_id="closed_loop_done",
-                                     trigger_rule=TriggerRule.NONE_FAILED_MIN_ONE_SUCCESS)
+    closed_loop_done = EmptyOperator(task_id="closed_loop_done", trigger_rule=TriggerRule.NONE_FAILED_MIN_ONE_SUCCESS)
 
     notify_success = EmailOperator(
         task_id="notify_success",

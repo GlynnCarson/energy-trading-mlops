@@ -8,19 +8,20 @@ into the energy_trading_mlops_pipeline DAG:
 """
 
 from __future__ import annotations
-from loguru import logger
 
+from loguru import logger
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Airflow task: train DRL agent
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 def task_train_drl(**context):
     """
     Airflow PythonOperator callable.
     Trains the DRL agent and pushes (run_id, model_path) to XCom.
     """
-    from src.ml.drl.train_drl import run_drl_training, load_drl_config
+    from src.ml.drl.train_drl import load_drl_config, run_drl_training
     from src.utils.helpers import download_df_from_s3
 
     split_paths = context["ti"].xcom_pull(task_ids="transform", key="split_paths")
@@ -53,14 +54,17 @@ def task_train_drl(**context):
 # Airflow task: backtest DRL agent
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 def task_backtest_drl(**context):
     """
     Airflow PythonOperator callable.
     Loads best checkpoint, runs full backtest, uploads report to S3.
     """
-    import boto3
     from pathlib import Path
-    from stable_baselines3 import PPO, SAC, TD3, A2C
+
+    import boto3
+    from stable_baselines3 import A2C, PPO, SAC, TD3
+
     from src.ml.drl.backtest import run_full_backtest
     from src.ml.drl.train_drl import load_drl_config
     from src.utils.helpers import download_df_from_s3, load_pipeline_config

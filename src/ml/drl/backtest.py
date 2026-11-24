@@ -23,19 +23,19 @@ Benchmarks compared:
 
 from __future__ import annotations
 
-import os
+import matplotlib
 import numpy as np
 import pandas as pd
-import matplotlib
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
-from pathlib import Path
-from loguru import logger
-from stable_baselines3.common.base_class import BaseAlgorithm
 
-from src.ml.drl.env import EnergyTradingEnv
+matplotlib.use("Agg")  # select the non-GUI backend before pyplot is imported
+from pathlib import Path  # noqa: E402
 
+import matplotlib.gridspec as gridspec  # noqa: E402
+import matplotlib.pyplot as plt  # noqa: E402
+from loguru import logger  # noqa: E402
+from stable_baselines3.common.base_class import BaseAlgorithm  # noqa: E402
+
+from src.ml.drl.env import EnergyTradingEnv  # noqa: E402
 
 # ── Dark theme ────────────────────────────────────────────────────────────────
 DARK = {
@@ -54,21 +54,22 @@ DARK = {
 }
 
 COLOURS = {
-    "agent":       "#58a6ff",   # blue
-    "buy_hold":    "#3fb950",   # green
-    "random":      "#f78166",   # red/orange
-    "price":       "#e3b341",   # yellow
-    "buy_marker":  "#3fb950",
+    "agent": "#58a6ff",  # blue
+    "buy_hold": "#3fb950",  # green
+    "random": "#f78166",  # red/orange
+    "price": "#e3b341",  # yellow
+    "buy_marker": "#3fb950",
     "sell_marker": "#f85149",
     "hold_marker": "#8b949e",
-    "drawdown":    "#f85149",
-    "portfolio":   "#58a6ff",
+    "drawdown": "#f85149",
+    "portfolio": "#58a6ff",
 }
 
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Core runner
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 def run_backtest(
     agent: BaseAlgorithm,
@@ -123,8 +124,7 @@ def run_backtest(
     bt = drl_cfg.get("backtest", {})
     ppy = bt.get("periods_per_year", 8760)
     spd = bt.get("steps_per_day", 24)
-    metrics = _compute_metrics(portfolio_values, prices, initial, env,
-                               periods_per_year=ppy, steps_per_day=spd)
+    metrics = _compute_metrics(portfolio_values, prices, initial, env, periods_per_year=ppy, steps_per_day=spd)
     metrics["algorithm"] = drl_cfg["training"]["algorithm"]
 
     logger.success(
@@ -148,6 +148,7 @@ def run_backtest(
 # ─────────────────────────────────────────────────────────────────────────────
 # Benchmark runners
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 def run_buy_and_hold(test_df: pd.DataFrame, drl_cfg: dict) -> dict:
     """Buy maximum position at t=0, hold until end."""
@@ -183,9 +184,13 @@ def run_buy_and_hold(test_df: pd.DataFrame, drl_cfg: dict) -> dict:
 
     pv = np.array(portfolio_values)
     bt = drl_cfg.get("backtest", {})
-    metrics = _compute_metrics(pv, np.array(prices_out), drl_cfg["environment"]["initial_cash"],
-                               periods_per_year=bt.get("periods_per_year", 8760),
-                               steps_per_day=bt.get("steps_per_day", 24))
+    metrics = _compute_metrics(
+        pv,
+        np.array(prices_out),
+        drl_cfg["environment"]["initial_cash"],
+        periods_per_year=bt.get("periods_per_year", 8760),
+        steps_per_day=bt.get("steps_per_day", 24),
+    )
     metrics["algorithm"] = "Buy & Hold"
     return {"metrics": metrics, "portfolio_values": pv}
 
@@ -194,7 +199,7 @@ def run_random_agent(test_df: pd.DataFrame, drl_cfg: dict, seed: int = 0) -> dic
     """Uniformly random actions as a baseline."""
     env = EnergyTradingEnv(test_df, drl_cfg, mode="test")
     env.reset(seed=seed)
-    env.action_space.seed(seed)   # DEF-09 fix: seed the action sampler too, so results are reproducible
+    env.action_space.seed(seed)  # DEF-09 fix: seed the action sampler too, so results are reproducible
 
     portfolio_values = []
     done = False
@@ -211,9 +216,13 @@ def run_random_agent(test_df: pd.DataFrame, drl_cfg: dict, seed: int = 0) -> dic
 
     pv = np.array(portfolio_values)
     bt = drl_cfg.get("backtest", {})
-    metrics = _compute_metrics(pv, np.array(prices_out), drl_cfg["environment"]["initial_cash"],
-                               periods_per_year=bt.get("periods_per_year", 8760),
-                               steps_per_day=bt.get("steps_per_day", 24))
+    metrics = _compute_metrics(
+        pv,
+        np.array(prices_out),
+        drl_cfg["environment"]["initial_cash"],
+        periods_per_year=bt.get("periods_per_year", 8760),
+        steps_per_day=bt.get("steps_per_day", 24),
+    )
     metrics["algorithm"] = "Random Agent"
     return {"metrics": metrics, "portfolio_values": pv}
 
@@ -221,6 +230,7 @@ def run_random_agent(test_df: pd.DataFrame, drl_cfg: dict, seed: int = 0) -> dic
 # ─────────────────────────────────────────────────────────────────────────────
 # Metrics
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 def _compute_metrics(
     portfolio_values: np.ndarray,
@@ -295,6 +305,7 @@ def _compute_metrics(
 # Visualisation
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 def plot_backtest_report(
     agent_results: dict,
     buy_hold_results: dict,
@@ -335,7 +346,9 @@ def plot_backtest_report(
         fig = plt.figure(figsize=(18, 14), constrained_layout=True)
         fig.suptitle(
             f"⚡  Energy Trading DRL Backtest  —  {algo}",
-            fontsize=17, fontweight="bold", color="#e6edf3",   # no fixed y: let constrained_layout reserve space
+            fontsize=17,
+            fontweight="bold",
+            color="#e6edf3",  # no fixed y: let constrained_layout reserve space
         )
 
         gs = gridspec.GridSpec(3, 3, figure=fig)
@@ -343,9 +356,18 @@ def plot_backtest_report(
         # ── Panel 1: Portfolio Returns ─────────────────────────────────────
         ax1 = fig.add_subplot(gs[0, :2])
         ax1.plot(steps, ret_agent, label=f"{algo}", color=COLOURS["agent"], linewidth=1.8)
-        ax1.plot(np.arange(len(ret_bh)), ret_bh, label="Buy & Hold", color=COLOURS["buy_hold"], linewidth=1.2, alpha=0.8)
-        ax1.plot(np.arange(len(ret_rand)), ret_rand, label=rand_label, color=COLOURS["random"], linewidth=1.0,
-                 alpha=0.6, linestyle="--")
+        ax1.plot(
+            np.arange(len(ret_bh)), ret_bh, label="Buy & Hold", color=COLOURS["buy_hold"], linewidth=1.2, alpha=0.8
+        )
+        ax1.plot(
+            np.arange(len(ret_rand)),
+            ret_rand,
+            label=rand_label,
+            color=COLOURS["random"],
+            linewidth=1.0,
+            alpha=0.6,
+            linestyle="--",
+        )
         ax1.axhline(0, color="#c9d1d9", linewidth=0.5, linestyle=":")
         ax1.fill_between(steps, ret_agent, 0, alpha=0.12, color=COLOURS["agent"])
         ax1.set_title("Portfolio Return (%)", fontweight="bold")
@@ -373,10 +395,14 @@ def plot_backtest_report(
         if "total_trades" in m:
             metrics_text += f"  {'Total Trades':<22} {m['total_trades']:>10}\n"
         ax2.text(
-            0.02, 0.95, metrics_text,
+            0.02,
+            0.95,
+            metrics_text,
             transform=ax2.transAxes,
-            fontfamily="monospace", fontsize=9,
-            verticalalignment="top", color="#e6edf3",
+            fontfamily="monospace",
+            fontsize=9,
+            verticalalignment="top",
+            color="#e6edf3",
             bbox=dict(facecolor="#21262d", edgecolor="#30363d", boxstyle="round,pad=0.5"),
         )
         ax2.set_title("Performance Summary", fontweight="bold")
@@ -391,14 +417,34 @@ def plot_backtest_report(
         # Overlay buy/sell markers from trade log. prices[i] is the price after step i, so a trade executed in
         # step t (at that step's opening price) sits at plot index t - 1; a trade in step 0 has no point here.
         if agent_results.get("trade_log"):
-            buy_steps = [t["step"] - 1 for t in agent_results["trade_log"]
-                         if t["action"] == "BUY" and 1 <= t["step"] <= n]
-            sell_steps = [t["step"] - 1 for t in agent_results["trade_log"]
-                          if t["action"] == "SELL" and 1 <= t["step"] <= n]
+            buy_steps = [
+                t["step"] - 1 for t in agent_results["trade_log"] if t["action"] == "BUY" and 1 <= t["step"] <= n
+            ]
+            sell_steps = [
+                t["step"] - 1 for t in agent_results["trade_log"] if t["action"] == "SELL" and 1 <= t["step"] <= n
+            ]
             if buy_steps:
-                ax3.scatter(buy_steps, prices[buy_steps], marker="^", color=COLOURS["buy_marker"], s=40, zorder=5, label="Buy", alpha=0.8)
+                ax3.scatter(
+                    buy_steps,
+                    prices[buy_steps],
+                    marker="^",
+                    color=COLOURS["buy_marker"],
+                    s=40,
+                    zorder=5,
+                    label="Buy",
+                    alpha=0.8,
+                )
             if sell_steps:
-                ax3.scatter(sell_steps, prices[sell_steps], marker="v", color=COLOURS["sell_marker"], s=40, zorder=5, label="Sell", alpha=0.8)
+                ax3.scatter(
+                    sell_steps,
+                    prices[sell_steps],
+                    marker="v",
+                    color=COLOURS["sell_marker"],
+                    s=40,
+                    zorder=5,
+                    label="Sell",
+                    alpha=0.8,
+                )
             ax3.legend(loc="upper right", fontsize=8)
 
         # ── Panel 4: Position held ─────────────────────────────────────────
@@ -423,11 +469,9 @@ def plot_backtest_report(
 
         # ── Panel 6: Action distribution ──────────────────────────────────
         ax6 = fig.add_subplot(gs[2, 2])
-        if drl_cfg_ref := agent_results.get("_drl_cfg"):
-            pass
 
         # For continuous actions, plot histogram of position targets
-        if actions.dtype == np.float64 or (actions.ndim > 0 and actions.dtype.kind == 'f'):
+        if actions.dtype == np.float64 or (actions.ndim > 0 and actions.dtype.kind == "f"):
             ax6.hist(actions[:n], bins=50, color=COLOURS["agent"], alpha=0.8, edgecolor="#30363d")
             ax6.set_xlabel("Action Value")
             ax6.set_title("Action Distribution", fontweight="bold")
@@ -435,10 +479,21 @@ def plot_backtest_report(
             # Discrete
             labels = ["Hold", "Buy", "Sell"]
             counts = [np.sum(actions[:n] == i) for i in range(3)]
-            bars = ax6.bar(labels, counts, color=[COLOURS["hold_marker"], COLOURS["buy_marker"], COLOURS["sell_marker"]], alpha=0.85)
+            bars = ax6.bar(
+                labels,
+                counts,
+                color=[COLOURS["hold_marker"], COLOURS["buy_marker"], COLOURS["sell_marker"]],
+                alpha=0.85,
+            )
             for bar, count in zip(bars, counts):
-                ax6.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.5,
-                         str(count), ha="center", va="bottom", fontsize=10)
+                ax6.text(
+                    bar.get_x() + bar.get_width() / 2,
+                    bar.get_height() + 0.5,
+                    str(count),
+                    ha="center",
+                    va="bottom",
+                    fontsize=10,
+                )
             ax6.set_title("Action Counts", fontweight="bold")
 
         ax6.set_ylabel("Count")
@@ -455,6 +510,7 @@ def plot_backtest_report(
 # Full backtest pipeline (called by Airflow or standalone)
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 def run_full_backtest(
     agent: BaseAlgorithm,
     test_df: pd.DataFrame,
@@ -470,8 +526,9 @@ def run_full_backtest(
     bh_results = run_buy_and_hold(test_df, drl_cfg)
     rand_results = run_random_agent(test_df, drl_cfg)
 
-    plot_path = plot_backtest_report(agent_results, bh_results, rand_results, output_dir,
-                                   units=drl_cfg.get("backtest", {}).get("units"))
+    plot_path = plot_backtest_report(
+        agent_results, bh_results, rand_results, output_dir, units=drl_cfg.get("backtest", {}).get("units")
+    )
 
     summary = {
         "agent": agent_results["metrics"],
@@ -491,20 +548,22 @@ def run_full_backtest(
         ("calmar_ratio", "Calmar Ratio"),
         ("win_rate_pct", "Win Rate (%)"),
     ]:
-        print(f"  {label:<25} Agent: {summary['agent'][metric]:>+8.3f}   "
-              f"B&H: {summary['buy_and_hold'][metric]:>+8.3f}   "
-              f"Random: {summary['random'][metric]:>+8.3f}")
+        print(
+            f"  {label:<25} Agent: {summary['agent'][metric]:>+8.3f}   "
+            f"B&H: {summary['buy_and_hold'][metric]:>+8.3f}   "
+            f"Random: {summary['random'][metric]:>+8.3f}"
+        )
     print("=" * 60)
 
     return summary
 
 
 if __name__ == "__main__":
-    from src.ingestion.ingest import SyntheticEnergyGenerator
-    from src.transformation.transform import clean_raw, engineer_features, temporal_split
-    from src.ml.drl.train_drl import load_drl_config, run_drl_training, evaluate_agent
     from stable_baselines3 import PPO
-    from pathlib import Path
+
+    from src.ingestion.ingest import SyntheticEnergyGenerator
+    from src.ml.drl.train_drl import load_drl_config, run_drl_training
+    from src.transformation.transform import clean_raw, engineer_features, temporal_split
 
     gen = SyntheticEnergyGenerator(seed=42)
     df = gen.generate(days=365)
@@ -522,6 +581,7 @@ if __name__ == "__main__":
     drl_cfg["backtest"].pop("units", None)
 
     import mlflow
+
     mlflow.set_tracking_uri("./mlruns")
 
     run_drl_training(train, val, drl_cfg)

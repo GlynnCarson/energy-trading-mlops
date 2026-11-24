@@ -53,13 +53,18 @@ class GateResult:
         return "; ".join(c.reason for c in self.checks)
 
     def to_dict(self) -> dict:
-        return {"passed": self.passed, "reasons": self.reasons,
-                "checks": [asdict(c) for c in self.checks], "metrics": self.metrics}
+        return {
+            "passed": self.passed,
+            "reasons": self.reasons,
+            "checks": [asdict(c) for c in self.checks],
+            "metrics": self.metrics,
+        }
 
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Evaluation on the validation window
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 def window_cfg(drl_cfg: dict, window: pd.DataFrame) -> dict:
     """Copy of the config whose episode covers the whole window (len - 1 trading steps)."""
@@ -75,8 +80,9 @@ def max_drawdown_pct(values, initial_cash: float) -> float:
     return float(((pv - peak) / peak * 100).min())
 
 
-def evaluate_on_window(agent, window: pd.DataFrame, drl_cfg: dict, norm_stats: dict | None,
-                       n_random_agents: int = 30) -> dict:
+def evaluate_on_window(
+    agent, window: pd.DataFrame, drl_cfg: dict, norm_stats: dict | None, n_random_agents: int = 30
+) -> dict:
     """Run the agent, Buy & Hold and seeded Random Agents over the same window."""
     c = window_cfg(drl_cfg, window)
     initial = c["environment"]["initial_cash"]
@@ -102,6 +108,7 @@ def evaluate_on_window(agent, window: pd.DataFrame, drl_cfg: dict, norm_stats: d
 # Decision (pure function, unit-tested)
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 def decide(metrics: dict, gate_cfg: dict) -> GateResult:
     """Apply checks (a)-(c) to the metrics produced by evaluate_on_window."""
     ret, bh = metrics["return_pct"], metrics["buy_and_hold_return_pct"]
@@ -114,13 +121,28 @@ def decide(metrics: dict, gate_cfg: dict) -> GateResult:
     b = beaten_pct >= min_beaten
     c = dd >= floor
     checks = [
-        GateCheck("beats_buy_and_hold", a, ret, bh,
-                  f"(a) validation return {ret:+.2f}% {'>' if a else '<='} Buy & Hold {bh:+.2f}%"),
-        GateCheck("beats_random_agents", b, beaten_pct, min_beaten,
-                  f"(b) beats {int(round(beaten_pct * len(rand) / 100))}/{len(rand)} Random Agents "
-                  f"({beaten_pct:.0f}%, needs {min_beaten:.0f}%)"),
-        GateCheck("drawdown_floor", c, dd, floor,
-                  f"(c) max drawdown {dd:.2f}% {'within' if c else 'below'} floor {floor:.0f}%"),
+        GateCheck(
+            "beats_buy_and_hold",
+            a,
+            ret,
+            bh,
+            f"(a) validation return {ret:+.2f}% {'>' if a else '<='} Buy & Hold {bh:+.2f}%",
+        ),
+        GateCheck(
+            "beats_random_agents",
+            b,
+            beaten_pct,
+            min_beaten,
+            f"(b) beats {int(round(beaten_pct * len(rand) / 100))}/{len(rand)} Random Agents "
+            f"({beaten_pct:.0f}%, needs {min_beaten:.0f}%)",
+        ),
+        GateCheck(
+            "drawdown_floor",
+            c,
+            dd,
+            floor,
+            f"(c) max drawdown {dd:.2f}% {'within' if c else 'below'} floor {floor:.0f}%",
+        ),
     ]
     summary = {k: v for k, v in metrics.items() if k != "random_returns_pct"}
     summary["random_beaten_pct"] = beaten_pct
@@ -132,10 +154,13 @@ def decide(metrics: dict, gate_cfg: dict) -> GateResult:
 # MLflow logging
 # ─────────────────────────────────────────────────────────────────────────────
 
-def log_gate_to_mlflow(run_id: str, result: GateResult, gate_cfg: dict, tracking_uri: str,
-                       context: str = "promotion") -> None:
+
+def log_gate_to_mlflow(
+    run_id: str, result: GateResult, gate_cfg: dict, tracking_uri: str, context: str = "promotion"
+) -> None:
     """Record the decision on the candidate's own run (tags gate.* and metrics gate_*)."""
     from mlflow import MlflowClient
+
     client = MlflowClient(tracking_uri=tracking_uri)
     tags = {
         "gate.passed": str(result.passed).lower(),

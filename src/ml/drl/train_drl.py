@@ -20,37 +20,37 @@ Pipeline flow:
 from __future__ import annotations
 
 import os
-import json
-import numpy as np
-import pandas as pd
+from datetime import datetime
+from pathlib import Path
+
 import mlflow
 import mlflow.pyfunc
-from pathlib import Path
-from loguru import logger
-from datetime import datetime
-
-import gymnasium as gym
+import numpy as np
+import pandas as pd
 from gymnasium.utils.env_checker import check_env
-from stable_baselines3 import PPO, SAC, TD3, A2C
-from stable_baselines3.common.env_util import make_vec_env
-from stable_baselines3.common.vec_env import DummyVecEnv, VecNormalize
+from loguru import logger
+from stable_baselines3 import A2C, PPO, SAC, TD3
 from stable_baselines3.common.callbacks import (
-    EvalCallback,
-    CheckpointCallback,
-    CallbackList,
     BaseCallback,
+    CallbackList,
+    CheckpointCallback,
+    EvalCallback,
 )
+from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.utils import set_random_seed
+from stable_baselines3.common.vec_env import DummyVecEnv
 
 from src.ml.drl.env import EnergyTradingEnv
-from src.utils.helpers import load_pipeline_config
 
 # ── Config ───────────────────────────────────────────────────────────────────
 
+
 def load_drl_config() -> dict:
-    import yaml
     from pathlib import Path
+
+    import yaml
+
     cfg_path = Path(__file__).resolve().parents[3] / "config" / "drl.yaml"
     with open(cfg_path) as f:
         return yaml.safe_load(f)
@@ -62,6 +62,7 @@ SB3_ALGOS = {"PPO": PPO, "SAC": SAC, "TD3": TD3, "A2C": A2C}
 # ─────────────────────────────────────────────────────────────────────────────
 # Custom MLflow callback
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 class MLflowCallback(BaseCallback):
     """
@@ -113,11 +114,14 @@ class PortfolioMetricsCallback(BaseCallback):
                     f"[PORTFOLIO EVAL @ {self.num_timesteps}] "
                     f"Return={final_ret:+.2f}% | Sharpe={sharpe:.3f} | MaxDD={max_dd:.2f}%"
                 )
-                mlflow.log_metrics({
-                    "portfolio_return_pct": final_ret,
-                    "portfolio_sharpe": sharpe,
-                    "portfolio_max_drawdown_pct": max_dd,
-                }, step=self.num_timesteps)
+                mlflow.log_metrics(
+                    {
+                        "portfolio_return_pct": final_ret,
+                        "portfolio_sharpe": sharpe,
+                        "portfolio_max_drawdown_pct": max_dd,
+                    },
+                    step=self.num_timesteps,
+                )
         return True
 
     def _run_eval_episode(self) -> list[float]:
@@ -151,12 +155,15 @@ class PortfolioMetricsCallback(BaseCallback):
 # Environment factory
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 def make_env_fn(df: pd.DataFrame, drl_cfg: dict, mode: str = "train", seed: int = 0):
     """Return a Gymnasium env factory function for vectorised envs."""
+
     def _init():
         env = EnergyTradingEnv(df, drl_cfg, mode=mode)
         env = Monitor(env)
         return env
+
     set_random_seed(seed)
     return _init
 
@@ -164,6 +171,7 @@ def make_env_fn(df: pd.DataFrame, drl_cfg: dict, mode: str = "train", seed: int 
 # ─────────────────────────────────────────────────────────────────────────────
 # Policy network architecture builder
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 def build_policy_kwargs(algo_cfg: dict) -> dict:
     """Build SB3 policy_kwargs from config net_arch."""
@@ -174,6 +182,7 @@ def build_policy_kwargs(algo_cfg: dict) -> dict:
 # ─────────────────────────────────────────────────────────────────────────────
 # Algorithm factory
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 def build_agent(
     algorithm: str,
@@ -246,6 +255,7 @@ def build_agent(
 # ─────────────────────────────────────────────────────────────────────────────
 # Main training function
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 def run_drl_training(
     train_df: pd.DataFrame,
@@ -339,12 +349,14 @@ def run_drl_training(
         eval_freq=eval_freq // actual_n_envs,
     )
 
-    callbacks = CallbackList([
-        eval_callback,
-        checkpoint_callback,
-        mlflow_callback,
-        portfolio_callback,
-    ])
+    callbacks = CallbackList(
+        [
+            eval_callback,
+            checkpoint_callback,
+            mlflow_callback,
+            portfolio_callback,
+        ]
+    )
 
     # ── MLflow tracking ───────────────────────────────────────────────────
     mlflow_cfg = drl_cfg.get("mlflow", {})
@@ -356,24 +368,27 @@ def run_drl_training(
         logger.info(f"[MLFLOW] DRL Run ID: {run_id}")
 
         # Log all config params
-        mlflow.log_params({
-            "algorithm": algorithm,
-            "total_timesteps": total_timesteps,
-            "n_envs": actual_n_envs,
-            "action_type": drl_cfg["action"]["type"],
-            "obs_dim": agent.observation_space.shape[0],
-            "initial_cash": drl_cfg["environment"]["initial_cash"],
-            "episode_length": drl_cfg["environment"]["episode_length"],
-            "train_rows": len(train_df),
-            "val_rows": len(val_df),
-            "seed": seed,
-            **{f"algo_{k}": v
-               for k, v in drl_cfg.get(algorithm, {}).items()
-               if not isinstance(v, (list, dict))},
-        })
+        mlflow.log_params(
+            {
+                "algorithm": algorithm,
+                "total_timesteps": total_timesteps,
+                "n_envs": actual_n_envs,
+                "action_type": drl_cfg["action"]["type"],
+                "obs_dim": agent.observation_space.shape[0],
+                "initial_cash": drl_cfg["environment"]["initial_cash"],
+                "episode_length": drl_cfg["environment"]["episode_length"],
+                "train_rows": len(train_df),
+                "val_rows": len(val_df),
+                "seed": seed,
+                **{f"algo_{k}": v for k, v in drl_cfg.get(algorithm, {}).items() if not isinstance(v, (list, dict))},
+            }
+        )
 
         # Log config files as artifacts
-        import yaml, tempfile
+        import tempfile
+
+        import yaml
+
         with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             yaml.dump(drl_cfg, f)
             mlflow.log_artifact(f.name, "config")
@@ -418,6 +433,7 @@ def run_drl_training(
 # ─────────────────────────────────────────────────────────────────────────────
 # Evaluation helper
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 def evaluate_agent(
     agent,
@@ -493,6 +509,7 @@ if __name__ == "__main__":
     drl_cfg["mlflow"]["tracking_uri"] = "./mlruns"
 
     import mlflow
+
     mlflow.set_tracking_uri("./mlruns")
 
     run_id = run_drl_training(train, val, drl_cfg)
