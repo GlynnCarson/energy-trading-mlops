@@ -394,7 +394,7 @@ def architecture():
     ax.text(88.25, 79.8, "PLATFORM\nAND DEVOPS", ha="center", va="center", fontsize=9.5, fontweight="bold",
             color=MID, linespacing=1.3)
     plat = [("Terraform", "AWS us-east-1; validated\nin CI, never applied", "code"),
-            ("Docker Compose", "Airflow, MLflow,\nLocalStack, Mailpit", "stack"),
+            ("Docker Compose", "Airflow + PostgreSQL,\nMLflow server,\nLocalStack, Mailpit", "stack"),
             ("GitHub Actions", "CI on every push; lint\nfails, deploy not run", "stack"),
             ("CloudWatch, SNS", "logs and alerts", "code"),
             ("ECR, IAM", "image registry, roles", "code")]
