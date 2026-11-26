@@ -194,7 +194,7 @@ footer { color: var(--text-muted); font-size: 12.5px; padding: 36px 0 44px; }
   </header>
 
   <nav><div class="wrap">
-    <a href="#live">Live model</a><a href="#results">Backtest</a><a href="#pipeline">Pipeline</a><a href="#objectives">Objectives</a>
+    <a href="#live">Live model</a><a href="#results">Backtest</a><a href="#training">Training period</a><a href="#pipeline">Pipeline</a><a href="#objectives">Objectives</a>
     <a href="#testing">Testing</a><a href="#defects">Defects</a><a href="#activity">Activity</a>
   </div></nav>
 
@@ -253,6 +253,32 @@ footer { color: var(--text-muted); font-size: 12.5px; padding: 36px 0 44px; }
       <div class="card mt">
         <h3>Detailed results (Table 5.8)</h3>
         <div class="scroll"><table class="tbl" id="results-table" style="margin-top:8px"></table></div>
+      </div>
+    </section>
+
+    <section id="training">
+      <div class="sec-head"><div><h2>Training period<span class="tag">IN-SAMPLE</span></h2><p id="train-sub"></p></div></div>
+      <div class="card">
+        <div class="sec-head" style="margin-bottom:6px">
+          <div><h3>Portfolio value over the training period</h3><p class="hint" id="train-hint"></p></div>
+          <div class="legend" id="train-legend"></div>
+        </div>
+        <div class="chart" id="train-equity"></div>
+      </div>
+      <div class="grid g-2-1 mt">
+        <div class="card">
+          <div class="sec-head" style="margin-bottom:6px">
+            <div><h3>Return in each training year</h3><p class="hint">A fresh $100,000 account each calendar year (about one 252-day training episode) · hover for each seed</p></div>
+            <div class="legend" id="years-legend"></div>
+          </div>
+          <div class="chart" id="train-years"></div>
+        </div>
+        <div class="card">
+          <h3>Training vs held-out data</h3>
+          <p class="hint">Median of the 5 seeds</p>
+          <table class="tbl" id="train-cmp" style="margin-top:8px"></table>
+          <div class="note-box" id="train-note"></div>
+        </div>
       </div>
     </section>
 
@@ -355,10 +381,12 @@ function niceTicks(lo, hi, count) {
   return ticks;
 }
 const cv = name => `var(${name})`;
-const kfmt = v => '$' + (Math.abs(v) >= 1e5 || v % 1000 === 0 ? (v / 1000).toFixed(0) : (v / 1000).toFixed(1)) + 'k';
+const kfmt = v => Math.abs(v) >= 1e6 ? '$' + (v / 1e6).toFixed(v % 1e6 === 0 ? 0 : 1) + 'M'
+  : '$' + (Math.abs(v) >= 1e5 || v % 1000 === 0 ? (v / 1000).toFixed(0) : (v / 1000).toFixed(1)) + 'k';
 
 // Line chart with crosshair tooltip. series: [{name, color, width, values}]
-function lineChart(host, { dates, series, height, aria, tooltip, endLabels = false, markers = [], tickEvery = 1 }) {
+// yearTicks: label each new year only (for periods of many years)
+function lineChart(host, { dates, series, height, aria, tooltip, endLabels = false, markers = [], tickEvery = 1, yearTicks = false }) {
   host.innerHTML = '';
   if (host.clientWidth <= 0) return;
   const n = dates.length, W = host.clientWidth, H = W < 600 ? Math.min(height, 260) : height;
@@ -377,7 +405,10 @@ function lineChart(host, { dates, series, height, aria, tooltip, endLabels = fal
   el('line', { x1: m.l, x2: m.l + iw, y1: y(100000), y2: y(100000), stroke: cv('--baseline') }, svg);
   dates.forEach((d, i) => {
     const [yy, mm] = d.split('-');
-    if (i && mm !== dates[i-1].split('-')[1] && (+mm - 1) % tickEvery === 0)
+    if (yearTicks) {
+      if (i && yy !== dates[i-1].slice(0, 4) && (W >= 700 || +yy % 2 === 0))
+        el('text', { x: x(i), y: H - 8, 'text-anchor': 'middle' }, svg).textContent = yy;
+    } else if (i && mm !== dates[i-1].split('-')[1] && (+mm - 1) % tickEvery === 0)
       el('text', { x: x(i), y: H - 8, 'text-anchor': 'middle' }, svg).textContent = `${MONTHS[+mm-1]} ${yy}`;
   });
   markers.forEach(({ i, label }) => {
@@ -586,6 +617,114 @@ function drawSeeds() {
   el('text', { x: x(bh) + 4, y: m.t - 9, class: 'axis-label' }, svg).textContent = `Buy & Hold ${pct(bh)}`;
 }
 
+// ── Training period (in-sample) ──────────────────────────────────────────────
+const TR = D.train;
+const med = a => { const s = [...a].sort((p, q) => p - q), k = s.length >> 1; return s.length % 2 ? s[k] : (s[k-1] + s[k]) / 2; };
+let drawTrain = null, drawTrainYears = null;
+if (!TR) { $('training').style.display = 'none'; } else {
+  const tn = TR.dates.length, OTHER = ['1', '2', '3', '4'];
+  // Buy & Hold is held flat after its stop-loss: find the day it was closed
+  let bhStop = tn - 1;
+  while (bhStop > 0 && TR.buy_hold[bhStop - 1] === TR.buy_hold[tn - 1]) bhStop--;
+  const bhStopped = bhStop < tn - 1;
+  const years = TR.yearly.map(r => { const v = Object.values(r.seeds);
+    return { ...r, med: med(v), min: Math.min(...v), max: Math.max(...v) }; });
+  const fullYears = years.filter(r => r.days >= 240);
+  const partial = years.filter(r => r.days < 240);
+  const beatYears = years.filter(r => r.med > r.buy_hold).length;
+
+  $('train-sub').textContent = `The same five agents replayed over the prices they were trained on (${fmtDate(TR.dates[0])} to ${fmtDate(TR.dates[tn-1])}, ${tn.toLocaleString('en-US')} trading days), next to Buy & Hold on the same days. These are in-sample results: the agents learned from these prices, so the charts show how they behave on data they have already seen, not how they would trade on new prices. For that, see the held-out backtest above and the paper trading.`;
+  $('train-hint').textContent = `One continuous $100,000 account · hover for daily values · the position limit is fixed (25,000 MMBtu), so profits add up in dollars rather than compounding` +
+    (bhStopped ? ` · Buy & Hold hit the 50 % stop-loss on ${fmtDate(TR.dates[bhStop])} and was closed (the same rule the agents trade under)` : '');
+  $('train-legend').innerHTML = [['--series-1', 'Agent, seed 42'], ['--series-1-soft', 'Agent, other seeds'], ['--series-2', 'Buy & Hold']]
+    .map(([c, l]) => `<span><i class="swatch" style="background:${cv(c)}"></i>${esc(l)}</span>`).join('');
+  drawTrain = () => lineChart($('train-equity'), {
+    dates: TR.dates, height: 360, yearTicks: true, endLabels: true,
+    markers: bhStopped ? [{ i: bhStop, label: 'Buy & Hold stopped out' }] : [],
+    aria: 'Line chart of portfolio value over the training period for five agent seeds and Buy & Hold',
+    series: [
+      ...OTHER.map(s => ({ name: `Seed ${s}`, color: '--series-1-soft', width: 1.5, values: TR.seeds[s] })),
+      { name: 'Buy & Hold', label: 'Buy & Hold', color: '--series-2', width: 2, values: TR.buy_hold, dot: true },
+      { name: 'Seed 42', label: 'Seed 42', color: '--series-1', width: 2, values: TR.seeds['42'], dot: true },
+    ],
+    tooltip: i => { const o = OTHER.map(k => TR.seeds[k][i]);
+      return `<div class="t-head">${fmtDate(TR.dates[i])} · gas $${TR.price[i].toFixed(2)}/MMBtu</div>` +
+        trow('--series-1', 'Seed 42', usd(TR.seeds['42'][i])) +
+        trow('--series-1-soft', 'Other seeds', `${usd(Math.min(...o))} – ${usd(Math.max(...o))}`) +
+        trow('--series-2', 'Buy &amp; Hold' + (bhStopped && i >= bhStop ? ' (stopped out)' : ''), usd(TR.buy_hold[i])); },
+  });
+
+  $('years-legend').innerHTML = `<span><i class="swatch" style="background:${cv('--series-1')};height:8px;width:8px"></i>Agent, median of 5 seeds</span>` +
+    `<span><i class="swatch" style="background:${cv('--text-secondary')};width:2px;height:12px"></i>Range of the 5 seeds</span>` +
+    `<span><i class="swatch" style="background:${cv('--series-2')};height:8px;width:8px"></i>Buy &amp; Hold</span>`;
+
+  // Bar whose data end (away from zero) has 4px rounded corners
+  const barPath = (x0, w, yb, yv) => {
+    const h = Math.abs(yb - yv), r = Math.min(4, w / 2, h), up = yv < yb;
+    if (h < 0.5) return `M${x0},${yb}h${w}`;
+    return up
+      ? `M${x0},${yb}V${yv + r}Q${x0},${yv} ${x0 + r},${yv}H${x0 + w - r}Q${x0 + w},${yv} ${x0 + w},${yv + r}V${yb}Z`
+      : `M${x0},${yb}V${yv - r}Q${x0},${yv} ${x0 + r},${yv}H${x0 + w - r}Q${x0 + w},${yv} ${x0 + w},${yv - r}V${yb}Z`;
+  };
+  drawTrainYears = () => {
+    const host = $('train-years'); host.innerHTML = '';
+    if (host.clientWidth <= 0) return;
+    const side = $('train-cmp').closest('.card').offsetHeight - 150;   // fill the card next to it on wide screens
+    const W = host.clientWidth, H = W < 600 ? 260 : window.innerWidth > 900 ? Math.max(300, side) : 300, m = { t: 12, r: 8, b: 28, l: 52 };
+    const iw = W - m.l - m.r, ih = H - m.t - m.b;
+    const vals = years.flatMap(r => [r.min, r.max, r.buy_hold, 0]);
+    const ticks = niceTicks(Math.min(...vals), Math.max(...vals), 6);
+    const step = ticks[1] - ticks[0];
+    const y0 = Math.min(ticks[0], Math.min(...vals) - step * 0.1), y1 = Math.max(ticks[ticks.length - 1], Math.max(...vals) + step * 0.1);
+    const y = v => m.t + ih - ((v - y0) / (y1 - y0)) * ih;
+    const gw = iw / years.length, bw = Math.max(4, Math.min(16, gw * 0.3));
+    const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, height: H, role: 'img',
+      'aria-label': 'Bar chart of the return in each training year: agent median of five seeds with their range, and Buy & Hold' }, host);
+    ticks.forEach(v => {
+      el('line', { x1: m.l, x2: m.l + iw, y1: y(v), y2: y(v), stroke: cv(v === 0 ? '--baseline' : '--grid') }, svg);
+      el('text', { x: m.l - 8, y: y(v) + 4, 'text-anchor': 'end' }, svg).textContent = (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v) + ' %';
+    });
+    const tip = document.createElement('div'); tip.className = 'tooltip'; host.appendChild(tip);
+    years.forEach((r, k) => {
+      const cx = m.l + gw * (k + 0.5), xa = cx - bw - 1, xb = cx + 1, yb = y(0);
+      const a = el('path', { d: barPath(xa, bw, yb, y(r.med)), fill: cv('--series-1') }, svg);
+      const b = el('path', { d: barPath(xb, bw, yb, y(r.buy_hold)), fill: cv('--series-2') }, svg);
+      // seed range whisker over the agent bar, with a 2px surface ring so it reads on top of the fill
+      const wx = xa + bw / 2;
+      [[cv('--surface-1'), 4], [cv('--text-secondary'), 1.5]].forEach(([c, sw]) => {
+        el('path', { d: `M${wx},${y(r.min)}V${y(r.max)}M${wx - 3},${y(r.min)}h6M${wx - 3},${y(r.max)}h6`, stroke: c, 'stroke-width': sw, fill: 'none', 'stroke-linecap': 'round' }, svg);
+      });
+      const lab = W < 700 ? `’${String(r.year).slice(2)}` : String(r.year);
+      el('text', { x: cx, y: H - 8, 'text-anchor': 'middle' }, svg).textContent = lab + (r.days < 240 ? '*' : '');
+      const hit = el('rect', { x: m.l + gw * k, y: m.t, width: gw, height: ih, fill: 'transparent' }, svg);
+      hit.addEventListener('pointermove', ev => {
+        const bb = svg.getBoundingClientRect();
+        tip.innerHTML = `<div class="t-head">${r.year} · ${r.days} trading days${r.days < 240 ? ' (part year)' : ''}</div>` +
+          trow('--series-1', 'Agent, median', pct(r.med)) +
+          ['42', ...OTHER].map(s => trow(null, `&nbsp;&nbsp;Seed ${s}`, pct(r.seeds[s]))).join('') +
+          trow('--series-2', 'Buy &amp; Hold', pct(r.buy_hold));
+        tip.style.opacity = 1;
+        const sx = (cx / W) * bb.width, tw = tip.offsetWidth;
+        tip.style.left = (sx + 16 + tw > bb.width ? sx - 16 - tw : sx + 16) + 'px';
+        tip.style.top = '4px';
+        a.setAttribute('opacity', 0.8); b.setAttribute('opacity', 0.8);
+      });
+      hit.addEventListener('pointerleave', () => { tip.style.opacity = 0; a.setAttribute('opacity', 1); b.setAttribute('opacity', 1); });
+    });
+  };
+  if (partial.length) $('train-years').insertAdjacentHTML('afterend',
+    `<p class="hint" style="margin-top:6px">* Part year: ${partial.map(r => `${r.year} has ${r.days} trading days`).join(', ')} (the training split starts on ${fmtDate(TR.dates[0])} and ends on ${fmtDate(TR.dates[tn-1])}).</p>`);
+
+  // training vs held-out, all as medians of the five seeds
+  const cmpRows = [[`Training, typical year (median of ${fullYears.length} full years)`, med(fullYears.map(r => r.med)), med(fullYears.map(r => r.buy_hold))]];
+  if (L) cmpRows.push(['Validation, 413 days (quality gate)', med(L.gate_initial.map(g => g.val)), L.gate_initial[0].bh]);
+  cmpRows.push(['Test, first 252 days (never seen)', med(S.map(s => s.test252)), S[0].bh252]);
+  cmpRows.push([`Test, full ${n} days (never seen)`, med(S.map(s => s.test_full)), S[0].bh_full]);
+  $('train-cmp').innerHTML = `<thead><tr><th>Period</th><th class="v">Agent</th><th class="v">Buy &amp; Hold</th></tr></thead><tbody>` +
+    cmpRows.map(([k, a, b]) => `<tr><td>${esc(k)}</td><td class="v">${pct(a)}</td><td class="v">${pct(b)}</td></tr>`).join('') + '</tbody>';
+  $('train-note').textContent = `On the prices they trained on, the median agent beat Buy & Hold in ${beatYears} of ${years.length} years, with a typical year of ${pct(med(fullYears.map(r => r.med)), 0)}. In the first 252 days of the held-out test it made ${pct(med(S.map(s => s.test252)), 0)} (Buy & Hold ${pct(S[0].bh252, 0)}). Training-period results are in-sample: they show how the agents behave on prices they have already seen, so they are not evidence of skill. The validation, test and paper-trading results are.`;
+}
+
 // ── Pipeline ─────────────────────────────────────────────────────────────────
 const FLOW = D.status.components, CAPS = D.status.capabilities;
 const cLocal = count(CAPS, 'status', 'local'), cPart = count(CAPS, 'status', 'partly');
@@ -625,7 +764,7 @@ $('footer').innerHTML = `Rebuilt automatically on every push from the report's t
   <code>reports/live/</code>, <code>dashboard/status.json</code> (updated ${esc(D.status.updated)}) and the git history.
   All results come from simulated trading on historical or newly published prices (paper trading); no real money is involved.`;
 
-const draw = () => { if (drawPaper) drawPaper(); drawEquity(); drawSeeds(); };
+const draw = () => { if (drawPaper) drawPaper(); drawEquity(); drawSeeds(); if (drawTrain) { drawTrain(); drawTrainYears(); } };
 draw();
 let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(draw, 120); });
 })();

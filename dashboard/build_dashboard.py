@@ -8,6 +8,8 @@ cannot drift away from the report:
   Buy & Hold are shown), Table 5.12 (objectives; Table 5.10 before 23 Nov 2026)
 - reports/evaluation_reward_fix/seed_results.csv and *_full_test_trajectory.csv:
   the five fixed-reward PPO-300k runs and Buy & Hold
+- reports/evaluation_reward_fix/training_period_*.csv: the same five agents
+  replayed over their training split (in-sample; evaluate_training_period.py)
 - reports/live/: the closed loop - model_registry.json (registered versions,
   quality-gate results, champion, promotion and retrain history),
   monitor_status.json (champion health) and paper_trading.csv (paper
@@ -117,6 +119,23 @@ def seed_results() -> list[dict]:
     return rows
 
 
+def training_period() -> dict | None:
+    """In-sample replay of the five seeds over their training split (evaluate_training_period.py)."""
+    full, yearly = FIX_DIR / "training_period_trajectory.csv", FIX_DIR / "training_period_yearly.csv"
+    if not (full.exists() and yearly.exists()):
+        return None
+    rows = read_csv(full)
+    return {
+        "dates": [r["date"] for r in rows],
+        "price": [round(float(r["price"]), 3) for r in rows],
+        "buy_hold": [round(float(r["buy_hold_value"]), 2) for r in rows],
+        "seeds": {s: [round(float(r[f"seed_{s}"]), 2) for r in rows] for s in ("42", "1", "2", "3", "4")},
+        "yearly": [{"year": int(r["year"]), "days": int(r["days"]), "buy_hold": float(r["buy_hold"]),
+                    "seeds": {s: float(r[f"seed_{s}"]) for s in ("42", "1", "2", "3", "4")}}
+                   for r in read_csv(yearly)],
+    }
+
+
 def live() -> dict | None:
     """Closed loop: champion, gate/retrain history, monitor status and the paper-trading ledger."""
     if not (LIVE_DIR / "model_registry.json").exists():
@@ -220,6 +239,7 @@ def build(out_dir: Path) -> Path:
         "objectives": objectives,
         "seeds": seed_results(),
         "traj": trajectories(),
+        "train": training_period(),
         "commits": commits,
         "live": live(),
     }
