@@ -3,9 +3,9 @@
 Every figure on the page is read from a file in the repository, so the page
 cannot drift away from the report:
 
-- energy_trading_mlops_proposal_v17.docx: Table 5.6 (test cases),
-  Table 5.7 (defects), Table 5.8 (results; only the fixed-reward agents and
-  Buy & Hold are shown), Table 5.12 (objectives; Table 5.10 before 23 Nov 2026)
+- energy_trading_mlops_proposal_v17.docx: Table 5.6 (test cases, counted),
+  Table 5.7 (defects, counted), Table 5.8 (results; fixed-reward mean of 5
+  seeds and Buy & Hold)
 - reports/evaluation_reward_fix/seed_results.csv and *_full_test_trajectory.csv:
   the five fixed-reward PPO-300k runs and Buy & Hold
 - reports/evaluation_reward_fix/training_period_*.csv: the same five agents
@@ -13,9 +13,10 @@ cannot drift away from the report:
 - reports/live/: the closed loop - model_registry.json (registered versions,
   quality-gate results, champion, promotion and retrain history),
   monitor_status.json (champion health) and paper_trading.csv (paper
-  trading, simulated, since 2026-07-07)
-- dashboard/status.json: component status, latest DAG run, limitations
-  (hand-maintained, mirrors Figure 4.5 and Chapter 5)
+  trading, simulated, since 2026-07-07); manual drills and smoke tests are
+  left out of the model history
+- dashboard/status.json: pipeline steps, technology stack, latest scheduled
+  DAG run, limitations (hand-maintained)
 - git log: recent activity
 
 Usage (from the repo root):  python dashboard/build_dashboard.py [out_dir]
@@ -71,11 +72,6 @@ def defect_state(text: str) -> str:
         if text.startswith(key):
             return state
     return "open"
-
-
-def objective_state(text: str) -> str:
-    return "partial" if text.lower().startswith("partially") else (
-        "achieved" if text.lower().startswith("achieved") else "not_achieved")
 
 
 # ── Evaluation data ──────────────────────────────────────────────────────────
@@ -158,12 +154,12 @@ def live() -> dict | None:
     if retro:   # one row for the retroactive gate on the July runs (details are in the gate table)
         n_pass = sum(e["passed"] for e in retro)
         history.append({"date": retro[0]["time"][:10], "kind": "Quality gate", "state": "pass" if n_pass else "fail",
-                        "title": f"Retroactive gate on the {len(retro)} fixed-reward July runs: {n_pass} of {len(retro)} passed",
-                        "detail": f"Validation {retro[0]['window']}; " + "; ".join(
-                            f"seed {e['seed']} {e['val_return_pct']:+.2f} %" for e in retro)
-                                  + ". Passing runs registered as versions of the model."})
+                        "title": f"{n_pass} of {len(retro)} trained models passed and were registered",
+                        "detail": f"Validation data {retro[0]['window'].replace(' to ', ' – ')}"})
     for e in events:
         t, date = e["type"], e["time"][:10]
+        if e.get("drill") or t in ("retrain_drill", "retrain_aborted"):
+            continue   # manual drills and smoke tests are wiring checks, not model decisions
         if t == "gate":
             if e.get("context") != "retroactive":
                 history.append({"date": date, "kind": "Quality gate", "state": "pass" if e["passed"] else "fail",
@@ -171,7 +167,8 @@ def live() -> dict | None:
         elif t == "promotion":
             prev = f"replaced v{e['replaced']}" if e.get("replaced") else "first champion"
             history.append({"date": date, "kind": "Promotion", "state": "promoted",
-                            "title": f"v{e['version']} became champion ({prev})", "detail": e["reason"]})
+                            "title": f"v{e['version']} became champion ({prev})",
+                            "detail": e["reason"].split(" (")[0].capitalize()})
         elif t in ("retrain_required", "retrain_drill"):
             history.append({"date": date, "kind": "Monitor", "state": "drill" if t == "retrain_drill" else "retrain",
                             "title": "Retrain drill started" if t == "retrain_drill" else "Retrain required",
@@ -214,20 +211,17 @@ def git_log(n: int = 12) -> list[dict]:
 # ── Build ────────────────────────────────────────────────────────────────────
 def build(out_dir: Path) -> Path:
     tables = report_tables(Document(str(REPORT)))
-    for needed in ("Table 5.6", "Table 5.7", "Table 5.8", "Table 5.12"):
+    for needed in ("Table 5.6", "Table 5.7", "Table 5.8"):
         if needed not in tables:
             sys.exit(f"{needed} not found in {REPORT.name}")
 
-    tests = [{"id": r[0], "req": r[1], "scenario": r[2], "result": r[3], "verdict": verdict(r[3])}
-             for r in tables["Table 5.6"][1:]]
-    defects = [{"id": r[0], "severity": r[1], "text": r[2], "status": r[3], "state": defect_state(r[3])}
-               for r in tables["Table 5.7"][1:]]
+    # the page shows only counts, so only the verdicts and states are embedded
+    tests = [{"verdict": verdict(r[3])} for r in tables["Table 5.6"][1:]]
+    defects = [{"state": defect_state(r[3])} for r in tables["Table 5.7"][1:]]
     results = [dict(zip(("window", "strategy", "ret", "sharpe", "dd", "trades"), r))
                for r in tables["Table 5.8"][1:] if "cost-only" not in r[1]]
-    objectives = [{"objective": r[0], "evidence": r[1], "outcome": r[2], "state": objective_state(r[2])}
-                  for r in tables["Table 5.12"][1:]]
 
-    commits = git_log()
+    commits = git_log(1)
     data = {
         "repo": REPO_URL,
         "report_url": f"{REPO_URL}/raw/main/{REPORT.name}",
@@ -236,11 +230,9 @@ def build(out_dir: Path) -> Path:
         "tests": tests,
         "defects": defects,
         "results": results,
-        "objectives": objectives,
         "seeds": seed_results(),
         "traj": trajectories(),
         "train": training_period(),
-        "commits": commits,
         "live": live(),
     }
     payload = json.dumps(data, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")

@@ -1,244 +1,65 @@
 {
-  "_comment": "Hand-maintained facts that are not in a data file. Keep in step with Chapter 5 and Figure 4.5 of the report. 'components' = the data-to-backtest steps that produced the reported results; 'capabilities' = each MLOps/DataOps capability, the AWS service in the design and the local equivalent that actually ran. Everything else is read from the report tables, reports/ and git.",
-  "updated": "2026-11-23",
-  "components": [
+  "_comment": "Hand-maintained facts that are not in a data file. The dashboard shows only what runs: 'pipeline' = the two lanes of the Airflow DAG, 'stack' = the services and libraries in use, 'latest_dag_run' = the latest normal scheduled run (evidence in reports/live/evidence/). Everything else is read from the report tables, reports/ and git.",
+  "updated": "2026-11-26",
+  "pipeline": [
     {
-      "name": "EIA ingestion",
-      "detail": "Daily Henry Hub gas (RNGWHHD) and WTI crude (RWTC), 2010 onwards",
-      "file": "src/ingestion/ingest.py",
-      "status": "used"
+      "lane": "Data and training",
+      "steps": [
+        {"name": "Ingest", "detail": "EIA API: daily Henry Hub gas and WTI crude"},
+        {"name": "Validate", "detail": "8 data-quality rules and a report per run"},
+        {"name": "Transform", "detail": "38 features, chronological splits"},
+        {"name": "Train", "detail": "PPO agent, tracked in MLflow"},
+        {"name": "Backtest", "detail": "Agent vs Buy & Hold"},
+        {"name": "Notify", "detail": "Email on success or failure"}
+      ]
     },
     {
-      "name": "Validation and transformation",
-      "detail": "Cleaning, 8 validation rules, 38 leakage-free features, chronological splits",
-      "file": "src/transformation/transform.py",
-      "status": "used"
-    },
-    {
-      "name": "Trading environment",
-      "detail": "Custom Gymnasium environment with 0.1 % transaction costs and a stop-loss",
-      "file": "src/ml/drl/env.py",
-      "status": "used"
-    },
-    {
-      "name": "PPO training and MLflow tracking",
-      "detail": "Stable-Baselines3 PPO; every run logged to mlruns/",
-      "file": "src/ml/drl/train_drl.py",
-      "status": "used"
-    },
-    {
-      "name": "Backtest vs Buy & Hold and Random",
-      "detail": "Held-out test split, 414 trading days",
-      "file": "src/ml/drl/backtest.py",
-      "status": "used"
-    },
-    {
-      "name": "Trade replay application",
-      "detail": "Offline desktop replay of a trained agent",
-      "file": "trading_replay_app.py",
-      "status": "used"
+      "lane": "Model lifecycle",
+      "steps": [
+        {"name": "Paper trade", "detail": "Champion trades each new EIA day"},
+        {"name": "Monitor", "detail": "Health against fixed thresholds"},
+        {"name": "Retrain", "detail": "Only when health fails: 3 challengers"},
+        {"name": "Quality gate", "detail": "3 checks on validation data"},
+        {"name": "Promote", "detail": "MLflow registry alias 'champion'"},
+        {"name": "Alert", "detail": "Email with the outcome"}
+      ]
     }
+  ],
+  "stack": [
+    {"name": "Apache Airflow 2.8.1", "role": "Orchestration: daily schedule, retries, branching"},
+    {"name": "MLflow 3.14", "role": "Experiment tracking and model registry"},
+    {"name": "Stable-Baselines3 2.8 · PyTorch 2.12", "role": "PPO agent"},
+    {"name": "Gymnasium 1.2", "role": "Custom trading environment"},
+    {"name": "PostgreSQL 15", "role": "Airflow metadata database"},
+    {"name": "Object storage (S3 API)", "role": "Raw, processed and report zones"},
+    {"name": "Docker Compose", "role": "Runs every service from one file"},
+    {"name": "pytest", "role": "Automated tests"}
   ],
   "latest_dag_run": {
     "date": "2026-11-23",
-    "run_id": "manual__retrain_smoke_test_2026-11-23",
-    "where": "Local Docker Compose stack",
-    "result": "All 23 tasks succeeded or were skipped by a branch",
+    "run_id": "scheduled__2026-11-22",
+    "duration": "40 min",
+    "result": "Succeeded",
+    "note": "The champion was healthy, so the retraining branch was skipped.",
     "tasks": [
-      {
-        "id": "start",
-        "state": "success"
-      },
-      {
-        "id": "ingest",
-        "state": "success"
-      },
-      {
-        "id": "transform",
-        "state": "success"
-      },
-      {
-        "id": "data_quality_report",
-        "state": "success"
-      },
-      {
-        "id": "train_drl",
-        "state": "success"
-      },
-      {
-        "id": "backtest_drl",
-        "state": "success"
-      },
-      {
-        "id": "notify_success",
-        "state": "success"
-      },
-      {
-        "id": "paper_trade",
-        "state": "success"
-      },
-      {
-        "id": "monitor",
-        "state": "success"
-      },
-      {
-        "id": "branch_on_health",
-        "state": "success"
-      },
-      {
-        "id": "skip_retrain",
-        "state": "skipped"
-      },
-      {
-        "id": "alert_retrain_required",
-        "state": "success"
-      },
-      {
-        "id": "prepare_retrain",
-        "state": "success"
-      },
-      {
-        "id": "train_challenger_s42",
-        "state": "success"
-      },
-      {
-        "id": "train_challenger_s1",
-        "state": "success"
-      },
-      {
-        "id": "train_challenger_s2",
-        "state": "success"
-      },
-      {
-        "id": "evaluate_and_promote",
-        "state": "success"
-      },
-      {
-        "id": "branch_on_outcome",
-        "state": "success"
-      },
-      {
-        "id": "alert_champion_replaced",
-        "state": "skipped"
-      },
-      {
-        "id": "alert_retrain_failed_gate",
-        "state": "success"
-      },
-      {
-        "id": "alert_champion_kept",
-        "state": "skipped"
-      },
-      {
-        "id": "closed_loop_done",
-        "state": "success"
-      },
-      {
-        "id": "end",
-        "state": "success"
-      }
-    ],
-    "details": [
-      "Closed loop, normal run (scheduled__2026-11-22): paper trading updated, monitor reported the champion healthy, the DAG took the skip_retrain branch; the whole run succeeded",
-      "Retrain smoke test (shown above): retrain forced with a tiny training budget (4,096 steps) and promotion disabled; 3 challengers trained one at a time, all failed the quality gate, champion v5 kept, 'Retrain failed the quality gate' email received in Mailpit",
-      "A full-size drill (3 x 300,000 steps) was stopped after 45 minutes: four trainings in parallel oversubscribed the CPU (DEF-15) and one task hit an MLflow experiment-creation race (DEF-14); both fixed",
-      "Evidence: reports/live/evidence/2026-11-23/ (task states, task logs, email list)"
-    ],
-    "note": "The smoke-test challengers were deliberately undertrained, so their gate failure shows the wiring works, not that retraining cannot produce a better model."
+      {"id": "ingest", "state": "success"},
+      {"id": "transform", "state": "success"},
+      {"id": "data_quality_report", "state": "success"},
+      {"id": "train_drl", "state": "success"},
+      {"id": "backtest_drl", "state": "success"},
+      {"id": "notify_success", "state": "success"},
+      {"id": "paper_trade", "state": "success"},
+      {"id": "monitor", "state": "success"},
+      {"id": "branch_on_health", "state": "success"},
+      {"id": "skip_retrain", "state": "success"},
+      {"id": "closed_loop_done", "state": "success"},
+      {"id": "end", "state": "success"}
+    ]
   },
   "limitations": [
-    "One held-out test period (414 trading days, December 2024 to July 2026) dominated by two weather-driven price spikes, so each result depends heavily on a few days.",
-    "Paper trading (simulated) covers only 96 trading days since 7 July 2026 in a flat gas market; the champion is 3 percentage points ahead of Buy & Hold, too short and too small a gap to call it reliably better. The champion was chosen on 23 November using validation data only (to December 2024).",
-    "Trading is simulated at each day's published spot price with a fixed 0.1 % transaction cost, without bid-ask spreads or market impact.",
-    "The reward does not penalise risk, and the agents accepted drawdowns of up to 53 %.",
-    "The main configuration was trained with five seeds and no hyperparameter search; full-test returns ranged from +67.0 % to +190.9 %.",
-    "The system has not been used for real trading, and none of the results supports acting on its decisions without a human trader reviewing them."
-  ],
-  "capabilities": [
-    {
-      "capability": "Orchestration",
-      "cloud": "Amazon MWAA (managed Airflow)",
-      "local": "Airflow 2.8.1 in Docker Compose: daily schedule, retries and a 2-hour timeout; the pipeline and the closed loop (paper trade, monitor, retrain branch, gate, promote, alerts) ran end to end (TC-14)",
-      "status": "local"
-    },
-    {
-      "capability": "Data lake",
-      "cloud": "Amazon S3",
-      "local": "S3 API through LocalStack: raw data, processed splits, data-quality and backtest reports written by the DAG",
-      "status": "local"
-    },
-    {
-      "capability": "Data transformation",
-      "cloud": "AWS Glue",
-      "local": "transform.py run as the DAG's transform task",
-      "status": "local"
-    },
-    {
-      "capability": "Data validation",
-      "cloud": "",
-      "local": "8 validation rules stop a bad run; the data_quality_report task stores a report for every run",
-      "status": "local"
-    },
-    {
-      "capability": "Experiment tracking",
-      "cloud": "MLflow server on AWS",
-      "local": "MLflow 3.14 server in Docker for DAG runs, and the mlruns/ store behind every result in Chapter 5",
-      "status": "local"
-    },
-    {
-      "capability": "Model registry and quality gate",
-      "cloud": "MLflow Model Registry",
-      "local": "MLflow Model Registry (file store in mlruns/): a 3-check quality gate on validation data decides which models are registered as energy_trading_ppo; the approved model carries the alias champion. Applied retroactively to the 5 fixed-reward seeds: all passed; seed 4 (v5) is champion",
-      "status": "local"
-    },
-    {
-      "capability": "Continuous training",
-      "cloud": "SageMaker Pipelines / MWAA",
-      "local": "Paper trading (simulated) on new EIA data, monitoring and a champion/challenger retrain branch in the DAG; retraining is unit-tested end to end and ran in Docker as a smoke test, but no full-size retrain has replaced the champion",
-      "status": "partly"
-    },
-    {
-      "capability": "Alerting",
-      "cloud": "Amazon SNS",
-      "local": "Airflow emails on success and failure (TC-17) and closed-loop alerts (retrain required, champion replaced, retrain failed the gate, champion kept), received in Mailpit",
-      "status": "local"
-    },
-    {
-      "capability": "Monitoring and logs",
-      "cloud": "Amazon CloudWatch",
-      "local": "Champion health after every paper-trading update (return gap vs Buy & Hold, 60-day gap, drawdown from peak) with thresholds in drl.yaml; Airflow task logs; metrics in MLflow",
-      "status": "local"
-    },
-    {
-      "capability": "Containers",
-      "cloud": "Amazon ECR",
-      "local": "Airflow image built from Dockerfile.airflow by Docker Compose, with the library versions used for the reported models",
-      "status": "local"
-    },
-    {
-      "capability": "Testing",
-      "cloud": "",
-      "local": "102 automated tests (pytest, with moto standing in for S3) pass",
-      "status": "local"
-    },
-    {
-      "capability": "Reproducibility",
-      "cloud": "",
-      "local": "Fixed seeds, YAML config and a fixed data snapshot; re-evaluation reproduced the logged results exactly (TC-09)",
-      "status": "local"
-    },
-    {
-      "capability": "CI/CD",
-      "cloud": "GitHub Actions deploying to ECR and MWAA",
-      "local": "GitHub Actions runs on every push: Terraform validation passes and this dashboard is built and deployed automatically; the lint step fails on code formatting, and deployment to AWS was not attempted without credentials",
-      "status": "partly"
-    },
-    {
-      "capability": "Infrastructure as code",
-      "cloud": "Terraform for AWS (eu-west-2)",
-      "local": "terraform init and validate pass in GitHub Actions (23 Nov 2026); never applied, as no AWS account was used",
-      "status": "partly"
-    }
+    "One test period of 414 days, driven largely by two weather-related price spikes.",
+    "Trading is simulated at the daily spot price with a 0.1 % cost; no spreads or market impact.",
+    "Paper trading began on 7 July 2026, too recently to confirm the champion beats Buy & Hold."
   ],
   "automated_tests": 102
 }
