@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Live model — paper trading demo</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22%3E%3Crect width=%2216%22 height=%2216%22 rx=%223%22 fill=%22%23132A4A%22/%3E%3Cpath d=%22M3 11l3-3 2 2 5-5%22 stroke=%22white%22 stroke-width=%221.8%22 fill=%22none%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/%3E%3C/svg%3E">
+<style>
+:root {
+  --navy: #132A4A; --ink: #0E1726; --muted: #66748A; --line: #D5DBE5; --grid: #E6E9EF; --panel: #EEF2F7; --page: #F7F8FA;
+  --agent: #2A78D6; --agent-soft: #9EC5F4; --bh: #EB6834; --buy: #1BAF7A; --sell: #D03B3B; --price: #3D4A5C; --new: #FFF4E5;
+  --good-text: #0B7A52; --warn: #B07A00; --crit: #A32323;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--page); color: var(--ink); font: 15px/1.5 "Segoe UI", system-ui, -apple-system, Roboto, sans-serif; -webkit-font-smoothing: antialiased; }
+header { background: var(--navy); color: #fff; }
+header .wrap { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 8px 20px; }
+header .wrap > div:first-child { min-width: 0; }
+.btns { flex: none; }
+.top { position: sticky; top: 0; z-index: 10; }
+h1 { margin: 0; font-size: 19px; font-weight: 650; letter-spacing: -0.01em; }
+.sub { margin: 1px 0 0; color: #9EC5F4; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tag { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .06em; border: 1px solid rgba(255,255,255,.35); border-radius: 4px; padding: 1px 7px; margin-left: 10px; vertical-align: 3px; color: #fff; }
+.btns { display: flex; gap: 10px; align-items: center; }
+button { font: inherit; border: 0; border-radius: 8px; cursor: pointer; padding: 9px 16px; font-weight: 600; transition: transform .08s, opacity .15s; }
+button:active { transform: translateY(1px); }
+button:disabled { opacity: .55; cursor: default; }
+.primary { background: var(--bh); color: #fff; font-size: 15px; padding: 9px 20px; box-shadow: 0 2px 10px rgb(235 104 52 / .35); }
+.secondary { background: #fff; color: var(--navy); }
+.offline { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; color: #fff; font-size: 13px; margin-right: 6px; }
+.switch { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; }
+.switch input { display: none; }
+.track { width: 38px; height: 22px; border-radius: 11px; background: rgba(255,255,255,.25); position: relative; transition: background .2s; }
+.track::after { content: ""; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: left .2s; }
+.switch input:checked + .track { background: var(--buy); }
+.switch input:checked + .track::after { left: 19px; }
+.switch input:disabled + .track { opacity: .4; }
+.cache-note { color: #9EC5F4; font-size: 11.5px; white-space: nowrap; }
+.status { background: var(--panel); border-bottom: 1px solid var(--line); padding: 6px 20px; font-size: 13.5px; min-height: 34px; display: flex; align-items: center; gap: 10px; }
+.spinner { width: 16px; height: 16px; border: 2px solid var(--line); border-top-color: var(--agent); border-radius: 50%; animation: spin .8s linear infinite; flex: none; display: none; }
+.busy .spinner { display: inline-block; }
+@keyframes spin { to { transform: rotate(360deg); } }
+main { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 12px; padding: 10px 20px 24px; }
+.card { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; }
+.chart-title { font-size: 13.5px; font-weight: 650; margin: 0; display: flex; align-items: center; gap: 12px; }
+.views { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.vbtn { border-radius: 0; padding: 3px 10px; font-size: 12px; font-weight: 600; background: #fff; color: var(--muted); }
+.vbtn.on { background: var(--navy); color: #fff; }
+.legend { display: flex; gap: 16px; font-size: 12.5px; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 16px; height: 3px; border-radius: 2px; display: inline-block; }
+.head-row { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.charts .card + .card { margin-top: 10px; }
+svg { display: block; width: 100%; overflow: visible; }
+svg text { fill: var(--muted); font-size: 11.5px; font-variant-numeric: tabular-nums; }
+svg .lbl { fill: var(--ink); font-weight: 650; font-size: 12.5px; }
+svg .day { fill: var(--ink); font-weight: 650; font-size: 12px; }
+.pop { transform-box: fill-box; transform-origin: center; animation: pop .45s cubic-bezier(.2, 1.6, .4, 1); }
+@keyframes pop { from { transform: scale(0); } to { transform: scale(1); } }
+.side { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.kpi .label { font-size: 12px; color: var(--muted); }
+.kpi .value { font-size: 21px; font-weight: 700; letter-spacing: -0.015em; line-height: 1.2; margin-top: 2px; font-variant-numeric: tabular-nums; transition: color .3s; }
+.kpi .note { font-size: 12px; color: var(--muted); }
+.kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.kpis .wide { grid-column: 1 / -1; }
+.kpis .kpi { padding: 8px 12px; }
+.kpis .kpi .label { font-size: 11.5px; }
+.pill { display: inline-flex; align-items: center; gap: 8px; }
+.dot { width: 12px; height: 12px; border-radius: 50%; }
+.log { flex: 1; min-height: 160px; display: flex; flex-direction: column; }
+.log h3 { margin: 0 0 6px; font-size: 14px; }
+.tnote { font-size: 12px; color: var(--muted); }
+.tscroll { max-height: 300px; overflow-y: auto; margin-top: 8px; border: 1px solid var(--grid); border-radius: 8px; }
+table.pnl { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+table.pnl th { position: sticky; top: 0; background: var(--panel); text-align: left; font-size: 12px; font-weight: 600; color: var(--muted); padding: 8px 10px; border-bottom: 1px solid var(--line); z-index: 1; }
+table.pnl td { padding: 7px 10px; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+table.pnl .n { text-align: right; }
+table.pnl tr.new td { background: var(--new); }
+table.pnl tr.new.pop-row td { animation: rowin .6s ease-out; }
+@keyframes rowin { from { background: #FFE2BF; } to { background: var(--new); } }
+table.pnl tfoot td { position: sticky; bottom: 0; background: var(--navy); color: #fff; font-weight: 700; border: 0; }
+table.pnl .pos { color: var(--good-text); font-weight: 600; } table.pnl .neg { color: var(--crit); font-weight: 600; }
+table.pnl tfoot .pos { color: #7FE0B8; } table.pnl tfoot .neg { color: #FF9C9C; }
+.log ol { list-style: none; margin: 0; padding: 0; overflow-y: auto; }
+.log li { display: grid; grid-template-columns: 22px 1fr; gap: 8px; padding: 7px 0; border-top: 1px solid var(--grid); font-size: 13px; animation: slide .35s ease-out; }
+.log li:first-child { border-top: 0; }
+.log .ic { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-size: 11px; font-weight: 800; }
+.log .meta { color: var(--muted); font-size: 12px; }
+.empty { color: var(--muted); font-size: 13px; }
+@keyframes slide { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+.foot { grid-column: 1 / -1; color: var(--muted); font-size: 12px; }
+#tip { position: fixed; z-index: 20; pointer-events: none; background: #fff; border: 1px solid var(--line); border-radius: 8px;
+  box-shadow: 0 6px 20px rgb(14 23 38 / .14); padding: 10px 12px; font-size: 13px; min-width: 250px; opacity: 0; transition: opacity .08s; }
+#tip .h { font-weight: 700; margin-bottom: 2px; }
+#tip .sub { color: var(--muted); font-size: 11.5px; margin-bottom: 6px; }
+#tip .r { display: flex; justify-content: space-between; gap: 16px; margin-top: 3px; font-variant-numeric: tabular-nums; }
+#tip .r span:first-child { color: var(--muted); display: inline-flex; align-items: center; gap: 6px; }
+#tip .r b { font-weight: 650; }
+#tip .badge { display: inline-block; background: var(--new); border: 1px solid #F2D4A8; color: #8a5a12; border-radius: 4px; font-size: 11px; font-weight: 700; padding: 0 6px; margin-left: 6px; }
+svg.hoverable { cursor: crosshair; }
+@media (max-width: 1000px) { main { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="top"><header><div class="wrap">
+  <div>
+    <h1>Live model: paper trading on new EIA prices<span class="tag">SIMULATED</span></h1>
+    <p class="sub">Champion v5 · simulated $100,000 account · each day uses only data up to that day · no real money</p>
+  </div>
+  <div class="btns">
+    <div class="offline">
+      <label class="switch" title="Trade from the saved copy of the EIA prices without contacting the API"><input type="checkbox" id="offline"><span class="track"></span><span>Offline mode</span></label>
+      <span class="cache-note" id="cache-note"></span>
+    </div>
+    <button class="primary" id="run">▶ Trade new days</button>
+    <button class="secondary" id="reset">↺ Reset demo</button>
+  </div>
+</div></header>
+<div class="status" id="statusbar"><span class="spinner"></span><span id="status">Loading…</span></div></div>
+
+<main>
+  <div class="charts">
+    <div class="card">
+      <div class="head-row"><p class="chart-title">Simulated $100,000 account <span class="views"><button class="vbtn on" data-view="recent">Last 2 months</button><button class="vbtn" data-view="all">Since 7 Jul</button></span></p>
+        <div class="legend"><span><i class="sw" style="background:var(--agent)"></i>Champion (v5)</span><span><i class="sw" style="background:var(--bh)"></i>Buy &amp; Hold</span><span><i class="sw" style="background:var(--new);height:10px;border:1px solid #F2D4A8"></i>New days</span></div></div>
+      <svg id="c-value" role="img" aria-label="Account value of the champion and Buy & Hold"></svg>
+    </div>
+    <div class="card">
+      <div class="head-row"><p class="chart-title">Henry Hub gas price ($/MMBtu) and the champion's trades</p>
+        <div class="legend"><span><i class="sw" style="background:var(--buy);height:10px;width:10px;border-radius:2px"></i>Bought</span><span><i class="sw" style="background:var(--sell);height:10px;width:10px;border-radius:2px"></i>Sold</span></div></div>
+      <svg id="c-price" role="img" aria-label="Gas price with buy and sell markers"></svg>
+    </div>
+    <div class="card">
+      <p class="chart-title">Gas held (MMBtu, limit 25,000)</p>
+      <svg id="c-pos" role="img" aria-label="Position held each day"></svg>
+    </div>
+    <div class="card">
+      <div class="head-row"><p class="chart-title">Test period: 4 Dec 2024 – 6 Jul 2026 <span class="tnote" style="font-weight:400">· 414 trading days the agents never saw · $100,000 start</span></p>
+        <div class="legend"><span><i class="sw" style="background:var(--agent)"></i>Champion (seed 4)</span><span><i class="sw" style="background:var(--agent-soft)"></i>Other 4 agents</span><span><i class="sw" style="background:var(--bh)"></i>Buy &amp; Hold</span></div></div>
+      <svg id="c-test" role="img" aria-label="Account value of the five agents and Buy and Hold over the test period"></svg>
+      <p class="tnote" id="test-note" style="margin:4px 0 0"></p>
+    </div>
+    <div class="card">
+      <div class="head-row"><p class="chart-title"><i class="sw" style="background:var(--agent);height:12px;width:12px;border-radius:3px"></i><span id="ta-title">Champion: profit / loss by day, last 2 months</span></p>
+        <span class="tnote" id="ta-note"></span></div>
+      <div class="tscroll"><table class="pnl">
+        <thead><tr><th>Date</th><th class="n">Gas price</th><th class="n">Gas held into the day</th>
+          <th class="n">Day's profit / loss</th><th>Trade that day</th><th class="n" title="Profit locked in by today's sale: quantity sold x (sale price - average purchase price)">Closed today (realised)</th>
+          <th class="n" title="Average price paid for the gas still held">Avg buy price</th><th class="n" title="Profit or loss on the gas still held, at today's price; on paper until it is sold">Floating (open)</th><th class="n">Account</th></tr></thead>
+        <tbody id="pnl-a"></tbody>
+        <tfoot><tr id="pnl-a-total"></tr></tfoot>
+      </table></div>
+    </div>
+    <div class="card">
+      <div class="head-row"><p class="chart-title"><i class="sw" style="background:var(--bh);height:12px;width:12px;border-radius:3px"></i><span id="tb-title">Buy &amp; Hold: profit / loss by day, last 2 months</span></p>
+        <span class="tnote" id="tb-note"></span></div>
+      <div class="tscroll"><table class="pnl">
+        <thead><tr><th>Date</th><th class="n">Gas price</th><th class="n">Price change</th><th class="n">Gas held</th>
+          <th class="n">Day's profit / loss</th><th class="n">Closed (realised)</th><th class="n">Floating (open)</th><th class="n">Account</th></tr></thead>
+        <tbody id="pnl-b"></tbody>
+        <tfoot><tr id="pnl-b-total"></tr></tfoot>
+      </table></div>
+    </div>
+  </div>
+  <div class="side">
+    <div class="kpis">
+    <div class="card kpi wide"><div class="label" id="k-pnl-l">Profit / loss, last 2 months</div><div class="value" id="k-pnl">—</div><div class="note" id="k-pnl-n"></div></div>
+    <div class="card kpi"><div class="label">Champion since 7 Jul</div><div class="value" id="k-ret" style="color:var(--agent)">—</div><div class="note" id="k-ret-n"></div></div>
+    <div class="card kpi"><div class="label">Buy &amp; Hold, same days</div><div class="value" id="k-bh" style="color:var(--bh)">—</div><div class="note" id="k-bh-n"></div></div>
+    <div class="card kpi"><div class="label">Monitor status</div><div class="value" id="k-health">—</div><div class="note" id="k-health-n"></div></div>
+    <div class="card kpi"><div class="label">Latest trading day</div><div class="value" id="k-day">—</div><div class="note" id="k-day-n"></div></div>
+    </div>
+    <div class="card log"><h3>New trades</h3><ol id="log"></ol><p class="empty" id="log-empty">Press ▶ Trade new days to trade the days EIA has published since the last one.</p></div>
+  </div>
+  <p class="foot">The demo trades into its own copy of the paper-trading ledger (reports/demo/); the real record in reports/live/ is not changed. Trading uses the project's own paper-trading code, the champion from the MLflow Model Registry and the same 0.1 % cost, 25,000 MMBtu limit and 50 % stop-loss as the backtest.</p>
+</main>
+
+<div id="tip"></div>
+<script>
+(() => {
+const $ = id => document.getElementById(id);
+const NS = 'http://www.w3.org/2000/svg';
+const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const d8 = s => { const [y, m, d] = s.split('-').map(Number); return new Date(Date.UTC(y, m - 1, d)); };
+const fmtDay = s => { const t = d8(s); return `${DOW[t.getUTCDay()]} ${t.getUTCDate()} ${MON[t.getUTCMonth()]}`; };
+const fmtDate = s => { const t = d8(s); return `${t.getUTCDate()} ${MON[t.getUTCMonth()]} ${t.getUTCFullYear()}`; };
+const pct = (v, d = 2) => (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(d) + ' %';
+const pp = (v, d = 2) => (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(d) + ' pp';
+const usd = v => '$' + Math.round(v).toLocaleString('en-US');
+const STATUS = { healthy: ['Healthy', 'var(--buy)', 'var(--good-text)'], watch: ['Watch', '#F2B134', 'var(--warn)'],
+  retrain_required: ['Retrain required', 'var(--sell)', 'var(--crit)'], warming_up: ['Warming up', 'var(--muted)', 'var(--muted)'] };
+const STEP_MS = 1100;
+
+let ROWS = [], NEW_FROM = null, UPTO = 0, timer = null, VIEW = 'recent', BH = null, FR = {}, HOVER = null;
+// zoomed view = the last two calendar months before the newest day in the ledger
+const v0 = () => {
+  if (VIEW !== 'recent' || !ROWS.length) return 0;
+  const end = d8(ROWS[ROWS.length - 1].date), from = new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth() - 2, end.getUTCDate()));
+  const i = ROWS.findIndex(r => d8(r.date) > from);
+  return i < 0 ? 0 : i;
+};
+
+function el(tag, attrs, parent) { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); parent.appendChild(e); return e; }
+function ticks(lo, hi, n) {
+  const raw = (hi - lo) / n, mag = Math.pow(10, Math.floor(Math.log10(raw)));
+  const step = [1, 2, 2.5, 5, 10].map(f => f * mag).find(s => s >= raw);
+  const out = []; for (let v = Math.ceil(lo / step) * step; v <= hi + 1e-9; v += step) out.push(+v.toFixed(6)); return out;
+}
+
+// One chart frame: x over the visible trading days (fixed for the whole animation), y from the visible data.
+function frame(svgId, H, lo, hi, fmt, opts = {}) {
+  const svg = $(svgId); svg.innerHTML = '';
+  const W = svg.clientWidth || 800, m = { t: 10, r: opts.r ?? 92, b: opts.xlabels ? 24 : 6, l: 58 };
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('height', H);
+  const V = v0(), n = ROWS.length - V, iw = W - m.l - m.r, ih = H - m.t - m.b;
+  const x = i => m.l + (n > 1 ? (i - V) / (n - 1) : .5) * iw, y = v => m.t + ih - (v - lo) / (hi - lo) * ih;
+  ticks(lo, hi, opts.nt || 4).forEach(v => {
+    el('line', { x1: m.l, x2: m.l + iw, y1: y(v), y2: y(v), stroke: 'var(--grid)' }, svg);
+    el('text', { x: m.l - 8, y: y(v) + 4, 'text-anchor': 'end' }, svg).textContent = fmt(v);
+  });
+  if (NEW_FROM !== null && UPTO > NEW_FROM) {   // band over the new days shown so far
+    const half = iw / Math.max(n - 1, 1) / 2;
+    el('rect', { x: x(NEW_FROM) - half, y: m.t, width: x(UPTO - 1) - x(NEW_FROM) + 2 * half, height: ih, fill: 'var(--new)' }, svg);
+  }
+  if (opts.xlabels) ROWS.forEach((r, i) => {
+    if (i > V && r.date.slice(5, 7) !== ROWS[i - 1].date.slice(5, 7))
+      el('text', { x: x(i), y: H - 6, 'text-anchor': 'middle' }, svg).textContent = MON[+r.date.slice(5, 7) - 1];
+  });
+  return { svg, x, y, m, iw, ih, W, H };
+}
+const path = (f, key, upto) => ROWS.slice(v0(), upto).map((r, k) => (k ? 'L' : 'M') + f.x(v0() + k).toFixed(1) + ',' + f.y(r[key]).toFixed(1)).join('');
+
+function heights() {
+  // space left under the sticky header for the three chart cards (titles and gaps take about 130 px)
+  const avail = window.innerHeight - document.querySelector('.top').offsetHeight - 185;
+  const c = (v, lo, hi) => Math.round(Math.max(lo, Math.min(hi, v)));
+  return { v: c(avail * .48, 120, 300), p: c(avail * .30, 75, 190), q: c(avail * .22, 55, 140) };
+}
+function draw() {
+  const HT = heights();
+  const upto = UPTO, last = ROWS[upto - 1], isNew = NEW_FROM !== null && upto > NEW_FROM;
+  // account value
+  const vis = ROWS.slice(v0());
+  const vals = vis.flatMap(r => [r.value, r.bh]).concat([100000]);
+  const vlo = Math.min(...vals), vhi = Math.max(...vals), vp = (vhi - vlo) * .1;
+  const fv = frame('c-value', HT.v, vlo - vp, vhi + vp, v => '$' + (v / 1000).toFixed(0) + 'k', { nt: 5 });
+  el('line', { x1: fv.m.l, x2: fv.m.l + fv.iw, y1: fv.y(100000), y2: fv.y(100000), stroke: 'var(--line)' }, fv.svg);
+  el('path', { d: path(fv, 'bh', upto), fill: 'none', stroke: 'var(--bh)', 'stroke-width': 2.2, 'stroke-linejoin': 'round' }, fv.svg);
+  el('path', { d: path(fv, 'value', upto), fill: 'none', stroke: 'var(--agent)', 'stroke-width': 2.6, 'stroke-linejoin': 'round' }, fv.svg);
+  const ends = [['Champion', last.value, 'var(--agent)'], ['Buy & Hold', last.bh, 'var(--bh)']].map(([n, v, c]) => ({ n, v, c, yy: fv.y(v) })).sort((a, b) => a.yy - b.yy);
+  if (ends[1].yy - ends[0].yy < 30) ends[1].yy = ends[0].yy + 30;
+  ends.forEach(e => {
+    el('circle', { cx: fv.x(upto - 1), cy: fv.y(e.v), r: 4.5, fill: e.c, stroke: '#fff', 'stroke-width': 2 }, fv.svg);
+    el('text', { x: fv.x(upto - 1) + 10, y: e.yy - 2, class: 'lbl' }, fv.svg).textContent = e.n;
+    el('text', { x: fv.x(upto - 1) + 10, y: e.yy + 13 }, fv.svg).textContent = usd(e.v);
+  });
+  if (isNew) {
+    el('line', { x1: fv.x(upto - 1), x2: fv.x(upto - 1), y1: fv.m.t, y2: fv.m.t + fv.ih, stroke: 'var(--ink)', 'stroke-opacity': .35, 'stroke-dasharray': '3 3' }, fv.svg);
+    el('text', { x: fv.x(upto - 1) - 6, y: fv.m.t + 12, 'text-anchor': 'end', class: 'day' }, fv.svg).textContent = fmtDay(last.date);
+  }
+  // price with trades
+  const prices = vis.map(r => r.price), plo = Math.min(...prices), phi = Math.max(...prices), ppad = (phi - plo) * .15;
+  const fp = frame('c-price', HT.p, plo - ppad, phi + ppad, v => '$' + v.toFixed(2));
+  el('path', { d: path(fp, 'price', upto), fill: 'none', stroke: 'var(--price)', 'stroke-width': 1.8 }, fp.svg);
+  if (NEW_FROM !== null) for (let i = NEW_FROM; i < upto; i++) {
+    const dq = ROWS[i].pos - ROWS[i - 1].pos;
+    if (Math.abs(dq) <= 1) continue;
+    const cx = fp.x(i), cy = fp.y(ROWS[i].price), up = dq > 0, s = 9;
+    const tri = up ? `M${cx},${cy + 4} l${-s},${s * 1.6} h${2 * s} Z` : `M${cx},${cy - 4} l${-s},${-s * 1.6} h${2 * s} Z`;
+    el('path', { d: tri, fill: up ? 'var(--buy)' : 'var(--sell)', stroke: '#fff', 'stroke-width': 1.5, class: i === upto - 1 ? 'pop' : '' }, fp.svg);
+  }
+  el('circle', { cx: fp.x(upto - 1), cy: fp.y(last.price), r: 4, fill: 'var(--price)', stroke: '#fff', 'stroke-width': 2 }, fp.svg);
+  el('text', { x: fp.x(upto - 1) + 10, y: fp.y(last.price) + 4, class: 'lbl' }, fp.svg).textContent = '$' + last.price.toFixed(2);
+  // position
+  const fq = frame('c-pos', HT.q, 0, 26000, v => (v / 1000).toFixed(0) + 'k', { xlabels: true, nt: 2 });
+  const bw = Math.max(1.5, Math.min(18, fq.iw / vis.length * .7));
+  ROWS.slice(0, upto).forEach((r, i) => {
+    if (i < v0()) return;
+    const neu = NEW_FROM !== null && i >= NEW_FROM;
+    el('rect', { x: fq.x(i) - bw / 2, y: fq.y(r.pos), width: bw, height: fq.y(0) - fq.y(r.pos), fill: neu ? 'var(--agent)' : 'var(--agent-soft)',
+      class: neu && i === upto - 1 ? 'pop' : '' }, fq.svg);
+  });
+  FR = { v: fv, p: fp, q: fq };
+  attachHover();
+  if (HOVER !== null) showHover(Math.min(HOVER, UPTO - 1));
+  renderTable(upto);
+  pnlKpi(upto);
+}
+const money = v => (v >= 0 ? '+$' : '\u2212$') + Math.abs(Math.round(v)).toLocaleString('en-US');
+// ── Hover: one crosshair across all three charts, tooltip with that day's numbers ──
+function attachHover() {
+  Object.values(FR).forEach(f => {
+    f.svg.classList.add('hoverable');
+    const hit = el('rect', { x: f.m.l, y: f.m.t, width: f.iw, height: f.ih, fill: 'transparent' }, f.svg);
+    hit.addEventListener('pointermove', ev => {
+      const r = f.svg.getBoundingClientRect(), px = (ev.clientX - r.left) * (f.W / r.width);
+      const V = v0(), n = ROWS.length - V;
+      const i = Math.max(V, Math.min(UPTO - 1, Math.round(V + (px - f.m.l) / f.iw * (n - 1))));
+      HOVER = i; showHover(i, ev.clientX, ev.clientY);
+    });
+    hit.addEventListener('pointerleave', hideHover);
+  });
+}
+function hideHover() {
+  HOVER = null; $('tip').style.opacity = 0;
+  Object.values(FR).forEach(f => f.svg.querySelectorAll('.hov').forEach(e => e.remove()));
+}
+let lastXY = [0, 0];
+function showHover(i, cx, cy) {
+  if (cx !== undefined) lastXY = [cx, cy];
+  const r = ROWS[i], prev = i > 0 ? ROWS[i - 1] : null;
+  Object.values(FR).forEach(f => {
+    f.svg.querySelectorAll('.hov').forEach(e => e.remove());
+    const g = el('g', { class: 'hov', 'pointer-events': 'none' }, f.svg);
+    el('line', { x1: f.x(i), x2: f.x(i), y1: f.m.t, y2: f.m.t + f.ih, stroke: 'var(--ink)', 'stroke-opacity': .45 }, g);
+  });
+  const gv = FR.v.svg.querySelector('.hov'), gp = FR.p.svg.querySelector('.hov');
+  [[r.bh, 'var(--bh)'], [r.value, 'var(--agent)']].forEach(([v, c]) => el('circle', { cx: FR.v.x(i), cy: FR.v.y(v), r: 5, fill: c, stroke: '#fff', 'stroke-width': 2 }, gv));
+  el('circle', { cx: FR.p.x(i), cy: FR.p.y(r.price), r: 5, fill: 'var(--price)', stroke: '#fff', 'stroke-width': 2 }, gp);
+  const t = d8(r.date), dayLong = `${DOW[t.getUTCDay()]} ${t.getUTCDate()} ${MON[t.getUTCMonth()]} ${t.getUTCFullYear()}`;
+  const neu = NEW_FROM !== null && i >= NEW_FROM;
+  const dq = prev ? r.pos - prev.pos : 0, n0 = v => Math.round(v).toLocaleString('en-US');
+  const trade = !prev ? 'First day' : dq > 1 ? `Bought ${n0(dq)} MMBtu` : dq < -1 ? `Sold ${n0(-dq)} MMBtu` : 'No trade (held)';
+  const day = (a, b) => prev ? ` <span style="color:${a - b >= 0 ? 'var(--good-text)' : 'var(--crit)'};font-weight:600">${money(a - b)}</span>` : '';
+  const sw = c => `<i class="sw" style="background:${c}"></i>`;
+  $('tip').innerHTML = `<div class="h">${dayLong}${neu ? '<span class="badge">NEW DAY</span>' : ''}</div>
+    <div class="sub">EIA daily Henry Hub spot price (one price per trading day)</div>
+    <div class="r"><span>${sw('var(--price)')}Gas price</span><b>$${r.price.toFixed(2)}${prev ? ` <span style="color:var(--muted);font-weight:500">(${r.price - prev.price >= 0 ? '+' : '\u2212'}$${Math.abs(r.price - prev.price).toFixed(2)})</span>` : ''}</b></div>
+    <div class="r"><span>${sw('var(--agent)')}Champion account</span><b>${usd(r.value)}${day(r.value, prev ? prev.value : 0)}</b></div>
+    <div class="r"><span>${sw('var(--bh)')}Buy &amp; Hold account</span><b>${usd(r.bh)}${day(r.bh, prev ? prev.bh : 0)}</b></div>
+    <div class="r"><span>${sw('var(--agent-soft)')}Trade</span><b>${trade}</b></div>
+    <div class="r"><span>${sw('var(--agent-soft)')}Gas held after</span><b>${n0(r.pos)} MMBtu</b></div>
+    ${(() => { const A = accounting()[i], f = v => `<span style="color:${v >= 0 ? 'var(--good-text)' : 'var(--crit)'}">${money(v)}</span>`;
+      return (dq < -1 ? `<div class="r"><span>${sw('var(--buy)')}Closed today (realised)</span><b>${f(A.real)}</b></div>` : '') +
+        `<div class="r"><span>${sw('var(--agent)')}Floating on gas held</span><b>${f(A.float)}</b></div>` +
+        (r.pos > 0 ? `<div class="r"><span>${sw('var(--agent-soft)')}Average buy price</span><b>$${A.avg.toFixed(3)}</b></div>` : ''); })()}`;
+  const tip = $('tip'), [x, y] = lastXY, w = tip.offsetWidth, h = tip.offsetHeight;
+  tip.style.left = (x + 18 + w > window.innerWidth ? x - 18 - w : x + 18) + 'px';
+  tip.style.top = Math.max(8, Math.min(window.innerHeight - h - 8, y - h / 2)) + 'px';
+  tip.style.opacity = 1;
+}
+
+// ── Small test-period chart ──
+let TEST = null;
+function drawTest() {
+  if (!TEST) return;
+  const svg = $('c-test'); svg.innerHTML = '';
+  const W = svg.clientWidth || 800, H = Math.max(200, Math.min(280, Math.round(window.innerHeight * .4))), m = { t: 10, r: 64, b: 22, l: 52 }, n = TEST.dates.length;
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('height', H);
+  const all = Object.values(TEST.seeds).flat().concat(TEST.bh), lo = Math.min(...all), hi = Math.max(...all);
+  const iw = W - m.l - m.r, ih = H - m.t - m.b, x = i => m.l + i / (n - 1) * iw, y = v => m.t + ih - (v - lo) / (hi - lo) * ih;
+  ticks(lo, hi, 4).forEach(v => {
+    el('line', { x1: m.l, x2: m.l + iw, y1: y(v), y2: y(v), stroke: 'var(--grid)' }, svg);
+    el('text', { x: m.l - 8, y: y(v) + 4, 'text-anchor': 'end' }, svg).textContent = '$' + (v / 1000).toFixed(0) + 'k';
+  });
+  el('line', { x1: m.l, x2: m.l + iw, y1: y(100000), y2: y(100000), stroke: 'var(--line)' }, svg);
+  TEST.dates.forEach((d, i) => { if (i && d.slice(5, 7) !== TEST.dates[i - 1].slice(5, 7) && ['01', '04', '07', '10'].includes(d.slice(5, 7)))
+    el('text', { x: x(i), y: H - 5, 'text-anchor': 'middle' }, svg).textContent = `${MON[+d.slice(5, 7) - 1]} ${d.slice(0, 4)}`; });
+  const line = (vals, c, w) => el('path', { d: vals.map((v, i) => (i ? 'L' : 'M') + x(i).toFixed(1) + ',' + y(v).toFixed(1)).join(''), fill: 'none', stroke: c, 'stroke-width': w, 'stroke-linejoin': 'round' }, svg);
+  Object.entries(TEST.seeds).filter(([k]) => k !== TEST.champion).forEach(([, v]) => line(v, 'var(--agent-soft)', 1.4));
+  line(TEST.bh, 'var(--bh)', 2);
+  line(TEST.seeds[TEST.champion], 'var(--agent)', 2.6);
+  const ret = v => (v[v.length - 1] / 100000 - 1) * 100;
+  [[TEST.seeds[TEST.champion], 'var(--agent)'], [TEST.bh, 'var(--bh)']].forEach(([v, c]) =>
+    el('text', { x: x(n - 1) + 8, y: y(v[n - 1]) + 4, class: 'lbl', style: `fill:${c};font-size:12.5px` }, svg).textContent = pct(ret(v), 1));
+  const rs = Object.values(TEST.seeds).map(ret).sort((a, b) => a - b);
+  $('test-note').textContent = `Median of the 5 agents ${pct(rs[2], 1)} · champion (seed ${TEST.champion}) ${pct(ret(TEST.seeds[TEST.champion]), 1)} · Buy & Hold ${pct(ret(TEST.bh), 1)}. The champion was chosen on validation data, before the test.`;
+  // hover: date and values
+  const hit = el('rect', { x: m.l, y: m.t, width: iw, height: ih, fill: 'transparent' }, svg);
+  svg.classList.add('hoverable');
+  hit.addEventListener('pointermove', ev => {
+    const r = svg.getBoundingClientRect(), i = Math.max(0, Math.min(n - 1, Math.round(((ev.clientX - r.left) * (W / r.width) - m.l) / iw * (n - 1))));
+    svg.querySelectorAll('.hov').forEach(e => e.remove());
+    const g = el('g', { class: 'hov', 'pointer-events': 'none' }, svg);
+    el('line', { x1: x(i), x2: x(i), y1: m.t, y2: m.t + ih, stroke: 'var(--ink)', 'stroke-opacity': .45 }, g);
+    const o = Object.entries(TEST.seeds).filter(([k]) => k !== TEST.champion).map(([, v]) => v[i]);
+    const tip = $('tip'), sw = c => `<i class="sw" style="background:${c}"></i>`;
+    tip.innerHTML = `<div class="h">${fmtDate(TEST.dates[i])}</div><div class="sub">Test period · day ${i + 1} of ${n}</div>
+      <div class="r"><span>${sw('var(--agent)')}Champion (seed ${TEST.champion})</span><b>${usd(TEST.seeds[TEST.champion][i])}</b></div>
+      <div class="r"><span>${sw('var(--agent-soft)')}Other 4 agents</span><b>${usd(Math.min(...o))} – ${usd(Math.max(...o))}</b></div>
+      <div class="r"><span>${sw('var(--bh)')}Buy &amp; Hold</span><b>${usd(TEST.bh[i])}</b></div>`;
+    const w = tip.offsetWidth, h = tip.offsetHeight;
+    tip.style.left = (ev.clientX + 18 + w > window.innerWidth ? ev.clientX - 18 - w : ev.clientX + 18) + 'px';
+    tip.style.top = Math.max(8, Math.min(window.innerHeight - h - 8, ev.clientY - h / 2)) + 'px';
+    tip.style.opacity = 1;
+  });
+  hit.addEventListener('pointerleave', () => { svg.querySelectorAll('.hov').forEach(e => e.remove()); $('tip').style.opacity = 0; });
+}
+
+// Realised vs floating, rebuilt from the ledger exactly as env.py trades:
+// buys update a weighted-average purchase price; sells realise qty x (price - average); fees 0.1 % of each trade.
+const FEE = 0.001;
+function accounting() {
+  const out = []; let pos = 0, avg = 0, R = 0, F = 0;
+  ROWS.forEach(r => {
+    const q = r.pos - pos, p = r.price; let real = 0, fee = 0;
+    if (q > 1e-9) { avg = (pos * avg + q * p) / (pos + q); fee = q * p * FEE; }
+    else if (q < -1e-9) { real = -q * (p - avg); fee = -q * p * FEE; if (r.pos <= 0) avg = 0; }
+    pos = r.pos; R += real; F += fee;
+    out.push({ avg, real, fee, R, F, float: pos * (p - avg) });   // float = open profit / loss on gas still held, at today's price
+  });
+  return out;
+}
+function bhAccounting() {   // Buy & Hold: one purchase on the first day, never sells, so nothing is ever realised
+  if (!BH) return null;
+  return ROWS.map(r => ({ float: BH.mmbtu * (r.price - BH.price) }));
+}
+
+function renderTable(upto) {
+  const start = Math.max(v0(), 1), cls = v => v >= 0 ? 'pos' : 'neg', fmtN = v => Math.round(v).toLocaleString('en-US');
+  const span = VIEW === 'recent' ? 'last 2 months' : 'since 7 Jul';
+  $('ta-title').textContent = `Champion: profit / loss by day, ${span}`;
+  $('tb-title').textContent = `Buy & Hold: profit / loss by day, ${span}`;
+  if (BH) $('tb-note').textContent = `Bought ${fmtN(BH.mmbtu)} MMBtu at $${BH.price.toFixed(2)} on ${fmtDate(BH.first_day)} and never trades`;
+  const day = r => fmtDay(r.date) + (r.date.slice(0, 4) !== ROWS[upto - 1].date.slice(0, 4) ? ' ' + r.date.slice(0, 4) : '');
+  const chg = dp => `${dp >= 0 ? '+' : '\u2212'}$${Math.abs(dp).toFixed(2)}`;
+  const A = [], B = [], ACC = accounting(), BHA = bhAccounting();
+  let tA = 0, tB = 0, tR = 0;
+  for (let i = start; i < upto; i++) {
+    const r = ROWS[i], prev = ROWS[i - 1], a = r.value - prev.value, b = r.bh - prev.bh, dp = r.price - prev.price, dq = r.pos - prev.pos;
+    tA += a; tB += b;
+    const trade = dq > 1 ? `Bought ${fmtN(dq)} \u2192 ${fmtN(r.pos)}` : dq < -1 ? `Sold ${fmtN(-dq)} \u2192 ${fmtN(r.pos)}` : `Held ${fmtN(r.pos)}`;
+    const neu = NEW_FROM !== null && i >= NEW_FROM, c = `${neu ? 'new' : ''}${neu && i === upto - 1 ? ' pop-row' : ''}`;
+    const ac = ACC[i], sold = dq < -1;
+    tR += ac.real;
+    A.push(`<tr class="${c}"><td>${day(r)}</td><td class="n">$${r.price.toFixed(2)} <span class="${cls(dp)}" style="font-weight:500">${chg(dp)}</span></td>
+      <td class="n">${fmtN(prev.pos)}</td><td class="n ${cls(a)}">${money(a)}</td><td>${trade}</td>
+      <td class="n ${sold ? cls(ac.real) : ''}">${sold ? money(ac.real) : '<span style="color:var(--muted)">\u2014</span>'}</td>
+      <td class="n">${r.pos > 0 ? '$' + ac.avg.toFixed(3) : '\u2014'}</td><td class="n ${cls(ac.float)}">${money(ac.float)}</td><td class="n">${usd(r.value)}</td></tr>`);
+    B.push(`<tr class="${c}"><td>${day(r)}</td><td class="n">$${r.price.toFixed(2)}</td><td class="n ${cls(dp)}">${chg(dp)}</td>
+      <td class="n">${BH ? fmtN(BH.mmbtu) + ' MMBtu' : ''}</td><td class="n ${cls(b)}">${money(b)}</td><td class="n" style="color:var(--muted)">\u2014</td>
+      <td class="n ${BHA ? cls(BHA[i].float) : ''}">${BHA ? money(BHA[i].float) : ''}</td><td class="n">${usd(r.bh)}</td></tr>`);
+  }
+  $('pnl-a').innerHTML = A.reverse().join('');   // newest day at the top
+  $('pnl-b').innerHTML = B.reverse().join('');
+  const days = upto - start;
+  const end = ACC[upto - 1];
+  $('pnl-a-total').innerHTML = `<td>Total, ${days} trading days</td><td></td><td></td><td class="n ${cls(tA)}">${money(tA)}</td><td>${tA - tB >= 0 ? 'Ahead of' : 'Behind'} Buy &amp; Hold by $${fmtN(Math.abs(tA - tB))}</td>
+    <td class="n ${cls(tR)}">${money(tR)}</td><td class="n">${ROWS[upto - 1].pos > 0 ? '$' + end.avg.toFixed(3) : '\u2014'}</td><td class="n ${cls(end.float)}">${money(end.float)}</td><td class="n">${usd(ROWS[upto - 1].value)}</td>`;
+  $('pnl-b-total').innerHTML = `<td>Total, ${days} trading days</td><td></td><td></td><td></td><td class="n ${cls(tB)}">${money(tB)}</td><td class="n">$0</td>
+    <td class="n ${BHA ? cls(BHA[upto - 1].float) : ''}">${BHA ? money(BHA[upto - 1].float) : ''}</td><td class="n">${usd(ROWS[upto - 1].bh)}</td>`;
+  // whole period since 7 Jul: realised + floating - fees = total profit / loss (matches the account exactly)
+  $('ta-note').innerHTML = `Since 7 Jul, after the latest trade: closed <b class="${cls(end.R)}">${money(end.R)}</b> + floating <b class="${cls(end.float)}">${money(end.float)}</b>
+    \u2212 fees <b>$${fmtN(end.F)}</b> = <b class="${cls(ROWS[upto - 1].value - 100000)}">${money(end.R + end.float - end.F)}</b>`;
+}
+function pnlKpi(upto) {
+  // profit / loss over the window shown: from the day before the first visible day to the latest day shown
+  const start = Math.max(v0() - 1, 0), a = ROWS[upto - 1].value - ROWS[start].value, b = ROWS[upto - 1].bh - ROWS[start].bh, d = a - b;
+  $('k-pnl-l').textContent = VIEW === 'recent' ? `Profit / loss, last 2 months (since ${fmtDay(ROWS[start].date)})` : 'Profit / loss since 7 Jul';
+  $('k-pnl').innerHTML = `<span style="color:${a >= 0 ? 'var(--good-text)' : 'var(--crit)'}">${money(a)}</span>`;
+  $('k-pnl-n').textContent = `Buy & Hold ${money(b)} on the same days \u00b7 champion $${Math.abs(Math.round(d)).toLocaleString('en-US')} ${d >= 0 ? 'ahead' : 'behind'}`;
+}
+
+function kpis(h, last) {
+  $('k-ret').textContent = pct(h.ret); $('k-ret-n').textContent = `${usd(last.value)} · gap ${pp(h.gap)} vs Buy & Hold`;
+  $('k-bh').textContent = pct(h.bh); $('k-bh-n').textContent = usd(last.bh);
+  const [lab, dot, txt] = STATUS[h.status];
+  $('k-health').innerHTML = `<span class="pill"><i class="dot" style="background:${dot}"></i><span style="color:${txt}">${lab}</span></span>`;
+  $('k-health-n').textContent = `${h.days} trading days · drawdown from peak ${pct(h.dd, 1)}`;
+  $('k-day').textContent = fmtDate(last.date);
+  $('k-day-n').textContent = `gas $${last.price.toFixed(2)} · holding ${Math.round(last.pos).toLocaleString('en-US')} MMBtu`;
+}
+function status(text, busy = false, colour = 'var(--ink)') {
+  $('status').textContent = text; $('status').style.color = colour; $('statusbar').classList.toggle('busy', busy);
+}
+function lock(on) { $('run').disabled = on; $('reset').disabled = on; }
+function clearLog() { $('log').innerHTML = ''; $('log-empty').style.display = ''; }
+function addLog(i) {
+  const r = ROWS[i], dq = r.pos - ROWS[i - 1].pos, kind = dq > 1 ? 'buy' : dq < -1 ? 'sell' : 'hold';
+  const verb = kind === 'buy' ? `Bought ${Math.round(dq).toLocaleString('en-US')} MMBtu` : kind === 'sell' ? `Sold ${Math.round(-dq).toLocaleString('en-US')} MMBtu` : 'Held position';
+  const li = document.createElement('li');
+  li.innerHTML = `<span class="ic" style="background:${kind === 'buy' ? 'var(--buy)' : kind === 'sell' ? 'var(--sell)' : 'var(--muted)'}">${kind === 'buy' ? '▲' : kind === 'sell' ? '▼' : '='}</span>
+    <span><b>${fmtDay(r.date)}</b> · ${verb} · <b style="color:${r.value - ROWS[i - 1].value >= 0 ? 'var(--good-text)' : 'var(--crit)'}">${money(r.value - ROWS[i - 1].value)}</b> today<br><span class="meta">gas $${r.price.toFixed(2)} · now holding ${Math.round(r.pos).toLocaleString('en-US')} MMBtu · account ${usd(r.value)}</span></span>`;
+  $('log-empty').style.display = 'none';
+  $('log').prepend(li);
+}
+
+function showCache(c) {
+  $('cache-note').textContent = c ? `Saved copy: prices to ${fmtDay(c.last_date)}` : 'No saved EIA copy yet';
+  $('cache-note').title = c ? `Saved ${c.saved_at} from the ${c.source}; prices up to ${fmtDate(c.last_date)}` : '';
+  $('offline').disabled = !c; if (!c) $('offline').checked = false;
+}
+function showState(s, msg) {
+  showCache(s.cache); BH = s.bh_hold;
+  ROWS = s.rows; NEW_FROM = null; UPTO = ROWS.length;
+  draw(); kpis(s.health, ROWS[UPTO - 1]); clearLog(); status(msg);
+}
+
+async function load() {
+  const s = await (await fetch('/api/state')).json();
+  fetch('/api/test').then(r => r.json()).then(t => { TEST = t; drawTest(); });
+  showState(s, `Ready. The demo ledger ends on ${fmtDate(s.rows[s.rows.length - 1].date)}. Press ▶ Trade new days.`);
+}
+
+async function run() {
+  lock(true); status('Starting…', true);
+  await fetch('/api/trade', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ offline: $('offline').checked }) });
+  const poll = async () => {
+    const j = await (await fetch('/api/job')).json();
+    if (j.messages.length) status(j.messages[j.messages.length - 1], true);
+    if (j.running) return setTimeout(poll, 500);
+    if (j.error) { status('Could not trade: ' + j.error, false, 'var(--crit)'); lock(false); return; }
+    const res = j.result;
+    fetch('/api/state').then(r => r.json()).then(s => showCache(s.cache));
+    if (res.rows.length <= res.new_from) {
+      status(`Already up to date: no new trading days after ${fmtDay(res.rows[res.rows.length - 1].date)}. Latest EIA price is for ${fmtDate(res.summary.data_last_date)}; source: ${res.source}. No day is ever traded twice.`, false, 'var(--muted)');
+      lock(false); return;
+    }
+    ROWS = res.rows; NEW_FROM = res.new_from; UPTO = NEW_FROM;
+    clearLog();
+    const n = ROWS.length - NEW_FROM;
+    status(`${n} new trading day${n > 1 ? 's' : ''} from ${res.source}. The champion trades them one by one…`, true, 'var(--agent)');
+    const step = () => {
+      UPTO += 1; draw(); kpis(res.steps[UPTO - 1 - NEW_FROM], ROWS[UPTO - 1]); addLog(UPTO - 1);
+      if (UPTO < ROWS.length) { timer = setTimeout(step, STEP_MS); return; }
+      const h = res.steps[res.steps.length - 1];
+      status(`Done: ${n} new day${n > 1 ? 's' : ''} traded. Monitor status: ${STATUS[h.status][0]}${h.status === 'retrain_required' ? ' — retraining would start' : ', no retraining needed'}.`);
+      lock(false);
+    };
+    timer = setTimeout(step, 500);
+  };
+  poll();
+}
+
+async function reset() {
+  clearTimeout(timer); lock(true);
+  const s = await (await fetch('/api/reset', { method: 'POST' })).json();
+  lock(false);
+  if (s.error) { status(s.error, false, 'var(--crit)'); return; }
+  showState(s, `Demo reset: the ledger is back to ${fmtDate(s.rows[s.rows.length - 1].date)}. The real record in reports/live/ was not touched.`);
+}
+
+document.querySelectorAll('.vbtn').forEach(b => b.addEventListener('click', () => {
+  VIEW = b.dataset.view; document.querySelectorAll('.vbtn').forEach(o => o.classList.toggle('on', o === b));
+  if (ROWS.length) draw();
+}));
+$('run').addEventListener('click', run);
+$('reset').addEventListener('click', reset);
+let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { if (ROWS.length) draw(); drawTest(); }, 150); });
+load();
+})();
+</script>
+</body>
+</html>

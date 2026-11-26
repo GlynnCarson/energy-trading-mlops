@@ -48,6 +48,7 @@ desktop.ini
 # ── Course material and local backups (not the student's own work) ──────────
 Research Writing for CS 2 Projects*.pdf
 presentation.txt
+slides.md
 docs/report/backup/
 
 # ── Machine-specific Docker overrides (antivirus HTTPS-scanning certificate) ──
@@ -59,3 +60,7 @@ site/
 
 # Signed copy of the report (handwritten signature) - kept local, never published
 *_signed.docx
+
+# Live paper-trading demo (demo/app.py): scratch ledger and EIA cache
+reports/demo/workspace/
+reports/demo/eia_cache.*

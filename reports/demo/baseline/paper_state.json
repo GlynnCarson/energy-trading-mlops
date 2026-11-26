@@ -1,0 +1,19 @@
+{
+  "agent": {
+    "cash": 24672.596943377983,
+    "position_mwh": 25000.0,
+    "avg_entry_price": 2.9175736172846256,
+    "total_trades": 87
+  },
+  "buy_hold": {
+    "cash": 21671.75,
+    "position_mwh": 25000.0,
+    "avg_entry_price": 3.13,
+    "total_trades": 1
+  },
+  "stopped": false,
+  "last_date": "2026-11-17",
+  "label": "paper trading (simulated)",
+  "data_last_date": "2026-11-17",
+  "updated_at": "2026-11-23T18:31:34Z"
+}
