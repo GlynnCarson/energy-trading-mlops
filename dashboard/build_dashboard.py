@@ -9,7 +9,8 @@ cannot drift away from the report:
 - reports/evaluation_reward_fix/seed_results.csv and *_full_test_trajectory.csv:
   the five fixed-reward PPO-300k runs and Buy & Hold
 - reports/evaluation_reward_fix/training_period_*.csv: the same five agents
-  replayed over their training split (in-sample; evaluate_training_period.py)
+  replayed over their training split (in-sample; evaluate_training_period.py),
+  shown only as one "typical training year" row in the seen-vs-unseen table
 - reports/live/: the closed loop - model_registry.json (registered versions,
   quality-gate results, champion, promotion and retrain history),
   monitor_status.json (champion health) and paper_trading.csv (paper
@@ -116,16 +117,14 @@ def seed_results() -> list[dict]:
 
 
 def training_period() -> dict | None:
-    """In-sample replay of the five seeds over their training split (evaluate_training_period.py)."""
+    """Per-year returns of the five seeds on their own training data (in-sample; evaluate_training_period.py).
+    Only the median of a typical year is shown, next to the validation, test and paper-trading results."""
     full, yearly = FIX_DIR / "training_period_trajectory.csv", FIX_DIR / "training_period_yearly.csv"
     if not (full.exists() and yearly.exists()):
         return None
-    rows = read_csv(full)
+    dates = [r["date"] for r in read_csv(full)]
     return {
-        "dates": [r["date"] for r in rows],
-        "price": [round(float(r["price"]), 3) for r in rows],
-        "buy_hold": [round(float(r["buy_hold_value"]), 2) for r in rows],
-        "seeds": {s: [round(float(r[f"seed_{s}"]), 2) for r in rows] for s in ("42", "1", "2", "3", "4")},
+        "start": dates[0], "end": dates[-1],
         "yearly": [{"year": int(r["year"]), "days": int(r["days"]), "buy_hold": float(r["buy_hold"]),
                     "seeds": {s: float(r[f"seed_{s}"]) for s in ("42", "1", "2", "3", "4")}}
                    for r in read_csv(yearly)],
